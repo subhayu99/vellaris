@@ -1,0 +1,38 @@
+# Local-dev stack: Postgres + the Vellaris server.
+# Run: docker compose -f docker/compose.yaml up --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vellaris
+      POSTGRES_PASSWORD: vellaris
+      POSTGRES_DB: vellaris
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vellaris -d vellaris"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    image: ghcr.io/subhayu99/vellaris:dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      VELLARIS_HOST: 0.0.0.0
+      VELLARIS_PORT: "8000"
+      VELLARIS_DATABASE_URL: postgresql+psycopg://vellaris:vellaris@postgres:5432/vellaris
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
