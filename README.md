@@ -27,10 +27,9 @@ pip install vellaris
 
 ## Status
 
-Pre-release. The `0.0.0` placeholder on PyPI reserves the name; the first
-shippable release is `v0.1.0`. See the
-[roadmap](https://github.com/subhayu99/vellaris/milestones) for what's
-in flight.
+`v0.1.0` — first shippable release. Alpha; expect rough edges. The
+on-wire format is locked, so blobs encrypted with this release keep
+decrypting on later versions.
 
 ## How it works
 
