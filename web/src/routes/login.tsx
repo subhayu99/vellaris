@@ -30,6 +30,7 @@ import {
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { getWrappedKey, hasWrappedKey } from '../state/keystore.ts'
 import { setCachedUser, setToken } from '../state/session.ts'
+import { setUnwrappedPem } from '../state/key-cache.ts'
 import { uuidToBytes } from '../util/uuid.ts'
 import { AuthLayout } from './_layout.tsx'
 
@@ -111,7 +112,8 @@ export function LoginRoute() {
         username: verified.user.username,
         email: verified.user.email,
       })
-      navigate('/home')
+      setUnwrappedPem(privatePem)
+      navigate('/dashboard?scope=shared')
     } catch (err) {
       setStage('error')
       if (err instanceof VellarisNetworkError) {

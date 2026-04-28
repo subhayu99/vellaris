@@ -9,3 +9,4 @@
 export * from './server.ts'
 export * from './session.ts'
 export * from './keystore.ts'
+export * from './key-cache.ts'

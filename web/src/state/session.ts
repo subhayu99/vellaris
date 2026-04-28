@@ -8,6 +8,8 @@
  * without an extra `/users/me` round-trip on every page navigation.
  */
 
+import { clearUnwrappedPem } from './key-cache.ts'
+
 const TOKEN_KEY = 'vellaris.token'
 const USER_KEY = 'vellaris.user'
 
@@ -71,4 +73,10 @@ export function clearCachedUser(): void {
 export function clearSession(): void {
   clearToken()
   clearCachedUser()
+}
+
+/** Clear the session AND the in-memory unwrapped private-key cache. */
+export function clearSessionAndKey(): void {
+  clearSession()
+  clearUnwrappedPem()
 }
