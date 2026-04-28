@@ -209,9 +209,14 @@ class AsyncClient:
     # ---------- documents ----------
 
     async def push(self, file_path: Path, *, share_with: list[str] | None = None) -> dict[str, Any]:
-        """Encrypt and upload a file. ``share_with`` is a list of usernames."""
-        if self._user is None or self._private_key is None:
-            raise RuntimeError("not logged in")
+        """Encrypt and upload a file. ``share_with`` is a list of usernames.
+
+        Only the owner's *public* key is needed; the private key stays untouched.
+        Re-fetches /users/me if the cached user dict lacks public_key (the CLI
+        builds a fresh Client per command and only carries id/username).
+        """
+        if self._user is None or "public_key" not in self._user:
+            self._user = await self._api.me()
 
         plaintext = file_path.read_bytes()
         recipients: list[Recipient] = [

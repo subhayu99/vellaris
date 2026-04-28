@@ -7,7 +7,11 @@ from uuid import UUID
 
 import typer
 
-from vellaris.cli._session import client_from_config, require_session
+from vellaris.cli._session import (
+    client_from_config,
+    load_private_key_or_exit,
+    require_session,
+)
 from vellaris.client import VellarisAPIError
 from vellaris.client.config import VellarisConfig
 
@@ -20,6 +24,7 @@ def share(
     cfg = VellarisConfig.load()
     require_session(cfg)
     client, _ = client_from_config(cfg)
+    load_private_key_or_exit(cfg, client)
     try:
         client.share_document(document_id, username)
     except VellarisAPIError as exc:
