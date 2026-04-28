@@ -13,9 +13,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from vellaris.core.asymmetric import deserialize_public_key, pss_verify
 from vellaris.core.errors import KeyFormatError, SignatureError
+from vellaris.server.audit import record as audit_record
 from vellaris.server.config import VellarisSettings, get_settings
 from vellaris.server.db import get_session as get_db_session
-from vellaris.server.models import AuthChallenge, User
+from vellaris.server.models import AuditAction, AuthChallenge, User
 from vellaris.server.schemas import (
     ChallengeRequest,
     ChallengeResponse,
@@ -101,6 +102,12 @@ async def verify_challenge(
     await db.delete(challenge)
     user_agent_hash = _short_hash(user_agent) if user_agent else None
     session = await create_session(db, user, settings=settings, user_agent_hash=user_agent_hash)
+    await audit_record(
+        db,
+        AuditAction.USER_LOGIN,
+        user_id=user.id,
+        extra={"user_agent_hash": user_agent_hash} if user_agent_hash else {},
+    )
     await db.commit()
     await db.refresh(session)
     await db.refresh(user)
@@ -119,10 +126,10 @@ async def logout(
     authorization: Annotated[str | None, Header()] = None,
 ) -> None:
     """Revoke the current session token."""
-    _ = current  # caller is authenticated; we only need the token
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization.split(maxsplit=1)[1].strip()
         await revoke_session(db, token)
+        await audit_record(db, AuditAction.USER_LOGOUT, user_id=current.id)
         await db.commit()
 
 

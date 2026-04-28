@@ -12,8 +12,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from vellaris.core.asymmetric import deserialize_public_key
 from vellaris.core.errors import KeyFormatError
+from vellaris.server.audit import record as audit_record
 from vellaris.server.db import get_session as get_db_session
-from vellaris.server.models import User
+from vellaris.server.models import AuditAction, User
 from vellaris.server.schemas import UserCreate, UserPrivate, UserPublic
 from vellaris.server.security import CurrentUser
 
@@ -37,12 +38,20 @@ async def signup(
     user = User(username=body.username, email=body.email, public_key=body.public_key)
     db.add(user)
     try:
-        await db.commit()
+        await db.flush()
     except IntegrityError as exc:
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="username or email already taken"
         ) from exc
+
+    await audit_record(
+        db,
+        AuditAction.USER_SIGNUP,
+        user_id=user.id,
+        extra={"username": user.username},
+    )
+    await db.commit()
     await db.refresh(user)
     return user
 
