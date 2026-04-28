@@ -20,7 +20,7 @@ import type { DocumentScope, DocumentSummary } from '../api/index.ts'
 import { decryptBundle, deserializePrivateKeyForOaep } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
 import { getCachedUser, getToken } from '../state/session.ts'
-import { getUnwrappedPem } from '../state/key-cache.ts'
+import { getUnwrappedPem, hasUnwrappedPem } from '../state/key-cache.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
 
 interface FileRow {
@@ -78,6 +78,12 @@ export function DashboardRoute() {
 
   useEffect(() => {
     if (!client || !user) return
+    // If the in-memory key cache has been wiped (page reload, logout in
+    // another tab), DashboardLayout is about to redirect to /login — don't
+    // fire a fetch we'll never decrypt and that would surface a confusing
+    // "Private key cache is empty" toast first.
+    if (!hasUnwrappedPem()) return
+
     let cancelled = false
     setLoading(true)
     setError(null)

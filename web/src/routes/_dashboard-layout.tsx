@@ -85,6 +85,7 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
               <NavLink
                 key={n.to}
                 to={n.to}
+                data-testid={`nav-${n.match.replace(/\W/g, '-')}-${n.to.includes('mine') ? 'mine' : n.to.includes('shared') ? 'shared' : 'root'}`}
                 className={({ isActive }) =>
                   [
                     'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13.5px] transition-colors',

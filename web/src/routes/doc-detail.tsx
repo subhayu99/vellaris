@@ -38,7 +38,7 @@ import {
 } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
 import { getCachedUser, getToken } from '../state/session.ts'
-import { getUnwrappedPem } from '../state/key-cache.ts'
+import { getUnwrappedPem, hasUnwrappedPem } from '../state/key-cache.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
 
 function formatBytes(n: number): string {
@@ -95,6 +95,8 @@ export function DocDetailRoute() {
 
   useEffect(() => {
     if (!client || !id || !user) return
+    // Same guard as dashboard — DashboardLayout redirects on missing cache.
+    if (!hasUnwrappedPem()) return
     let cancelled = false
 
     async function load() {
