@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Vellaris dev artifacts
+vellaris.db
+vellaris.db-journal
+.venv/
+
