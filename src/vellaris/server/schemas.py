@@ -83,3 +83,60 @@ class TokenResponse(BaseModel):
     token: str
     expires_at: datetime
     user: UserPrivate
+
+
+# ---------- documents ----------
+
+
+class AccessGrant(BaseModel):
+    """A single recipient + the DEK encrypted for their public key."""
+
+    user_id: UUID
+    encrypted_dek: B64Bytes
+
+
+class DocumentCreate(BaseModel):
+    encrypted_filename: B64Bytes
+    content_hash: str = Field(min_length=1, max_length=128)
+    ciphertext: B64Bytes
+    access: list[AccessGrant] = Field(min_length=1)
+
+
+class DocumentSummary(BaseModel):
+    """Listed in /documents — no ciphertext or per-user DEK."""
+
+    id: UUID
+    owner_id: UUID
+    ciphertext_size: int
+    content_hash: str
+    encrypted_filename: B64Bytes
+    created_at: datetime
+
+
+class DocumentDownload(BaseModel):
+    """Returned by GET /documents/{id} for an authorized user."""
+
+    id: UUID
+    owner_id: UUID
+    encrypted_filename: B64Bytes
+    encrypted_dek: B64Bytes
+    ciphertext: B64Bytes
+    content_hash: str
+
+
+class ShareRequest(BaseModel):
+    user_id: UUID
+    encrypted_dek: B64Bytes
+
+
+# ---------- key blob sync (opt-in) ----------
+
+
+class KeyBlobUpload(BaseModel):
+    wrapped_key: B64Bytes
+
+
+class KeyBlobResponse(BaseModel):
+    user_id: UUID
+    wrapped_key: B64Bytes
+    updated_at: datetime

@@ -29,15 +29,19 @@ from vellaris.core.asymmetric import (
 from vellaris.server import models as _models  # noqa: F401
 from vellaris.server.config import reset_settings_cache
 from vellaris.server.db import create_all, drop_all, reset_engine_cache
+from vellaris.server.storage_factory import reset_blob_store_cache
 
 
 @pytest.fixture
 def server(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
     """Build a fresh FastAPI app + per-test SQLite file + ready-to-go TestClient."""
     db_path = tmp_path / "vellaris-test.db"
+    blob_root = tmp_path / "blobs"
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
+    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(blob_root))
     reset_settings_cache()
     reset_engine_cache()
+    reset_blob_store_cache()
 
     asyncio.new_event_loop().run_until_complete(create_all())
 
@@ -50,6 +54,7 @@ def server(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     asyncio.new_event_loop().run_until_complete(drop_all())
     reset_engine_cache()
     reset_settings_cache()
+    reset_blob_store_cache()
 
 
 # A module-scoped RSA keypair for tests that need it. Generating RSA-4096

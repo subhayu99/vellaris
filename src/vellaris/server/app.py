@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from vellaris import __version__
 from vellaris.server.config import get_settings
 from vellaris.server.routes import auth as auth_routes
+from vellaris.server.routes import documents as documents_routes
 from vellaris.server.routes import users as users_routes
 
 
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
 
     application.include_router(auth_routes.router)
     application.include_router(users_routes.router)
+    application.include_router(documents_routes.router)
     return application
 
 
