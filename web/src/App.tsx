@@ -3,6 +3,7 @@ import { ConnectRoute } from './routes/connect.tsx'
 import { DashboardRoute } from './routes/dashboard.tsx'
 import { LoginRoute } from './routes/login.tsx'
 import { SignupRoute } from './routes/signup.tsx'
+import { UploadRoute } from './routes/upload.tsx'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route path="/signup" element={<SignupRoute />} />
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/dashboard" element={<DashboardRoute />} />
+      <Route path="/upload" element={<UploadRoute />} />
       <Route path="/home" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/connect" replace />} />
     </Routes>
