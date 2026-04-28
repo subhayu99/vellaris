@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ConnectRoute } from './routes/connect.tsx'
+import { HomeRoute } from './routes/home.tsx'
 import { LoginRoute } from './routes/login.tsx'
 import { SignupRoute } from './routes/signup.tsx'
 
@@ -10,6 +11,7 @@ export default function App() {
       <Route path="/connect" element={<ConnectRoute />} />
       <Route path="/signup" element={<SignupRoute />} />
       <Route path="/login" element={<LoginRoute />} />
+      <Route path="/home" element={<HomeRoute />} />
       <Route path="*" element={<Navigate to="/connect" replace />} />
     </Routes>
   )
