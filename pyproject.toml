@@ -8,7 +8,7 @@ version = "0.0.0"
 description = "End-to-end encrypted document sharing you self-host."
 readme = "README.md"
 license = { text = "Apache-2.0" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Subhayu Kumar Bala", email = "balasubhayu99@gmail.com" },
 ]
@@ -19,7 +19,6 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Security :: Cryptography",
@@ -92,7 +91,7 @@ include = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -115,7 +114,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
