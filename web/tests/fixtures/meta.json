@@ -1,0 +1,13 @@
+{
+  "argon2_params": {
+    "l": 32,
+    "m": 64,
+    "p": 1,
+    "t": 1
+  },
+  "dek_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "description": "Cross-side fixtures produced by vellaris.core. TS verifies it can unwrap, OAEP-decrypt, AES-decrypt, and PSS-verify everything here using web/src/crypto/.",
+  "passphrase": "vellaris-test-passphrase",
+  "plaintext": "hello vellaris interop\n",
+  "pss_message": "challenge-id-bytes-and-nonce"
+}
