@@ -67,9 +67,11 @@ function pemBodyToBytes(pem: Uint8Array): Uint8Array {
 
 export function SettingsRoute() {
   const navigate = useNavigate()
-  const serverUrl = getServerUrl()
-  const token = getToken()
-  const cachedUser = getCachedUser()
+  // Memoize once to keep dep arrays in dashboard/doc-detail/upload stable
+  // (see dashboard.tsx for the refetch-loop bug this defends against).
+  const serverUrl = useMemo(() => getServerUrl(), [])
+  const token = useMemo(() => getToken(), [])
+  const cachedUser = useMemo(() => getCachedUser(), [])
 
   const [fingerprint, setFingerprint] = useState<string | null>(null)
   const [accountError, setAccountError] = useState<string | null>(null)

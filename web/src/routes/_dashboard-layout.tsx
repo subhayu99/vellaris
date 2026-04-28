@@ -9,7 +9,7 @@
  * Auth screens (/connect, /signup, /login) use AuthLayout instead.
  */
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useMemo, type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { VSigil } from '../components/v-sigil.tsx'
@@ -35,9 +35,11 @@ const NAV = [
 
 export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutProps) {
   const navigate = useNavigate()
-  const serverUrl = getServerUrl()
-  const user = getCachedUser()
-  const token = getToken()
+  // Read once — getCachedUser() returns a fresh JSON.parse object per call,
+  // and `user` in the useEffect deps below would otherwise re-fire forever.
+  const serverUrl = useMemo(() => getServerUrl(), [])
+  const user = useMemo(() => getCachedUser(), [])
+  const token = useMemo(() => getToken(), [])
 
   useEffect(() => {
     if (!serverUrl || !token || !user) {

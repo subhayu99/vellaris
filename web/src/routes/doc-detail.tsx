@@ -62,9 +62,12 @@ function downloadBlob(filename: string, bytes: Uint8Array): void {
 export function DocDetailRoute() {
   const navigate = useNavigate()
   const { id = '' } = useParams<{ id: string }>()
-  const serverUrl = getServerUrl()
-  const token = getToken()
-  const user = getCachedUser()
+  // Memoize once: getCachedUser() JSON.parses on each call, so without this
+  // `user` would have a fresh identity every render and the useEffect below
+  // would re-fire forever, draining the server's 120/min rate bucket.
+  const serverUrl = useMemo(() => getServerUrl(), [])
+  const token = useMemo(() => getToken(), [])
+  const user = useMemo(() => getCachedUser(), [])
 
   const [download, setDownload] = useState<DocumentDownload | null>(null)
   const [filename, setFilename] = useState<string | null>(null)

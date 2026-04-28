@@ -59,9 +59,13 @@ export function DashboardRoute() {
   const scopeParam = params.get('scope')
   const scope: DocumentScope = scopeParam === 'mine' || scopeParam === 'all' ? scopeParam : 'shared'
 
-  const serverUrl = getServerUrl()
-  const token = getToken()
-  const user = getCachedUser()
+  // Read once on mount. getCachedUser() JSON.parses on every call, so a fresh
+  // object identity each render would put `user` in the useEffect deps and
+  // trip an infinite refetch loop (~drains the server's 120-req/min bucket
+  // in seconds → 429 → cascading "Failed to fetch" elsewhere in the app).
+  const serverUrl = useMemo(() => getServerUrl(), [])
+  const token = useMemo(() => getToken(), [])
+  const user = useMemo(() => getCachedUser(), [])
 
   const [rows, setRows] = useState<FileRow[]>([])
   const [loading, setLoading] = useState(true)

@@ -53,9 +53,11 @@ function formatBytes(n: number): string {
 
 export function UploadRoute() {
   const navigate = useNavigate()
-  const serverUrl = getServerUrl()
-  const token = getToken()
-  const user = getCachedUser()
+  // Memoize once on mount — see dashboard.tsx for the refetch-loop bug
+  // this guards against.
+  const serverUrl = useMemo(() => getServerUrl(), [])
+  const token = useMemo(() => getToken(), [])
+  const user = useMemo(() => getCachedUser(), [])
 
   const [file, setFile] = useState<File | null>(null)
   const [recipientInput, setRecipientInput] = useState('')
