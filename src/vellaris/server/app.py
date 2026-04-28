@@ -22,14 +22,6 @@ def create_app() -> FastAPI:
         description="End-to-end encrypted document sharing — server.",
         version=__version__,
     )
-    application.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_allow_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
     @application.get("/healthz", tags=["meta"])
     def healthz() -> dict[str, str]:
         """Liveness probe. Returns 200 with a fixed payload."""
@@ -40,6 +32,20 @@ def create_app() -> FastAPI:
     application.include_router(users_routes.router)
     application.include_router(documents_routes.router)
     application.include_router(keyblobs_routes.router)
+
+    # CORS is installed LAST so it's the outermost middleware. Starlette
+    # composes middleware most-recently-added = outermost, so a 429 from
+    # the rate limiter (which short-circuits before call_next) still flows
+    # back through CORS on the way out and gets its Access-Control-Allow-*
+    # headers — without that the browser surfaces "rate limit exceeded"
+    # 429s as opaque CORS errors.
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allow_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     return application
 
 
