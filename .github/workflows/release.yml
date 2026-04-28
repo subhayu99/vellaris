@@ -1,0 +1,176 @@
+name: Release
+
+# Triggers on annotated tags matching v* (e.g. v0.1.0, v1.0.0-rc.1).
+# The tag's name (minus the leading v) is used as the version everywhere.
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # create the GitHub release + upload assets
+  packages: write # push to ghcr.io
+  id-token: write # PyPI trusted publishing (OIDC)
+  pages: write # deploy SPA to GitHub Pages
+  attestations: write # provenance attestations
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+jobs:
+  # ---------- 1. Sanity-check: lint + tests must pass on the tagged commit ----------
+  guard:
+    name: Pre-release guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy src/vellaris
+      - run: pytest -q
+
+  # ---------- 2. Build Python wheel + sdist, publish to PyPI ----------
+  pypi:
+    name: PyPI publish
+    needs: guard
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/vellaris
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Verify the tag matches pyproject.toml's version
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          file_version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')"
+          if [ "$tag_version" != "$file_version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match pyproject version $file_version"
+            exit 1
+          fi
+
+      - name: Build distribution
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Publish to PyPI (trusted publishing — OIDC, no token)
+        # Configure on PyPI: pypi.org/manage/account/publishing/ → "Add new pending publisher"
+        #   Owner: subhayu99, Repository: vellaris, Workflow: release.yml,
+        #   Environment: pypi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          attestations: true
+
+  # ---------- 3. Build multi-arch Docker image, push to GHCR ----------
+  ghcr:
+    name: GHCR multi-arch image
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - name: Build and push (linux/amd64, linux/arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.server
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------- 4. Build the SPA, attach a tarball to the release, deploy to Pages ----------
+  spa:
+    name: SPA build + Pages deploy
+    needs: guard
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: pnpm install
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (with the right base path for github.io)
+        working-directory: web
+        env:
+          VITE_BASE: ${{ github.event.repository.has_pages && format('/{0}/', github.event.repository.name) || '/' }}
+        run: pnpm build --base "$VITE_BASE"
+
+      - name: Tarball the dist/
+        working-directory: web
+        run: tar -czvf "../vellaris-web-${GITHUB_REF_NAME}.tar.gz" -C dist .
+
+      - name: Attach the tarball to the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: vellaris-web-*.tar.gz
+          generate_release_notes: true
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - name: Deploy to Pages
+        uses: actions/deploy-pages@v4
