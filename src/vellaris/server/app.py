@@ -6,9 +6,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from vellaris import __version__
+from vellaris.server import limits
 from vellaris.server.config import get_settings
 from vellaris.server.routes import auth as auth_routes
 from vellaris.server.routes import documents as documents_routes
+from vellaris.server.routes import keyblobs as keyblobs_routes
 from vellaris.server.routes import users as users_routes
 
 
@@ -33,9 +35,11 @@ def create_app() -> FastAPI:
         """Liveness probe. Returns 200 with a fixed payload."""
         return {"status": "ok"}
 
+    limits.install(application)
     application.include_router(auth_routes.router)
     application.include_router(users_routes.router)
     application.include_router(documents_routes.router)
+    application.include_router(keyblobs_routes.router)
     return application
 
 
