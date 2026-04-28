@@ -8,6 +8,7 @@
 
 export { VellarisClient } from './client.ts'
 export { VellarisAPIError, VellarisNetworkError } from './errors.ts'
+export { base64ToBytes, bytesToBase64 } from './_b64.ts'
 export type {
   AccessGrant,
   ChallengeResponse,
