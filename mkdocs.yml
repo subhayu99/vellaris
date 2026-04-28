@@ -47,3 +47,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Quickstart: quickstart.md
+  - Security model: security-model.md
+  - CLI reference: cli.md
+  - Python SDK: sdk.md
+  - Deployment: deployment.md
+  - Build your own client: build-your-own-client.md
