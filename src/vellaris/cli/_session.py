@@ -30,7 +30,15 @@ def client_from_config(cfg: VellarisConfig | None = None) -> tuple[Client, Vella
     """Build a :class:`Client` configured from ``cfg`` (or the on-disk config)."""
     cfg = cfg or load_config_or_exit()
     if cfg.server_url is None:
-        # load_config_or_exit catches this; this branch keeps the type checker happy.
+        # cfg arrived from a caller that didn't go through load_config_or_exit
+        # (e.g. `cfg = VellarisConfig.load()` followed by client_from_config(cfg)).
+        # Re-emit the same friendly error rather than exiting silently.
+        typer.secho(
+            "no server configured; run `vellaris signup --server URL` "
+            "or `vellaris login --server URL`",
+            err=True,
+            fg=typer.colors.RED,
+        )
         raise typer.Exit(code=2)
     client = Client(cfg.server_url, token=cfg.session_token)
     if cfg.current_user_id and cfg.current_username:
