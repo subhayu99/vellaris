@@ -10,8 +10,6 @@ describe('<App />', () => {
         <App />
       </MemoryRouter>,
     )
-    expect(
-      screen.getByRole('heading', { name: /connect to a vellaris server/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /connect to your server/i })).toBeInTheDocument()
   })
 })

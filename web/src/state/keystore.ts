@@ -17,7 +17,7 @@ const STORAGE_KEY = 'vellaris.wrappedKey'
 
 export function getWrappedKey(): Uint8Array | null {
   try {
-    const b64 = globalThis.localStorage?.getItem(STORAGE_KEY)
+    const b64 = localStorage.getItem(STORAGE_KEY)
     if (!b64) return null
     return base64ToBytes(b64)
   } catch {
@@ -26,13 +26,25 @@ export function getWrappedKey(): Uint8Array | null {
 }
 
 export function setWrappedKey(blob: Uint8Array): void {
-  globalThis.localStorage?.setItem(STORAGE_KEY, bytesToBase64(blob))
+  try {
+    localStorage.setItem(STORAGE_KEY, bytesToBase64(blob))
+  } catch {
+    /* swallow */
+  }
 }
 
 export function clearWrappedKey(): void {
-  globalThis.localStorage?.removeItem(STORAGE_KEY)
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* swallow */
+  }
 }
 
 export function hasWrappedKey(): boolean {
-  return globalThis.localStorage?.getItem(STORAGE_KEY) != null
+  try {
+    return localStorage.getItem(STORAGE_KEY) != null
+  } catch {
+    return false
+  }
 }

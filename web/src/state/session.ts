@@ -19,23 +19,31 @@ export interface CachedUser {
 
 export function getToken(): string | null {
   try {
-    return globalThis.sessionStorage?.getItem(TOKEN_KEY) ?? null
+    return sessionStorage.getItem(TOKEN_KEY)
   } catch {
     return null
   }
 }
 
 export function setToken(token: string): void {
-  globalThis.sessionStorage?.setItem(TOKEN_KEY, token)
+  try {
+    sessionStorage.setItem(TOKEN_KEY, token)
+  } catch {
+    /* swallow */
+  }
 }
 
 export function clearToken(): void {
-  globalThis.sessionStorage?.removeItem(TOKEN_KEY)
+  try {
+    sessionStorage.removeItem(TOKEN_KEY)
+  } catch {
+    /* swallow */
+  }
 }
 
 export function getCachedUser(): CachedUser | null {
   try {
-    const raw = globalThis.sessionStorage?.getItem(USER_KEY)
+    const raw = sessionStorage.getItem(USER_KEY)
     if (!raw) return null
     return JSON.parse(raw) as CachedUser
   } catch {
@@ -44,11 +52,19 @@ export function getCachedUser(): CachedUser | null {
 }
 
 export function setCachedUser(user: CachedUser): void {
-  globalThis.sessionStorage?.setItem(USER_KEY, JSON.stringify(user))
+  try {
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user))
+  } catch {
+    /* swallow */
+  }
 }
 
 export function clearCachedUser(): void {
-  globalThis.sessionStorage?.removeItem(USER_KEY)
+  try {
+    sessionStorage.removeItem(USER_KEY)
+  } catch {
+    /* swallow */
+  }
 }
 
 /** Convenience: clear both token and user (logout). */
