@@ -65,3 +65,9 @@ jobs:
           pip install -e ".[dev]"
       - name: pytest
         run: pytest
+
+      - name: core/ coverage gate
+        if: matrix.python-version == '3.12'
+        run: |
+          coverage run -m pytest
+          coverage report --include="src/vellaris/core/*" --fail-under=100

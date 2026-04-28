@@ -61,8 +61,7 @@ def wrap_private_key(
     salt = random_salt()
     key = derive_key(passphrase, salt, p)
     params_bytes = json.dumps(p.to_dict(), sort_keys=True, separators=(",", ":")).encode("utf-8")
-    if len(params_bytes) > 0xFFFF:
-        # Practically unreachable; defensive cap to keep the 2-byte length field honest.
+    if len(params_bytes) > 0xFFFF:  # pragma: no cover - defensive; 4 small ints can't exceed 64 KiB
         raise WireFormatError(f"params_json too large: {len(params_bytes)} bytes")
 
     aad = _associated_data(WRAPPED_V1, salt, params_bytes)

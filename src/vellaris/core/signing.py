@@ -66,7 +66,7 @@ def deserialize_private_key(raw: bytes) -> Ed25519PrivateKey:
         raise KeyFormatError(f"private key must be {PRIVATE_KEY_SIZE} bytes, got {len(raw)}")
     try:
         return Ed25519PrivateKey.from_private_bytes(bytes(raw))
-    except ValueError as exc:
+    except ValueError as exc:  # pragma: no cover - cryptography accepts any 32-byte seed
         raise KeyFormatError(f"failed to load Ed25519 private key: {exc}") from exc
 
 
@@ -85,7 +85,7 @@ def deserialize_public_key(raw: bytes) -> Ed25519PublicKey:
         raise KeyFormatError(f"public key must be {PUBLIC_KEY_SIZE} bytes, got {len(raw)}")
     try:
         return Ed25519PublicKey.from_public_bytes(bytes(raw))
-    except ValueError as exc:
+    except ValueError as exc:  # pragma: no cover - cryptography accepts any 32-byte point
         raise KeyFormatError(f"failed to load Ed25519 public key: {exc}") from exc
 
 
