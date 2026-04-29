@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { SignupRoute } from './signup.tsx'
 import { setServerUrl } from '../state/server.ts'
-import { hasWrappedKey } from '../state/keystore.ts'
+import { hasWrappedKey, setWrappedKey } from '../state/keystore.ts'
 
 function renderWithRouter() {
   return render(
@@ -52,6 +52,18 @@ describe('<SignupRoute />', () => {
     await waitFor(() => expect(screen.getByText(/Username must be 1–64 chars/)).toBeInTheDocument())
     expect(fetchMock).not.toHaveBeenCalled()
     expect(hasWrappedKey()).toBe(false)
+  })
+
+  it('still renders the form when a wrapped key is already cached, with a replace warning', () => {
+    setServerUrl('http://localhost:8000')
+    setWrappedKey(new Uint8Array([0x01, 0x02, 0x03]))
+    renderWithRouter()
+    // The form must render — pre-v0.3.2, this route auto-redirected to
+    // /login the moment hasWrappedKey() returned true, breaking the
+    // "Create an account" link on /login itself for returning users.
+    expect(screen.getByTestId('signup-username')).toBeInTheDocument()
+    expect(screen.getByTestId('signup-replacing-key-warning')).toBeInTheDocument()
+    expect(screen.queryByTestId('login-route')).not.toBeInTheDocument()
   })
 
   it('rejects mismatched passphrases before any crypto runs', async () => {

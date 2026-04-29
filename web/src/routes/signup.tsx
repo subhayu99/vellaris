@@ -51,14 +51,17 @@ export function SignupRoute() {
   useEffect(() => {
     if (!serverUrl) {
       navigate('/connect', { replace: true })
-    } else if (hasWrappedKey()) {
-      navigate('/login', { replace: true })
     }
   }, [navigate, serverUrl])
   useEffect(() => {
     trackPageview('/signup')
   }, [])
-  if (!serverUrl || hasWrappedKey()) return null
+  if (!serverUrl) return null
+
+  // If a wrapped key is already cached on this device, signup will
+  // replace it. Surface that to the user so they don't accidentally
+  // strand a previous account whose passphrase they still need.
+  const replacingExistingKey = hasWrappedKey()
 
   function disconnect() {
     clearServerUrl()
@@ -136,6 +139,31 @@ export function SignupRoute() {
             Your private key is generated in this browser. The server only sees the public half.
           </p>
         </div>
+
+        {replacingExistingKey && (
+          <div
+            className="rounded-lg border px-4 py-3 text-[13px] leading-relaxed"
+            style={{
+              borderColor: 'rgba(232, 183, 90, 0.32)',
+              background: 'rgba(232, 183, 90, 0.08)',
+              color: 'var(--color-fg)',
+            }}
+            role="status"
+            data-testid="signup-replacing-key-warning"
+          >
+            <strong style={{ color: 'var(--color-warn)' }}>Heads up:</strong> this device already
+            has an encrypted key on it. Creating a new account will replace it, and the previous
+            account&rsquo;s files will be unreadable from this browser.{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="text-fg-2 decoration-line-2 hover:text-fg underline underline-offset-2"
+            >
+              Sign in to the existing account instead
+            </button>
+            .
+          </div>
+        )}
 
         <Field label="Username" htmlFor="signup-username">
           <Input
