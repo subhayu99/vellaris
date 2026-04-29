@@ -99,12 +99,19 @@ Python's `cryptography` output for byte-equality with CLI fixtures.
 
 ## Analytics
 
-The SPA fires Cloudflare Web Analytics on the **public** screens only —
-`/connect`, `/signup`, `/login`. Once the user logs in, `DashboardLayout`
-takes over from `AuthLayout` and the beacon is detached. No telemetry on
-`/dashboard`, `/doc/:id`, `/upload`, or `/settings` — those routes would
-leak who's using the app and which docs they're touching, which is what
-Vellaris's privacy model says no third party should ever see.
+The SPA loads Cloudflare Web Analytics from `AuthLayout` only — i.e.
+`/connect`, `/signup`, `/login`. The intent is to track public surfaces
+without leaking authenticated activity to a third party.
+
+> **Known leak (alpha — fix in v0.2):** detaching the `<script>` tag on
+> AuthLayout unmount does **not** undo the `history.pushState` listeners
+> the beacon already attached. So once a user lands on /connect, the
+> beacon will keep firing pageviews for `/dashboard`, `/doc/:id`,
+> `/upload`, `/settings` for the rest of the session. Cloudflare sees
+> the URLs (including doc UUIDs) and basic Web Vitals — never document
+> content. The fix: pass `"spa": false` in the beacon config and call
+> `window.__cfBeacon.trackPageview()` manually only from the public
+> route components. Tracked under the v0.2 todo.
 
 The beacon token comes from `VITE_CF_BEACON_TOKEN` (Vite env var, baked
 in at build time). If unset (dev, CI, PR builds), the beacon never
