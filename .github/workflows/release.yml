@@ -151,6 +151,12 @@ jobs:
         working-directory: web
         env:
           VITE_BASE: ${{ github.event.repository.has_pages && format('/{0}/', github.event.repository.name) || '/' }}
+          # Cloudflare Web Analytics beacon token. Public identifier (not a
+          # secret), but kept as a repo secret so dev / PR builds don't ship
+          # one. Set under Settings → Secrets and variables → Actions →
+          # Repository secrets → "VITE_CF_BEACON_TOKEN". If unset, the
+          # SPA simply ships without analytics.
+          VITE_CF_BEACON_TOKEN: ${{ secrets.VITE_CF_BEACON_TOKEN }}
         run: pnpm build --base "$VITE_BASE"
 
       - name: Tarball the dist/

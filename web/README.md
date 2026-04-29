@@ -96,3 +96,21 @@ of truth — port from there, don't redesign.
 
 PEM serialization writes 64-char body lines + trailing `\n` to match
 Python's `cryptography` output for byte-equality with CLI fixtures.
+
+## Analytics
+
+The SPA fires Cloudflare Web Analytics on the **public** screens only —
+`/connect`, `/signup`, `/login`. Once the user logs in, `DashboardLayout`
+takes over from `AuthLayout` and the beacon is detached. No telemetry on
+`/dashboard`, `/doc/:id`, `/upload`, or `/settings` — those routes would
+leak who's using the app and which docs they're touching, which is what
+Vellaris's privacy model says no third party should ever see.
+
+The beacon token comes from `VITE_CF_BEACON_TOKEN` (Vite env var, baked
+in at build time). If unset (dev, CI, PR builds), the beacon never
+loads. Production releases pull it from a GitHub repository secret —
+set under Settings → Secrets and variables → Actions →
+**Repository secrets** → name `VITE_CF_BEACON_TOKEN`. Get the token
+itself from `dash.cloudflare.com` → Web Analytics → Add a site → "I
+don't have a website on Cloudflare" → copy the value of the `token` key
+from the `data-cf-beacon` attribute.
