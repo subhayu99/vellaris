@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import Marketing from './marketing/Marketing.tsx'
 import { ConnectRoute } from './routes/connect.tsx'
 import { DashboardRoute } from './routes/dashboard.tsx'
 import { DocDetailRoute } from './routes/doc-detail.tsx'
@@ -8,19 +8,16 @@ import { SettingsRoute } from './routes/settings.tsx'
 import { SignupRoute } from './routes/signup.tsx'
 import { UploadRoute } from './routes/upload.tsx'
 
-const Marketing = lazy(() => import('./marketing/Marketing.tsx'))
+// Marketing was originally React.lazy-loaded so /login+ visits wouldn't
+// download the landing-page chunk. With the merged build it's only ~11 KB
+// JS + 5 KB CSS gzipped — paying ~600ms of blank-screen Suspense for that
+// saving on / cold loads is the wrong trade. Eager-imported now; revisit
+// if the marketing chunk grows materially.
 
 export default function App() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <Suspense fallback={null}>
-            <Marketing />
-          </Suspense>
-        }
-      />
+      <Route path="/" element={<Marketing />} />
       <Route path="/app" element={<Navigate to="/connect" replace />} />
       <Route path="/connect" element={<ConnectRoute />} />
       <Route path="/signup" element={<SignupRoute />} />
