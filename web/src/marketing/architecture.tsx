@@ -223,8 +223,10 @@ function ArchSVG({ reduced }: { reduced: boolean }) {
           <path d="M746 200 L750 208 L754 200 Z" />
         </g>
 
-        {/* upward 'plaintext' attempt with red strike */}
-        <g transform="translate(820, 50)">
+        {/* upward 'plaintext' attempt with red strike — pulled in from
+            x=820 to x=770 so the "(impossible)" label fits inside the
+            900-wide viewBox on narrower panels. */}
+        <g transform="translate(770, 50)">
           <path
             d="M0 130 L0 30"
             fill="none"

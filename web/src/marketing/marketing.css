@@ -1372,12 +1372,18 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
     gap: 32px;
   }
 }
+/* The status pill + secondary section links wrap awkwardly between
+   720 and ~900px because their combined width exceeds the available
+   nav space. Hide the .nav-hide-sm group earlier so the nav stays on
+   one line all the way down to mobile. */
+@media (max-width: 900px) {
+  .marketing-root .nav-links .nav-hide-sm {
+    display: none;
+  }
+}
 @media (max-width: 720px) {
   .marketing-root .nav {
     padding: 14px 20px;
-  }
-  .marketing-root .nav-links .nav-hide-sm {
-    display: none;
   }
   .marketing-root .container,
   .marketing-root .container-narrow {
