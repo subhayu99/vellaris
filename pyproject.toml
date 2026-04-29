@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vellaris"
-version = "0.1.1"
+version = "0.1.2"
 description = "End-to-end encrypted document sharing you self-host."
 readme = "README.md"
 license = { text = "Apache-2.0" }
