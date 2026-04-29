@@ -3,6 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Strict-ish CSP. Notes on the loose bits, with a v0.3 path to tighten:
+      - 'unsafe-inline' on script-src is required for Vite's runtime-injected
+        prefetch + module-preload script tags. Move to nonces or sha256
+        hashes once the build is fully static.
+      - 'wasm-unsafe-eval' is non-negotiable: hash-wasm's Argon2id runs as
+        WebAssembly, and without this directive the wrap/unwrap path on
+        signup + login fails outright in modern browsers.
+      - 'unsafe-inline' on style-src is for Tailwind's runtime injected
+        styles + Google Fonts' inline @font-face block.
+      - connect-src https: is intentionally broad: the SPA's whole point is
+        to talk to *any* user-supplied Vellaris server URL, so we can't
+        allowlist a single origin. ws://localhost:* + wss://localhost:* are
+        for Vite HMR in dev (no-op in prod).
+      - frame-ancestors / sandbox / report-* are silently ignored when set
+        via meta http-equiv; they're listed here for intent. Move to an
+        HTTP header at the hosting layer if/when we want enforcement.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:* https: https://cloudflareinsights.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="color-scheme" content="dark light" />
     <meta
