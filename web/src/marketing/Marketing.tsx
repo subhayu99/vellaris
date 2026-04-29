@@ -11,6 +11,8 @@ import { useRef } from 'react'
 import { useRevealOnScroll, useTheme } from './hooks.ts'
 import { NavBar } from './nav-bar.tsx'
 import { Hero } from './hero.tsx'
+import { HowItWorks } from './how-it-works.tsx'
+import { Clients } from './clients.tsx'
 import './marketing.css'
 
 export default function Marketing() {
@@ -25,8 +27,14 @@ export default function Marketing() {
       <NavBar />
       <main>
         <Hero />
+        <div className="reveal">
+          <HowItWorks />
+        </div>
+        <div className="reveal">
+          <Clients />
+        </div>
         {/* Sections land in subsequent commits:
-            HowItWorks · Clients · Architecture · Features · FAQ ·
+            Architecture · Features · FAQ ·
             LivingTerminal · GetStarted · Footer */}
       </main>
     </div>

@@ -11,7 +11,9 @@ describe('<App />', () => {
       </MemoryRouter>,
     )
     // Marketing is lazy-loaded; await the first chrome element to confirm it mounted.
-    expect(await screen.findByText('vellaris')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: /files only the people you choose can read/i }),
+    ).toBeInTheDocument()
   })
 
   it('"/app" routes into the connect entry point', () => {
@@ -29,6 +31,8 @@ describe('<App />', () => {
         <App />
       </MemoryRouter>,
     )
-    expect(await screen.findByText('vellaris')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: /files only the people you choose can read/i }),
+    ).toBeInTheDocument()
   })
 })
