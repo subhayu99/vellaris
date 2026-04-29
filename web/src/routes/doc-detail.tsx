@@ -341,8 +341,8 @@ export function DocDetailRoute() {
                   <div>
                     <h2 className="text-fg text-[15px] font-semibold">Shared with</h2>
                     <p className="text-fg-3 mt-0.5 text-[12.5px]">
-                      Click × to revoke. Anyone who already downloaded the file keeps their copy
-                      — revoke is forward-only.
+                      Click × to revoke. Anyone who already downloaded the file keeps their copy —
+                      revoke is forward-only.
                     </p>
                   </div>
                   <ul className="flex flex-wrap gap-2" data-testid="access-chips">

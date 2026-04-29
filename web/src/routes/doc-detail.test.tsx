@@ -110,9 +110,7 @@ describe('<DocDetailRoute /> access chips', () => {
 
     // Wait for the "shared with you" header to confirm the doc loaded so
     // we're not asserting on a still-loading page.
-    await waitFor(() =>
-      expect(screen.getByText(/shared with you/i)).toBeInTheDocument(),
-    )
+    await waitFor(() => expect(screen.getByText(/shared with you/i)).toBeInTheDocument())
     expect(screen.queryByTestId('access-section')).toBeNull()
     expect(screen.queryByTestId('access-chips')).toBeNull()
   })

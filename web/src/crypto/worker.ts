@@ -18,11 +18,7 @@
 
 /// <reference lib="webworker" />
 
-import {
-  generateOaepKeypair,
-  serializePrivateKey,
-  serializePublicKey,
-} from './asymmetric.ts'
+import { generateOaepKeypair, serializePrivateKey, serializePublicKey } from './asymmetric.ts'
 import { unwrapPrivateKey, wrapPrivateKey } from './wrap.ts'
 
 export type WorkerRequestBody =

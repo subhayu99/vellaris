@@ -19,10 +19,7 @@ import {
   serializePrivateKey,
   serializePublicKey,
 } from './asymmetric.ts'
-import {
-  unwrapPrivateKey as _unwrapPrivateKey,
-  wrapPrivateKey as _wrapPrivateKey,
-} from './wrap.ts'
+import { unwrapPrivateKey as _unwrapPrivateKey, wrapPrivateKey as _wrapPrivateKey } from './wrap.ts'
 import {
   handleWorkerRequest,
   type WorkerKeypairResult,
@@ -113,18 +110,12 @@ export async function generateOaepKeypair(): Promise<WorkerKeypairResult> {
   return promise ?? fallbackGenerate()
 }
 
-export async function wrapPrivateKey(
-  pem: Uint8Array,
-  passphrase: string,
-): Promise<Uint8Array> {
+export async function wrapPrivateKey(pem: Uint8Array, passphrase: string): Promise<Uint8Array> {
   const promise = send<Uint8Array>({ type: 'wrapPrivateKey', pem, passphrase })
   return promise ?? _wrapPrivateKey(pem, passphrase)
 }
 
-export async function unwrapPrivateKey(
-  blob: Uint8Array,
-  passphrase: string,
-): Promise<Uint8Array> {
+export async function unwrapPrivateKey(blob: Uint8Array, passphrase: string): Promise<Uint8Array> {
   const promise = send<Uint8Array>({ type: 'unwrapPrivateKey', blob, passphrase })
   return promise ?? _unwrapPrivateKey(blob, passphrase)
 }
