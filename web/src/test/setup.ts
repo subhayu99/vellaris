@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest'
+import 'fake-indexeddb/auto'
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeEach } from 'vitest'
+
+import { __resetKeystoreForTests } from '../state/keystore.ts'
 
 // Vitest 4 doesn't auto-register testing-library cleanup, so do it here.
 afterEach(() => {
@@ -50,4 +53,5 @@ beforeEach(() => {
     configurable: true,
     writable: true,
   })
+  __resetKeystoreForTests()
 })
