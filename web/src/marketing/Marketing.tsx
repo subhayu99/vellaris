@@ -13,6 +13,9 @@ import { NavBar } from './nav-bar.tsx'
 import { Hero } from './hero.tsx'
 import { HowItWorks } from './how-it-works.tsx'
 import { Clients } from './clients.tsx'
+import { Architecture } from './architecture.tsx'
+import { Features } from './features.tsx'
+import { FAQ } from './faq.tsx'
 import './marketing.css'
 
 export default function Marketing() {
@@ -33,8 +36,16 @@ export default function Marketing() {
         <div className="reveal">
           <Clients />
         </div>
+        <div className="reveal">
+          <Architecture />
+        </div>
+        <div className="reveal">
+          <Features />
+        </div>
+        <div className="reveal">
+          <FAQ />
+        </div>
         {/* Sections land in subsequent commits:
-            Architecture · Features · FAQ ·
             LivingTerminal · GetStarted · Footer */}
       </main>
     </div>
