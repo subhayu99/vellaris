@@ -48,6 +48,16 @@ export interface DocumentSummary {
   createdAt: Date
 }
 
+/**
+ * One row of a document's access list. Returned only to the document's
+ * owner — the server omits the field for non-owners so they can't
+ * enumerate co-recipients.
+ */
+export interface GrantSummary {
+  userId: string
+  username: string
+}
+
 export interface DocumentDownload {
   id: string
   ownerId: string
@@ -55,6 +65,8 @@ export interface DocumentDownload {
   encryptedDek: Uint8Array
   ciphertext: Uint8Array
   contentHash: string
+  /** Owner-only. `null` for non-owners. */
+  access: GrantSummary[] | null
 }
 
 export interface KeyBlobResponse {
