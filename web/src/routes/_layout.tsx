@@ -7,6 +7,7 @@
  */
 
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { ConnectionPill, VSigil, Wordmark } from '../components/index.ts'
 import { CloudflareBeacon } from '../components/cloudflare-beacon.tsx'
 
@@ -27,10 +28,10 @@ export function AuthLayout({ children, serverUrl, user, onDisconnect }: AuthLayo
       */}
       <CloudflareBeacon />
       <header className="flex items-center justify-between px-6 py-5">
-        <a href="/" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5">
           <VSigil size={26} />
           <Wordmark size="md" />
-        </a>
+        </Link>
         {serverUrl ? (
           <ConnectionPill serverUrl={serverUrl} user={user} onDisconnect={onDisconnect} />
         ) : null}

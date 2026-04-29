@@ -147,17 +147,44 @@ jobs:
         working-directory: web
         run: pnpm install --frozen-lockfile
 
-      - name: Build (with the right base path for github.io)
+      # Compute the base path from $GITHUB_REPOSITORY so the same workflow
+      # works in any fork without hardcoding the project name. User-pages
+      # repos (<owner>.github.io) deploy at root; project-pages repos
+      # deploy at /<repo-name>/.
+      - name: Compute base path
+        id: base
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          REPO_OWNER="${GITHUB_REPOSITORY%/*}"
+          if [ "$REPO_NAME" = "${REPO_OWNER}.github.io" ]; then
+            echo "BASE_PATH=/" >> $GITHUB_OUTPUT
+          else
+            echo "BASE_PATH=/${REPO_NAME}/" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build
         working-directory: web
         env:
-          VITE_BASE: ${{ github.event.repository.has_pages && format('/{0}/', github.event.repository.name) || '/' }}
+          # vite.config.ts reads VITE_BASE_PATH and configures both the
+          # asset prefix and import.meta.env.BASE_URL (which BrowserRouter
+          # uses as its basename). One env var, both sides aligned.
+          VITE_BASE_PATH: ${{ steps.base.outputs.BASE_PATH }}
           # Cloudflare Web Analytics beacon token. Public identifier (not a
           # secret), but kept as a repo secret so dev / PR builds don't ship
           # one. Set under Settings → Secrets and variables → Actions →
           # Repository secrets → "VITE_CF_BEACON_TOKEN". If unset, the
           # SPA simply ships without analytics.
           VITE_CF_BEACON_TOKEN: ${{ secrets.VITE_CF_BEACON_TOKEN }}
-        run: pnpm build --base "$VITE_BASE"
+        run: pnpm build
+
+      # GitHub Pages serves the static bundle, so a hard-refresh on a
+      # deep link (e.g. /vellaris/login) hits Pages looking for that file
+      # and 404s. Aliasing 404.html to index.html makes Pages serve the
+      # SPA shell for any unknown path under the project, which then
+      # routes client-side.
+      - name: SPA 404 fallback
+        working-directory: web
+        run: cp dist/index.html dist/404.html
 
       - name: Tarball the dist/
         working-directory: web
