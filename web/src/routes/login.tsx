@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button, EncryptAnim, Field, Input, VSigil } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
+import { trackPageview } from '../components/cloudflare-beacon.tsx'
 import {
   DecryptError,
   deserializePrivateKeyForPss,
@@ -58,6 +59,9 @@ export function LoginRoute() {
       navigate('/signup', { replace: true })
     }
   }, [navigate, serverUrl])
+  useEffect(() => {
+    trackPageview('/login')
+  }, [])
   if (!serverUrl || !hasWrappedKey()) return null
 
   function disconnect() {
