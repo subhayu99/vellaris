@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IArrowRight, IGitHub } from './icons.tsx'
 import { useTypewriter, type TermLine } from './hooks.ts'
+import { Terminal } from './terminal.tsx'
 import { APP_ROUTE, REPO_URL } from './links.ts'
 
 export function Hero() {
@@ -15,6 +16,7 @@ export function Hero() {
     setInstallCopied(true)
     setTimeout(() => setInstallCopied(false), 1400)
   }
+  const progress = useTypewriter(HERO_SCRIPT, { loopAfterMs: 5500 })
   return (
     <section className="hero">
       <div className="container">
@@ -52,7 +54,12 @@ export function Hero() {
             </button>
           </div>
 
-          <HeroTerminal />
+          <Terminal
+            script={HERO_SCRIPT}
+            progress={progress}
+            label="~/work/marchetti — vellaris"
+            ariaLabel="Vellaris CLI demo"
+          />
         </div>
       </div>
     </section>
@@ -78,77 +85,3 @@ const HERO_SCRIPT: ReadonlyArray<TermLine> = [
   { kind: 'out', check: true, text: 'Uploaded ciphertext', meta: 'vault.team-marchetti.dev' },
   { kind: 'out', check: true, text: 'Shared with bob', meta: "RSA-OAEP via bob's pubkey" },
 ]
-
-function HeroTerminal() {
-  const progress = useTypewriter(HERO_SCRIPT, { loopAfterMs: 5500 })
-  return (
-    <div className="terminal" role="img" aria-label="Vellaris CLI demo">
-      <div className="terminal-bar">
-        <span className="terminal-dot" />
-        <span className="terminal-dot" />
-        <span className="terminal-dot" />
-        <span className="label">~/work/marchetti — vellaris</span>
-      </div>
-      <div className="terminal-body">
-        {HERO_SCRIPT.map((line, i) => (
-          <TermLineView key={i} idx={i} line={line} progress={progress} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-interface TermLineViewProps {
-  idx: number
-  line: TermLine
-  progress: { line: number; char: number; held: number }
-}
-
-function TermLineView({ idx, line, progress }: TermLineViewProps) {
-  if (idx > progress.line) return null
-  if (line.kind === 'blank') return <div className="term-line">&nbsp;</div>
-  if (line.kind === 'cmd') {
-    const fullText = line.text ?? ''
-    const isCurrent = idx === progress.line
-    const visible = isCurrent ? fullText.slice(0, progress.char) : fullText
-    return (
-      <div className="term-line">
-        <span className="term-prompt">$ </span>
-        <span className="term-cmd">{visible}</span>
-        {isCurrent && progress.char < fullText.length && <span className="term-cursor" />}
-      </div>
-    )
-  }
-  if (line.kind === 'out') {
-    const isCurrent = idx === progress.line
-    const showCheck = !isCurrent || progress.held >= 2
-    return (
-      <div className="term-line term-out">
-        {line.check ? (
-          <span
-            className="check"
-            style={{ opacity: showCheck ? 1 : 0, transition: 'opacity 200ms ease' }}
-          >
-            ✓
-          </span>
-        ) : (
-          <span style={{ display: 'inline-block', width: '1.4em' }} />
-        )}
-        <span>{line.text}</span>
-        {line.meta && <span className="meta">  {line.meta}</span>}
-      </div>
-    )
-  }
-  if (line.kind === 'encrypting') {
-    return (
-      <div className="term-line term-encrypting">
-        <span className="thread" aria-hidden="true" />
-        <span style={{ color: 'var(--gold-soft)' }}>{line.text}</span>
-        {line.meta && (
-          <span style={{ color: 'rgba(247,241,227,0.45)' }}>· {line.meta}</span>
-        )}
-      </div>
-    )
-  }
-  return null
-}

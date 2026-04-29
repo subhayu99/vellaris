@@ -2,9 +2,9 @@
  * Marketing landing page — direct port of
  *   ~/Downloads/Vellaris (1)/landing/app.jsx
  *
- * Section components are added incrementally; this shell handles the
- * marketing scope class, theme persistence, and reveal-on-scroll
- * wiring that the prototype put in app.jsx.
+ * Section order matches the prototype's JSX. Theme + reveal-on-scroll
+ * stay at the root so the footer's theme toggle and every section's
+ * `.reveal` wrapper share a single source.
  */
 
 import { useRef } from 'react'
@@ -16,13 +16,14 @@ import { Clients } from './clients.tsx'
 import { Architecture } from './architecture.tsx'
 import { Features } from './features.tsx'
 import { FAQ } from './faq.tsx'
+import { LivingTerminal } from './living-terminal.tsx'
+import { GetStarted } from './get-started.tsx'
+import { Footer } from './footer.tsx'
 import './marketing.css'
 
 export default function Marketing() {
   const rootRef = useRef<HTMLDivElement>(null)
-  // Theme state lives here so the toggle in the footer (added later)
-  // can flip dark/light for the whole document.
-  useTheme()
+  const [theme, toggleTheme] = useTheme()
   useRevealOnScroll(rootRef)
 
   return (
@@ -45,9 +46,14 @@ export default function Marketing() {
         <div className="reveal">
           <FAQ />
         </div>
-        {/* Sections land in subsequent commits:
-            LivingTerminal · GetStarted · Footer */}
+        <div className="reveal">
+          <LivingTerminal />
+        </div>
+        <div className="reveal">
+          <GetStarted />
+        </div>
       </main>
+      <Footer theme={theme} onToggleTheme={toggleTheme} />
     </div>
   )
 }
