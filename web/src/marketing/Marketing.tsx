@@ -28,7 +28,7 @@ export default function Marketing() {
 
   return (
     <div className="marketing-root" ref={rootRef} id="top">
-      <NavBar />
+      <NavBar theme={theme} onToggleTheme={toggleTheme} />
       <main>
         <Hero />
         <div className="reveal">

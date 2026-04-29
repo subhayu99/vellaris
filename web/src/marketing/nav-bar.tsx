@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { VSigil } from '../components/v-sigil.tsx'
-import { IGitHub } from './icons.tsx'
+import { IGitHub, IMoon, ISun } from './icons.tsx'
+import type { ThemeName } from './hooks.ts'
 import { APP_ROUTE, REPO_URL } from './links.ts'
 
-export function NavBar() {
+interface NavBarProps {
+  theme: ThemeName
+  onToggleTheme: () => void
+}
+
+export function NavBar({ theme, onToggleTheme }: NavBarProps) {
   const [stuck, setStuck] = useState(false)
   useEffect(() => {
     const onScroll = () => setStuck(window.scrollY > 8)
@@ -35,6 +41,15 @@ export function NavBar() {
           <IGitHub size={16} />
           <span className="nav-hide-sm">GitHub</span>
         </a>
+        <button
+          type="button"
+          className="nav-icon-btn"
+          onClick={onToggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <ISun size={16} /> : <IMoon size={16} />}
+        </button>
         <Link className="btn btn-secondary btn-sm" to={APP_ROUTE}>
           Sign in
         </Link>

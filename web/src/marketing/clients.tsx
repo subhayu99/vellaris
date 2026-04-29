@@ -21,7 +21,7 @@ export function Clients() {
             label="CLI"
             sub="Built for engineers. Pipe-able, scriptable, comfortable."
             snippet={<CLISnippet />}
-            text={`vellaris push contract.pdf --to alice --to bob
+            text={`vellaris push contract.pdf --to alice
 vellaris ls --shared-with-me
 vellaris share doc-9a4b21f8 --to carol
 vellaris revoke doc-9a4b21f8 --from bob`}
@@ -40,8 +40,14 @@ vellaris revoke doc-9a4b21f8 --from bob`}
             snippet={<SDKSnippet />}
             text={`from vellaris import Client
 
-client = Client.login("https://vault.team.dev", passphrase=...)
-doc = client.push(Path("audit.pdf"), share_with=["alice", "bob"])
+client = Client.login(
+    "https://vault.team.dev",
+    passphrase=...,
+)
+doc = client.push(
+    Path("audit.pdf"),
+    share_with=["alice", "bob"],
+)
 print(doc.fingerprint)`}
           />
         </div>
@@ -99,7 +105,7 @@ function CLISnippet() {
       <div>
         <span style={{ color: 'var(--fg-4)' }}>$ </span>
         <span style={{ color: '#f3c777' }}>vellaris</span> push contract.pdf{' '}
-        <span className="tok-flag">--to</span> alice <span className="tok-flag">--to</span> bob
+        <span className="tok-flag">--to</span> alice
       </div>
       <div>
         <span style={{ color: 'var(--fg-4)' }}>$ </span>
@@ -129,16 +135,24 @@ function SDKSnippet() {
       <div>&nbsp;</div>
       <div>
         client = Client.<span className="tok-fn">login</span>(
-        <span className="tok-str">"https://vault.team.dev"</span>, passphrase=...)
       </div>
       <div>
-        doc = client.<span className="tok-fn">push</span>(Path(
-        <span className="tok-str">"audit.pdf"</span>),
+        {'    '}
+        <span className="tok-str">"https://vault.team.dev"</span>,
+      </div>
+      <div>{'    '}passphrase=...,</div>
+      <div>)</div>
+      <div>
+        doc = client.<span className="tok-fn">push</span>(
       </div>
       <div>
-        {'  '}share_with=[<span className="tok-str">"alice"</span>,{' '}
-        <span className="tok-str">"bob"</span>])
+        {'    '}Path(<span className="tok-str">"audit.pdf"</span>),
       </div>
+      <div>
+        {'    '}share_with=[<span className="tok-str">"alice"</span>,{' '}
+        <span className="tok-str">"bob"</span>],
+      </div>
+      <div>)</div>
       <div>
         <span className="tok-fn">print</span>(doc.fingerprint)
       </div>
