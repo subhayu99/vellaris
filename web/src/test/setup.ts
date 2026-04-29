@@ -51,3 +51,47 @@ beforeEach(() => {
     writable: true,
   })
 })
+
+/**
+ * jsdom 29 doesn't implement `window.matchMedia`. Marketing components use
+ * it to honor `prefers-reduced-motion` and the initial light/dark theme
+ * preference. Stub it as "no match" so those code paths take their default
+ * branch without throwing.
+ */
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string): MediaQueryList => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
+}
+
+/**
+ * jsdom 29 doesn't implement IntersectionObserver. Marketing components use
+ * it to trigger reveal-on-scroll and to arm the living-terminal typewriter.
+ * The stub never fires; tests don't depend on visibility behavior.
+ */
+class StubIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return []
+  }
+  root = null
+  rootMargin = ''
+  thresholds: ReadonlyArray<number> = []
+}
+if (typeof globalThis.IntersectionObserver === 'undefined') {
+  ;(globalThis as unknown as { IntersectionObserver: typeof IntersectionObserver }).IntersectionObserver =
+    StubIntersectionObserver as unknown as typeof IntersectionObserver
+}

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ConnectRoute } from './routes/connect.tsx'
 import { DashboardRoute } from './routes/dashboard.tsx'
@@ -7,10 +8,20 @@ import { SettingsRoute } from './routes/settings.tsx'
 import { SignupRoute } from './routes/signup.tsx'
 import { UploadRoute } from './routes/upload.tsx'
 
+const Marketing = lazy(() => import('./marketing/Marketing.tsx'))
+
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/connect" replace />} />
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={null}>
+            <Marketing />
+          </Suspense>
+        }
+      />
+      <Route path="/app" element={<Navigate to="/connect" replace />} />
       <Route path="/connect" element={<ConnectRoute />} />
       <Route path="/signup" element={<SignupRoute />} />
       <Route path="/login" element={<LoginRoute />} />
@@ -19,7 +30,7 @@ export default function App() {
       <Route path="/doc/:id" element={<DocDetailRoute />} />
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/home" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/connect" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
