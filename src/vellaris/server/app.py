@@ -22,6 +22,7 @@ def create_app() -> FastAPI:
         description="End-to-end encrypted document sharing — server.",
         version=__version__,
     )
+
     @application.get("/healthz", tags=["meta"])
     def healthz() -> dict[str, str]:
         """Liveness probe. Returns 200 with a fixed payload."""
