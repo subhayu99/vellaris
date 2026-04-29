@@ -47,9 +47,14 @@ def test_root_help_shows_all_commands() -> None:
 
 
 def test_version_command() -> None:
+    # Hardcoding the version here is a footgun: every release bump makes this
+    # test fail, and a stale `pip install -e .` masks it locally. Compare
+    # against the real package metadata instead.
+    from vellaris import __version__
+
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
-    assert "0.0.0" in result.output
+    assert result.output.strip() == __version__
 
 
 def test_whoami_without_session_fails() -> None:
