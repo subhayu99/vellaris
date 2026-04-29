@@ -21,12 +21,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, EncryptAnim, Field, Input, VSigil } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import { trackPageview } from '../components/cloudflare-beacon.tsx'
-import {
-  generateOaepKeypair,
-  serializePrivateKey,
-  serializePublicKey,
-  wrapPrivateKey,
-} from '../crypto/index.ts'
+import { generateOaepKeypair, wrapPrivateKey } from '../crypto/worker-client.ts'
 import { getServerUrl, clearServerUrl } from '../state/server.ts'
 import { hasWrappedKey, setWrappedKey } from '../state/keystore.ts'
 import { AuthLayout } from './_layout.tsx'
@@ -97,9 +92,9 @@ export function SignupRoute() {
 
     try {
       setStage('generating')
-      const pair = await generateOaepKeypair()
-      const privatePem = await serializePrivateKey(pair.privateKey)
-      const publicPem = await serializePublicKey(pair.publicKey)
+      // Worker-backed: keygen + serialization happen off the main thread
+      // so EncryptAnim keeps animating instead of dropping frames.
+      const { privatePem, publicPem } = await generateOaepKeypair()
 
       setStage('deriving')
       const wrapped = await wrapPrivateKey(privatePem, passphrase)

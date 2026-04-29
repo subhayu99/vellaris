@@ -22,12 +22,8 @@ import { useNavigate } from 'react-router-dom'
 import { Button, EncryptAnim, Field, Input, VSigil } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import { trackPageview } from '../components/cloudflare-beacon.tsx'
-import {
-  DecryptError,
-  deserializePrivateKeyForPss,
-  pssSign,
-  unwrapPrivateKey,
-} from '../crypto/index.ts'
+import { DecryptError, deserializePrivateKeyForPss, pssSign } from '../crypto/index.ts'
+import { unwrapPrivateKey } from '../crypto/worker-client.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { getWrappedKey, hasWrappedKey } from '../state/keystore.ts'
 import { setCachedUser, setToken } from '../state/session.ts'
