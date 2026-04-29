@@ -1,0 +1,135 @@
+name: Stats — daily GHCR pull snapshot
+
+# Runs daily at 03:00 UTC (chosen to be quiet US/EU prime time so we don't
+# fight CI for runners) plus a manual trigger so a human can backfill.
+#
+# Appends one row to analytics/ghcr-pulls.csv on the `stats` orphan branch.
+# That branch has no shared history with main, so these daily commits don't
+# pollute main's log.
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Optional note to attach to today's row"
+        required: false
+        default: ""
+
+permissions:
+  contents: write # to push to the stats branch
+
+concurrency:
+  group: stats
+  cancel-in-progress: false
+
+env:
+  PACKAGE_OWNER: subhayu99
+  PACKAGE_NAME: vellaris
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the stats branch (depth=1, just the tip)
+        uses: actions/checkout@v4
+        with:
+          ref: stats
+          fetch-depth: 1
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Scrape GHCR pull count
+        id: scrape
+        env:
+          MANUAL_NOTE: ${{ inputs.note }}
+        run: |
+          set -uo pipefail
+          today="$(date -u +%Y-%m-%d)"
+          page_url="https://github.com/users/${PACKAGE_OWNER}/packages/container/package/${PACKAGE_NAME}"
+          html=$(mktemp)
+          status=$(curl -fsS -o "$html" -w '%{http_code}' "$page_url" 2>/dev/null || echo "000")
+
+          if [ "$status" != "200" ]; then
+            echo "GitHub returned $status for $page_url"
+            echo "date=$today" >> "$GITHUB_OUTPUT"
+            echo "pulls=" >> "$GITHUB_OUTPUT"
+            echo "scraped_from=html-grep" >> "$GITHUB_OUTPUT"
+            echo "note=GitHub returned HTTP $status (run ${GITHUB_RUN_ID})" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # GitHub's package-page HTML changes occasionally. Try several
+          # selectors that have historically held the pull count, falling
+          # back to a generic "Total downloads" regex.
+          pulls=""
+          for pattern in \
+            'data-testid="downloads-count"[^>]*>([0-9,]+)' \
+            'aria-label="[0-9,]+ pulls"' \
+            'Total downloads[^0-9]*([0-9,]+)' \
+            '"downloads_count":([0-9]+)'; do
+            match=$(grep -oE "$pattern" "$html" | head -1 || true)
+            if [ -n "$match" ]; then
+              pulls=$(echo "$match" | grep -oE '[0-9][0-9,]*' | head -1 | tr -d ',')
+              [ -n "$pulls" ] && break
+            fi
+          done
+
+          extra="${MANUAL_NOTE:-}"
+          if [ -z "$pulls" ]; then
+            extra="${extra:+$extra · }no selector matched (run ${GITHUB_RUN_ID})"
+            # Save the HTML for debugging on failure
+            mkdir -p _debug && cp "$html" "_debug/${today}.html"
+            echo "::warning::No selector matched; HTML saved to _debug/${today}.html (artifact only — not committed)."
+          fi
+
+          echo "date=$today" >> "$GITHUB_OUTPUT"
+          echo "pulls=$pulls" >> "$GITHUB_OUTPUT"
+          echo "scraped_from=html-grep" >> "$GITHUB_OUTPUT"
+          # CSV-safe note (no commas, no quotes)
+          echo "note=$(echo "$extra" | tr ',' ';' | tr -d '"')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload debug HTML on scrape failure
+        if: steps.scrape.outputs.pulls == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghcr-page-debug-${{ steps.scrape.outputs.date }}
+          path: _debug/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Append row to analytics/ghcr-pulls.csv
+        run: |
+          set -euo pipefail
+          mkdir -p analytics
+          [ -f analytics/ghcr-pulls.csv ] || echo "date,ghcr_pulls,scraped_from,note" > analytics/ghcr-pulls.csv
+
+          # Skip if today's row is already there (re-running on the same day
+          # via workflow_dispatch shouldn't double-append; cron is once/day so
+          # this is just a guard).
+          today="${{ steps.scrape.outputs.date }}"
+          if grep -q "^${today}," analytics/ghcr-pulls.csv; then
+            echo "row for $today already present — skipping"
+            exit 0
+          fi
+
+          printf '%s,%s,%s,%s\n' \
+            "${{ steps.scrape.outputs.date }}" \
+            "${{ steps.scrape.outputs.pulls }}" \
+            "${{ steps.scrape.outputs.scraped_from }}" \
+            "${{ steps.scrape.outputs.note }}" \
+            >> analytics/ghcr-pulls.csv
+
+      - name: Commit and push (only if there's an actual change)
+        run: |
+          set -euo pipefail
+          if git diff --quiet analytics/ghcr-pulls.csv; then
+            echo "no change — nothing to commit"
+            exit 0
+          fi
+          git add analytics/ghcr-pulls.csv
+          git commit -m "stats: ghcr pulls ${{ steps.scrape.outputs.date }} = ${{ steps.scrape.outputs.pulls || 'unknown' }}"
+          git push origin stats
