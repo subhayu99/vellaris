@@ -8,10 +8,11 @@
  * prototype is deferred to a follow-up phase — for now we trust HTTPS.
  */
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Field, Input, VSigil } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
+import { trackPageview } from '../components/cloudflare-beacon.tsx'
 import { getServerUrl, setServerUrl } from '../state/server.ts'
 import { hasWrappedKey } from '../state/keystore.ts'
 import { AuthLayout } from './_layout.tsx'
@@ -30,6 +31,10 @@ export function ConnectRoute() {
   const [url, setUrl] = useState(() => getServerUrl() ?? '')
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    trackPageview('/connect')
+  }, [])
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

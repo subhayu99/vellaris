@@ -1,48 +1,41 @@
 /**
- * Cloudflare Web Analytics beacon — privacy-respecting (no cookies, no PII).
+ * Cloudflare Web Analytics — manual-pageview mode.
  *
- * Mounted ONLY by AuthLayout (the public connect / signup / login screens).
- * Once the user logs in, AuthLayout unmounts and the beacon's <script> is
- * removed from the DOM. The dashboard / doc-detail / upload / settings
- * screens never fire analytics — those reveal who's using the app and
- * which docs they're touching, which is exactly what Vellaris's privacy
- * model says the server (and any third party) shouldn't see.
+ * Each public route (`/connect`, `/signup`, `/login`) calls
+ * `trackPageview(path)` on mount; the dashboard / doc-detail / upload /
+ * settings screens never call it. The beacon is loaded with
+ * `"spa": false`, so it does NOT auto-listen to `history.pushState`,
+ * which means the leak that v0.1.x shipped (post-login pageviews still
+ * firing because the listeners outlived AuthLayout's unmount) is gone.
  *
- * The beacon token is a Vite env var (`VITE_CF_BEACON_TOKEN`) baked in at
- * build time. Cloudflare beacon tokens are not secrets — they're public
- * identifiers — but they're build-time so dev / test bundles don't ship
- * one.
+ * The token is a Vite env var (`VITE_CF_BEACON_TOKEN`) baked in at build
+ * time. Cloudflare beacon tokens are not secrets — they're public
+ * identifiers — but they're build-time so dev / test bundles never ship
+ * one and never fire. The PROD guard is belt-and-suspenders for any
+ * developer who sets the token in `.env.local`.
  */
-
-import { useEffect } from 'react'
 
 const BEACON_TOKEN = import.meta.env.VITE_CF_BEACON_TOKEN as string | undefined
 const BEACON_SRC = 'https://static.cloudflareinsights.com/beacon.min.js'
+const ENABLED = !!import.meta.env.PROD && !!BEACON_TOKEN
 
-export function CloudflareBeacon() {
-  useEffect(() => {
-    if (!import.meta.env.PROD) return
-    if (!BEACON_TOKEN) return
+/**
+ * Fire a single Cloudflare Web Analytics pageview for the current
+ * route. Removes any previously-injected beacon `<script>` first so a
+ * fresh insertion forces the beacon IIFE to re-run and emit a new
+ * pageview request. The `path` argument is documentation-only — the
+ * beacon picks the URL up from `window.location` automatically — but
+ * keeps call sites self-describing and makes spy-based tests easy.
+ */
+export function trackPageview(_path: string): void {
+  if (!ENABLED) return
 
-    // Don't double-inject if a previous AuthLayout mount already added it
-    // (StrictMode in dev double-mounts; in prod we only mount once per
-    // session anyway).
-    const existing = document.querySelector(`script[src="${BEACON_SRC}"]`)
-    if (existing) return
+  const existing = document.querySelector('script[data-cf-beacon]')
+  if (existing) existing.remove()
 
-    const script = document.createElement('script')
-    script.defer = true
-    script.src = BEACON_SRC
-    script.dataset.cfBeacon = JSON.stringify({ token: BEACON_TOKEN })
-    document.body.appendChild(script)
-
-    return () => {
-      // On unmount (user logged in → AuthLayout swaps for DashboardLayout),
-      // pull the beacon out so subsequent History.pushState transitions
-      // inside the authenticated area don't fire pageview events.
-      script.remove()
-    }
-  }, [])
-
-  return null
+  const script = document.createElement('script')
+  script.defer = true
+  script.src = BEACON_SRC
+  script.dataset.cfBeacon = JSON.stringify({ token: BEACON_TOKEN, spa: false })
+  document.body.appendChild(script)
 }
