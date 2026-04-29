@@ -99,19 +99,24 @@ Python's `cryptography` output for byte-equality with CLI fixtures.
 
 ## Analytics
 
-The SPA loads Cloudflare Web Analytics from `AuthLayout` only — i.e.
-`/connect`, `/signup`, `/login`. The intent is to track public surfaces
-without leaking authenticated activity to a third party.
+The SPA fires Cloudflare Web Analytics pageviews only from the public
+route components (`/connect`, `/signup`, `/login`). Each of those calls
+`trackPageview(path)` from `components/cloudflare-beacon.tsx` on mount.
+Authenticated routes (`/dashboard`, `/doc/:id`, `/upload`, `/settings`)
+never call it, so Cloudflare never sees document UUIDs or any
+post-login URLs.
 
-> **Known leak (alpha — fix in v0.2):** detaching the `<script>` tag on
-> AuthLayout unmount does **not** undo the `history.pushState` listeners
-> the beacon already attached. So once a user lands on /connect, the
-> beacon will keep firing pageviews for `/dashboard`, `/doc/:id`,
-> `/upload`, `/settings` for the rest of the session. Cloudflare sees
-> the URLs (including doc UUIDs) and basic Web Vitals — never document
-> content. The fix: pass `"spa": false` in the beacon config and call
-> `window.__cfBeacon.trackPageview()` manually only from the public
-> route components. Tracked under the v0.2 todo.
+The beacon is loaded with `"spa": false`, which disables Cloudflare's
+default `history.pushState` auto-tracking. That auto-tracking was the
+v0.1.x leak: even after `AuthLayout` unmounted and we removed the
+`<script>` tag, the listeners it had already attached to `pushState`
+kept firing for every authenticated route in the session. Manual
+pageviews + `spa: false` close the leak.
+
+`trackPageview` removes any prior beacon `<script>` and inserts a fresh
+one on each call so the IIFE re-runs and Cloudflare records a new
+pageview for the current `window.location`. The `path` argument is for
+self-documenting call sites; the beacon picks the URL up itself.
 
 The beacon token comes from `VITE_CF_BEACON_TOKEN` (Vite env var, baked
 in at build time). If unset (dev, CI, PR builds), the beacon never

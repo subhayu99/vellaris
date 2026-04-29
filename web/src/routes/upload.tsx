@@ -24,7 +24,7 @@ import { Button, EncryptAnim, Field, Icons, Input } from '../components/index.ts
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import {
   deserializePublicKeyForOaep,
-  encryptForRecipients,
+  encryptForRecipientsFromStream,
   type Recipient,
 } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
@@ -141,14 +141,14 @@ export function UploadRoute() {
 
     try {
       setStage('encrypting')
-      const buffer = await file.arrayBuffer()
-      const plaintext = new Uint8Array(buffer)
       const recipientList: Recipient[] = recipients.map((r) => ({
         userId: r.userId,
         publicKey: r.publicKey,
       }))
-      const bundle = await encryptForRecipients({
-        plaintext,
+      // Read via the File's ReadableStream rather than file.arrayBuffer()
+      // so we don't hit ArrayBuffer size limits on multi-hundred-MB files.
+      const bundle = await encryptForRecipientsFromStream({
+        plaintextStream: file.stream(),
         filename: file.name,
         recipients: recipientList,
       })

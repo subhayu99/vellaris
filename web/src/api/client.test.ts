@@ -169,6 +169,30 @@ describe('VellarisClient', () => {
     expect(Array.from(doc.encryptedDek)).toEqual(Array.from(dek))
     expect(Array.from(doc.encryptedFilename)).toEqual(Array.from(filename))
     expect(doc.contentHash).toBe('sha256:abc')
+    expect(doc.access).toBeNull()
+  })
+
+  it('decodes the owner-only access list when present', async () => {
+    const { fetchFn } = makeFetch(() =>
+      jsonResponse(200, {
+        id: 'doc-1',
+        owner_id: 'user-1',
+        encrypted_filename: bytesToBase64(new Uint8Array([0])),
+        encrypted_dek: bytesToBase64(new Uint8Array([0])),
+        ciphertext: bytesToBase64(new Uint8Array([0])),
+        content_hash: 'sha256:x',
+        access: [
+          { user_id: 'user-1', username: 'alice' },
+          { user_id: 'user-2', username: 'bob' },
+        ],
+      }),
+    )
+    const client = new VellarisClient('http://x', { token: 't', fetch: fetchFn })
+    const doc = await client.downloadDocument('doc-1')
+    expect(doc.access).toEqual([
+      { userId: 'user-1', username: 'alice' },
+      { userId: 'user-2', username: 'bob' },
+    ])
   })
 
   it('upload encodes nested access grants', async () => {

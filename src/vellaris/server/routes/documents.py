@@ -27,6 +27,7 @@ from vellaris.server.schemas import (
     DocumentCreate,
     DocumentDownload,
     DocumentSummary,
+    GrantSummary,
     ShareRequest,
 )
 from vellaris.server.security import CurrentUser
@@ -185,6 +186,21 @@ async def download(
             detail="blob missing for document (server-side data corruption)",
         ) from exc
 
+    # Owner gets the full grant list so they can see who has access; for
+    # non-owners we leave it None to avoid leaking co-recipient identities.
+    grants: list[GrantSummary] | None = None
+    if doc.owner_id == current.id:
+        rows = (
+            await db.exec(
+                select(DocumentAccess, User)
+                .join(User, DocumentAccess.user_id == User.id)  # type: ignore[arg-type]
+                .where(DocumentAccess.document_id == doc.id)
+            )
+        ).all()
+        grants = [
+            GrantSummary(user_id=user.id, username=user.username) for _access_row, user in rows
+        ]
+
     await audit_record(db, AuditAction.DOCUMENT_DOWNLOAD, user_id=current.id, target_id=doc.id)
     await db.commit()
 
@@ -195,6 +211,7 @@ async def download(
         encrypted_dek=access.encrypted_dek,
         ciphertext=ciphertext,
         content_hash=doc.content_hash,
+        access=grants,
     )
 
 

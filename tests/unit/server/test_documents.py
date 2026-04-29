@@ -340,3 +340,95 @@ def test_invalid_scope_rejected(
     token = _login(server, "alice", alice_keypair)
     resp = server.get("/documents?scope=garbage", headers=_bearer(token))
     assert resp.status_code == 400
+
+
+def test_owner_sees_access_list_in_download(
+    server: TestClient,
+    alice_keypair: RSAKeyPair,
+    alice_public_pem: bytes,
+    bob_keypair: RSAKeyPair,
+    bob_public_pem: bytes,
+) -> None:
+    alice = _signup(server, "alice", alice_public_pem)
+    bob = _signup(server, "bob", bob_public_pem)
+    alice_token = _login(server, "alice", alice_keypair)
+
+    body, _ = _upload_payload(
+        plaintext=b"shared",
+        owner_id=UUID(alice["id"]),
+        owner_kp=alice_keypair,
+        recipients=[(UUID(bob["id"]), bob_keypair)],
+    )
+    doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
+
+    payload = server.get(f"/documents/{doc_id}", headers=_bearer(alice_token)).json()
+    access = payload.get("access")
+    assert access is not None, "owner must see the access list"
+    by_uid = {grant["user_id"]: grant for grant in access}
+    assert by_uid[alice["id"]]["username"] == "alice"
+    assert by_uid[bob["id"]]["username"] == "bob"
+    assert len(access) == 2
+
+
+def test_non_owner_sees_access_null(
+    server: TestClient,
+    alice_keypair: RSAKeyPair,
+    alice_public_pem: bytes,
+    bob_keypair: RSAKeyPair,
+    bob_public_pem: bytes,
+) -> None:
+    alice = _signup(server, "alice", alice_public_pem)
+    bob = _signup(server, "bob", bob_public_pem)
+    alice_token = _login(server, "alice", alice_keypair)
+    bob_token = _login(server, "bob", bob_keypair)
+
+    body, _ = _upload_payload(
+        plaintext=b"shared",
+        owner_id=UUID(alice["id"]),
+        owner_kp=alice_keypair,
+        recipients=[(UUID(bob["id"]), bob_keypair)],
+    )
+    doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
+
+    payload = server.get(f"/documents/{doc_id}", headers=_bearer(bob_token)).json()
+    assert payload["access"] is None
+
+
+def test_access_list_reflects_share_and_revoke(
+    server: TestClient,
+    alice_keypair: RSAKeyPair,
+    alice_public_pem: bytes,
+    bob_keypair: RSAKeyPair,
+    bob_public_pem: bytes,
+) -> None:
+    alice = _signup(server, "alice", alice_public_pem)
+    bob = _signup(server, "bob", bob_public_pem)
+    alice_token = _login(server, "alice", alice_keypair)
+
+    body, dek = _upload_payload(
+        plaintext=b"only-mine-for-now",
+        owner_id=UUID(alice["id"]),
+        owner_kp=alice_keypair,
+    )
+    doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
+
+    initial = server.get(f"/documents/{doc_id}", headers=_bearer(alice_token)).json()
+    assert {g["username"] for g in initial["access"]} == {"alice"}
+
+    enc_dek_for_bob = oaep_encrypt(dek, bob_keypair.public_key)
+    server.post(
+        f"/documents/{doc_id}/access",
+        json={"user_id": bob["id"], "encrypted_dek": _b64(enc_dek_for_bob)},
+        headers=_bearer(alice_token),
+    )
+
+    after_share = server.get(f"/documents/{doc_id}", headers=_bearer(alice_token)).json()
+    assert {g["username"] for g in after_share["access"]} == {"alice", "bob"}
+
+    server.delete(
+        f"/documents/{doc_id}/access/{bob['id']}",
+        headers=_bearer(alice_token),
+    )
+
+    after_revoke = server.get(f"/documents/{doc_id}", headers=_bearer(alice_token)).json()
+    assert {g["username"] for g in after_revoke["access"]} == {"alice"}

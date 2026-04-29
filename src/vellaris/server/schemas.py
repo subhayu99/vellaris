@@ -113,6 +113,18 @@ class DocumentSummary(BaseModel):
     created_at: datetime
 
 
+class GrantSummary(BaseModel):
+    """A single recipient on a document, owner-visible.
+
+    Returned only to the owner so non-owners can't enumerate co-recipients.
+    Includes ``username`` so the SPA doesn't have to round-trip /users/by-id
+    for every chip.
+    """
+
+    user_id: UUID
+    username: str
+
+
 class DocumentDownload(BaseModel):
     """Returned by GET /documents/{id} for an authorized user."""
 
@@ -122,6 +134,7 @@ class DocumentDownload(BaseModel):
     encrypted_dek: B64Bytes
     ciphertext: B64Bytes
     content_hash: str
+    access: list[GrantSummary] | None = None
 
 
 class ShareRequest(BaseModel):

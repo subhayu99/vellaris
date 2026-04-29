@@ -231,6 +231,13 @@ export class VellarisClient {
       requireAuth: true,
     })
     const body = (await r.json()) as Record<string, unknown>
+    const rawAccess = body.access
+    const access = Array.isArray(rawAccess)
+      ? (rawAccess as Record<string, unknown>[]).map((g) => ({
+          userId: String(g.user_id),
+          username: String(g.username),
+        }))
+      : null
     return {
       id: String(body.id),
       ownerId: String(body.owner_id),
@@ -238,6 +245,7 @@ export class VellarisClient {
       encryptedDek: base64ToBytes(String(body.encrypted_dek)),
       ciphertext: base64ToBytes(String(body.ciphertext)),
       contentHash: String(body.content_hash),
+      access,
     }
   }
 

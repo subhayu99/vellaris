@@ -27,9 +27,25 @@ pip install vellaris
 
 ## Status
 
-`v0.1.0` — first shippable release. Alpha; expect rough edges. The
-on-wire format is locked, so blobs encrypted with this release keep
+`v0.2.0` — feature drop. Alpha; expect rough edges. The on-wire format
+is still locked, so blobs encrypted with any v0.x release keep
 decrypting on later versions.
+
+What v0.2 adds on top of the v0.1 baseline:
+
+- **Web Worker for crypto.** RSA-4096 keygen and Argon2id-at-prod-params
+  no longer block the main thread on signup or login. The
+  `EncryptAnim` actually animates instead of stuttering.
+- **IndexedDB-backed key store.** The wrapped private key now lives in
+  IDB, with one-shot migration from any pre-existing localStorage entry.
+- **Streaming uploads.** The upload route reads files via
+  `File.stream()` instead of `file.arrayBuffer()`, so the SPA no longer
+  trips ArrayBuffer size limits on multi-hundred-megabyte uploads.
+
+Plus the v0.1.3 → v0.1.5 fixes already in: owner-visible "shared with"
+chips on `/doc/:id`, manual Cloudflare pageviews on the public auth
+routes only (no leak past login), and a strict-ish Content-Security-
+Policy on the SPA.
 
 ## How it works
 

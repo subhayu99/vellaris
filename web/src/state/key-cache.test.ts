@@ -12,7 +12,9 @@ afterEach(() => {
 describe('key-cache', () => {
   it('round-trips the unwrapped PEM through the in-memory cache', async () => {
     const cache = await import('./key-cache.ts')
-    const pem = new TextEncoder().encode('-----BEGIN PRIVATE KEY-----\nABC\n-----END PRIVATE KEY-----\n')
+    const pem = new TextEncoder().encode(
+      '-----BEGIN PRIVATE KEY-----\nABC\n-----END PRIVATE KEY-----\n',
+    )
     expect(cache.hasUnwrappedPem()).toBe(false)
     cache.setUnwrappedPem(pem)
     expect(cache.hasUnwrappedPem()).toBe(true)

@@ -2,21 +2,18 @@
  * Document detail — download, share, revoke, delete.
  *
  * /doc/:id fetches the user's view of the document (DocumentDownload):
- * encrypted filename + the user's wrapped DEK + ciphertext. We decrypt
- * the filename + DEK on mount; the full plaintext only materializes
- * when the user clicks Download (avoids holding plaintext in memory
- * until they actually want it).
+ * encrypted filename + the user's wrapped DEK + ciphertext + (owner only)
+ * the access list. We decrypt the filename + DEK on mount; the full
+ * plaintext only materializes when the user clicks Download.
  *
  * Owner-only actions:
  *   - Share: resolve a username → fetch their public key → OAEP-wrap
  *     the DEK to them → POST /documents/:id/access.
- *   - Revoke by username: resolve username → DELETE the access grant.
+ *   - Revoke from a chip: DELETE the access grant for that user_id.
  *   - Delete the document.
  *
- * The server's DocumentDownload schema doesn't return the full access
- * list, so revoke is by-username (the owner has to remember who they
- * shared with). Listing recipients lands when the server adds an
- * access-list endpoint.
+ * Non-owners get `download.access === null` and the access section is
+ * hidden so they can't enumerate co-recipients.
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -80,9 +77,9 @@ export function DocDetailRoute() {
   const [shareNotice, setShareNotice] = useState<string | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
 
-  // Revoke state
-  const [revokeInput, setRevokeInput] = useState('')
-  const [revokeBusy, setRevokeBusy] = useState(false)
+  // Revoke state — chip-driven; we track the busy user_id so only one chip
+  // shows a spinner at a time without forcing a full disable on the rest.
+  const [revokingUserId, setRevokingUserId] = useState<string | null>(null)
   const [revokeNotice, setRevokeNotice] = useState<string | null>(null)
   const [revokeError, setRevokeError] = useState<string | null>(null)
 
@@ -161,6 +158,16 @@ export function DocDetailRoute() {
     }
   }
 
+  async function refreshAccessList() {
+    if (!client || !download) return
+    try {
+      const fresh = await client.downloadDocument(download.id)
+      setDownload(fresh)
+    } catch {
+      // Non-fatal: chips will refresh on the next mount even if this fails.
+    }
+  }
+
   async function onShare() {
     if (!client || !download) return
     const name = shareInput.trim()
@@ -188,6 +195,7 @@ export function DocDetailRoute() {
       await client.share(download.id, { userId: recipient.id, encryptedDek: wrappedForThem })
       setShareNotice(`Shared with ${recipient.username}.`)
       setShareInput('')
+      await refreshAccessList()
     } catch (err) {
       if (err instanceof VellarisAPIError && err.status === 404) {
         setShareError(`No user named "${name}".`)
@@ -201,28 +209,25 @@ export function DocDetailRoute() {
     }
   }
 
-  async function onRevoke() {
+  async function onRevokeChip(userId: string, username: string) {
     if (!client || !download) return
-    const name = revokeInput.trim()
-    if (!name) return
-    setRevokeBusy(true)
+    setRevokingUserId(userId)
     setRevokeError(null)
     setRevokeNotice(null)
     try {
-      const target = await client.getUserByUsername(name)
-      await client.revoke(download.id, target.id)
-      setRevokeNotice(`Revoked ${target.username}.`)
-      setRevokeInput('')
+      await client.revoke(download.id, userId)
+      setRevokeNotice(`Revoked ${username}.`)
+      await refreshAccessList()
     } catch (err) {
       if (err instanceof VellarisAPIError && err.status === 404) {
-        setRevokeError(`No user named "${name}", or they don't have access.`)
+        setRevokeError(`${username} no longer has access.`)
       } else if (err instanceof VellarisAPIError && err.status === 403) {
         setRevokeError('Only the owner can revoke access.')
       } else {
         setRevokeError((err as Error).message)
       }
     } finally {
-      setRevokeBusy(false)
+      setRevokingUserId(null)
     }
   }
 
@@ -329,6 +334,59 @@ export function DocDetailRoute() {
 
             {isOwner && (
               <>
+                <div
+                  className="border-line bg-bg-card/40 flex flex-col gap-3 rounded-lg border p-5"
+                  data-testid="access-section"
+                >
+                  <div>
+                    <h2 className="text-fg text-[15px] font-semibold">Shared with</h2>
+                    <p className="text-fg-3 mt-0.5 text-[12.5px]">
+                      Click × to revoke. Anyone who already downloaded the file keeps their copy —
+                      revoke is forward-only.
+                    </p>
+                  </div>
+                  <ul className="flex flex-wrap gap-2" data-testid="access-chips">
+                    {(download.access ?? []).map((grant) => {
+                      const isSelf = grant.userId === user?.id
+                      const busy = revokingUserId === grant.userId
+                      return (
+                        <li
+                          key={grant.userId}
+                          className="border-line bg-bg/30 text-fg-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px]"
+                          data-testid={`access-chip-${grant.username}`}
+                        >
+                          <span className="font-medium">
+                            {grant.username}
+                            {isSelf && <span className="text-fg-3 ml-1">(you)</span>}
+                          </span>
+                          {!isSelf && (
+                            <button
+                              type="button"
+                              onClick={() => onRevokeChip(grant.userId, grant.username)}
+                              disabled={busy}
+                              aria-label={`Revoke ${grant.username}`}
+                              className="text-fg-3 hover:text-danger disabled:text-fg-3/40 -mr-0.5 inline-flex items-center justify-center rounded-full p-0.5 transition-colors"
+                              data-testid={`access-chip-revoke-${grant.username}`}
+                            >
+                              <Icons.IClose size={12} />
+                            </button>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  {revokeError && (
+                    <div className="text-danger text-[12.5px]" data-testid="revoke-error">
+                      {revokeError}
+                    </div>
+                  )}
+                  {revokeNotice && (
+                    <div className="text-ok text-[12.5px]" data-testid="revoke-notice">
+                      {revokeNotice}
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
                   <div>
                     <h2 className="text-fg text-[15px] font-semibold">Share access</h2>
@@ -366,48 +424,6 @@ export function DocDetailRoute() {
                   {shareNotice && (
                     <div className="text-ok text-[12.5px]" data-testid="share-notice">
                       {shareNotice}
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
-                  <div>
-                    <h2 className="text-fg text-[15px] font-semibold">Revoke access</h2>
-                    <p className="text-fg-3 mt-0.5 text-[12.5px]">
-                      Removes the recipient's wrapped DEK from the server. Anyone who already
-                      downloaded the file keeps their copy — revoke is forward-only.
-                    </p>
-                  </div>
-                  <Field error={revokeError ?? undefined}>
-                    <div className="flex gap-2">
-                      <Input
-                        value={revokeInput}
-                        onChange={(e) => setRevokeInput(e.target.value)}
-                        placeholder="username"
-                        disabled={revokeBusy}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            void onRevoke()
-                          }
-                        }}
-                        data-testid="revoke-input"
-                      />
-                      <Button
-                        variant="danger"
-                        size="default"
-                        leading={<Icons.ITrash size={14} />}
-                        onClick={onRevoke}
-                        disabled={revokeBusy || revokeInput.trim().length === 0}
-                        data-testid="revoke-submit"
-                      >
-                        {revokeBusy ? 'Revoking…' : 'Revoke'}
-                      </Button>
-                    </div>
-                  </Field>
-                  {revokeNotice && (
-                    <div className="text-ok text-[12.5px]" data-testid="revoke-notice">
-                      {revokeNotice}
                     </div>
                   )}
                 </div>
