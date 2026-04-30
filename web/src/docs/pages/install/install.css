@@ -29,8 +29,8 @@
 }
 
 /* Text + password inputs: full width, bordered, monospace values */
-.install-panel input[type='text'],
-.install-panel input[type='password'] {
+.install-page input[type='text'],
+.install-page input[type='password'] {
   width: 100%;
   box-sizing: border-box;
   padding: 0.4rem 0.6rem;
@@ -43,17 +43,70 @@
   outline: none;
   transition: border-color 150ms;
 }
-.install-panel input[type='text']:focus,
-.install-panel input[type='password']:focus {
+.install-page input[type='text']:focus,
+.install-page input[type='password']:focus {
   border-color: var(--line-2, rgba(255, 255, 255, 0.3));
 }
 
-/* Radio buttons: visible size, breathing room before label text */
-.install-panel input[type='radio'] {
-  inline-size: 1rem;
-  block-size: 1rem;
-  margin-right: 0.15rem;
-  flex: 0 0 auto;
-  accent-color: var(--accent, #c4943a);
+/* Select inputs: forward-compat, mirrors text-input style */
+.install-page select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 5px;
+  background: var(--bg-elev, rgba(255, 255, 255, 0.05));
+  color: var(--fg, inherit);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
   cursor: pointer;
+}
+.install-page select:focus {
+  outline: none;
+  border-color: var(--line-2, rgba(255, 255, 255, 0.3));
+}
+
+/* Custom radio: outer ring + inner accent dot, dark-mode visible */
+.install-page input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  margin: 0 0.15rem 0 0;
+  border: 1.5px solid var(--line-2, rgba(255, 255, 255, 0.35));
+  border-radius: 50%;
+  background: transparent;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  position: relative;
+}
+
+.install-page input[type='radio']::before {
+  content: '';
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent, #cba65a);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+
+.install-page input[type='radio']:hover:not(:checked) {
+  border-color: var(--fg, rgba(255, 255, 255, 0.55));
+}
+
+.install-page input[type='radio']:checked {
+  border-color: var(--accent, #cba65a);
+}
+
+.install-page input[type='radio']:checked::before {
+  transform: scale(1);
+}
+
+.install-page input[type='radio']:focus-visible {
+  outline: 2px solid var(--accent, #cba65a);
+  outline-offset: 2px;
 }
