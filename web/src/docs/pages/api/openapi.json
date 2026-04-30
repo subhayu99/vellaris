@@ -1,0 +1,1207 @@
+{
+  "components": {
+    "schemas": {
+      "AccessGrant": {
+        "description": "A single recipient + the DEK encrypted for their public key.",
+        "properties": {
+          "encrypted_dek": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Encrypted Dek",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "encrypted_dek"
+        ],
+        "title": "AccessGrant",
+        "type": "object"
+      },
+      "ChallengeRequest": {
+        "properties": {
+          "username": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ],
+        "title": "ChallengeRequest",
+        "type": "object"
+      },
+      "ChallengeResponse": {
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "nonce": {
+            "description": "Random bytes the client signs.",
+            "title": "Nonce",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "nonce",
+          "expires_at"
+        ],
+        "title": "ChallengeResponse",
+        "type": "object"
+      },
+      "DocumentCreate": {
+        "properties": {
+          "access": {
+            "items": {
+              "$ref": "#/components/schemas/AccessGrant"
+            },
+            "minItems": 1,
+            "title": "Access",
+            "type": "array"
+          },
+          "ciphertext": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Ciphertext",
+            "type": "string"
+          },
+          "content_hash": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "encrypted_filename": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Encrypted Filename",
+            "type": "string"
+          }
+        },
+        "required": [
+          "encrypted_filename",
+          "content_hash",
+          "ciphertext",
+          "access"
+        ],
+        "title": "DocumentCreate",
+        "type": "object"
+      },
+      "DocumentDownload": {
+        "description": "Returned by GET /documents/{id} for an authorized user.",
+        "properties": {
+          "access": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GrantSummary"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access"
+          },
+          "ciphertext": {
+            "title": "Ciphertext",
+            "type": "string"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "encrypted_dek": {
+            "title": "Encrypted Dek",
+            "type": "string"
+          },
+          "encrypted_filename": {
+            "title": "Encrypted Filename",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "title": "Owner Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "owner_id",
+          "encrypted_filename",
+          "encrypted_dek",
+          "ciphertext",
+          "content_hash"
+        ],
+        "title": "DocumentDownload",
+        "type": "object"
+      },
+      "DocumentSummary": {
+        "description": "Listed in /documents \u2014 no ciphertext or per-user DEK.",
+        "properties": {
+          "ciphertext_size": {
+            "title": "Ciphertext Size",
+            "type": "integer"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "encrypted_filename": {
+            "title": "Encrypted Filename",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "owner_id": {
+            "format": "uuid",
+            "title": "Owner Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "owner_id",
+          "ciphertext_size",
+          "content_hash",
+          "encrypted_filename",
+          "created_at"
+        ],
+        "title": "DocumentSummary",
+        "type": "object"
+      },
+      "GrantSummary": {
+        "description": "A single recipient on a document, owner-visible.\n\nReturned only to the owner so non-owners can't enumerate co-recipients.\nIncludes ``username`` so the SPA doesn't have to round-trip /users/by-id\nfor every chip.",
+        "properties": {
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "username"
+        ],
+        "title": "GrantSummary",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "KeyBlobResponse": {
+        "properties": {
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "wrapped_key": {
+            "title": "Wrapped Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "wrapped_key",
+          "updated_at"
+        ],
+        "title": "KeyBlobResponse",
+        "type": "object"
+      },
+      "KeyBlobUpload": {
+        "properties": {
+          "wrapped_key": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Wrapped Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "wrapped_key"
+        ],
+        "title": "KeyBlobUpload",
+        "type": "object"
+      },
+      "ShareRequest": {
+        "properties": {
+          "encrypted_dek": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Encrypted Dek",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "encrypted_dek"
+        ],
+        "title": "ShareRequest",
+        "type": "object"
+      },
+      "TokenResponse": {
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserPrivate"
+          }
+        },
+        "required": [
+          "token",
+          "expires_at",
+          "user"
+        ],
+        "title": "TokenResponse",
+        "type": "object"
+      },
+      "UserCreate": {
+        "description": "Signup body. ``public_key`` is the PEM-encoded RSA-4096 SPKI as bytes.",
+        "example": {
+          "username": "alice"
+        },
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "public_key": {
+            "contentMediaType": "application/octet-stream",
+            "description": "PEM-encoded RSA public key (base64 over the wire).",
+            "title": "Public Key",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "public_key"
+        ],
+        "title": "UserCreate",
+        "type": "object"
+      },
+      "UserPrivate": {
+        "description": "Self-view: includes email.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "public_key": {
+            "title": "Public Key",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "public_key",
+          "created_at"
+        ],
+        "title": "UserPrivate",
+        "type": "object"
+      },
+      "UserPublic": {
+        "description": "Other-user view: no email.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "public_key": {
+            "title": "Public Key",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "public_key"
+        ],
+        "title": "UserPublic",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VerifyRequest": {
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "signature": {
+            "contentMediaType": "application/octet-stream",
+            "description": "RSA-PSS signature over challenge_id || nonce.",
+            "title": "Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "signature"
+        ],
+        "title": "VerifyRequest",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "description": "Opaque Vellaris session token.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "End-to-end encrypted document sharing \u2014 server.",
+    "title": "Vellaris",
+    "version": "0.5.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/auth/challenge": {
+      "post": {
+        "description": "Server issues a fresh nonce + challenge_id for the named user.",
+        "operationId": "issue_challenge_auth_challenge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Issue Challenge",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Revoke the current session token.",
+        "operationId": "logout_auth_logout_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "description": "Client posts a signature over the challenge bytes; server issues a session token.",
+        "operationId": "verify_challenge_auth_verify_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "User-Agent",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User-Agent"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Challenge",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/documents": {
+      "get": {
+        "description": "List documents the current user can decrypt.\n\n``scope``: ``mine`` = owned by me, ``shared`` = shared with me (and not mine),\n``all`` (default) = both.",
+        "operationId": "list_documents_documents_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "title": "Scope",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentSummary"
+                  },
+                  "title": "Response List Documents Documents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Documents",
+        "tags": [
+          "documents"
+        ]
+      },
+      "post": {
+        "description": "Store ciphertext + per-recipient encrypted DEK rows.",
+        "operationId": "upload_documents_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{document_id}": {
+      "delete": {
+        "description": "Delete the document + all access rows + the blob. Owner only.",
+        "operationId": "delete_document_documents__document_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Document",
+        "tags": [
+          "documents"
+        ]
+      },
+      "get": {
+        "description": "Return the ciphertext + the requesting user's encrypted_dek.",
+        "operationId": "download_documents__document_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDownload"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Download",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{document_id}/access": {
+      "post": {
+        "description": "Grant a new user access to a document the caller owns.",
+        "operationId": "share_documents__document_id__access_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Share",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/documents/{document_id}/access/{user_id}": {
+      "delete": {
+        "description": "Remove a user's access. Owner cannot revoke themselves.",
+        "operationId": "revoke_documents__document_id__access__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Revoke",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "description": "Liveness probe. Returns 200 with a fixed payload.",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Healthz Healthz Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthz",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/key-blobs/me": {
+      "delete": {
+        "description": "Remove the caller's wrapped-key blob.",
+        "operationId": "delete_key_blobs_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete",
+        "tags": [
+          "key-blobs"
+        ]
+      },
+      "get": {
+        "description": "Return the caller's stored wrapped-key blob, or 404 if none.",
+        "operationId": "pull_key_blobs_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyBlobResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Pull",
+        "tags": [
+          "key-blobs"
+        ]
+      },
+      "put": {
+        "description": "Upsert the caller's wrapped-key blob.",
+        "operationId": "push_key_blobs_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyBlobUpload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyBlobResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Push",
+        "tags": [
+          "key-blobs"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "description": "Create a new user. Server stores only the public key \u2014 no password ever.",
+        "operationId": "signup_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPrivate"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signup",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/by-id/{user_id}": {
+      "get": {
+        "operationId": "by_id_users_by_id__user_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "By Id",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/by-username/{username}": {
+      "get": {
+        "operationId": "by_username_users_by_username__username__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "By Username",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "me_users_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPrivate"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "users"
+        ]
+      }
+    }
+  }
+}

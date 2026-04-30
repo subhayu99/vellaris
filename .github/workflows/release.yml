@@ -41,6 +41,12 @@ jobs:
       - run: mypy src/vellaris
       - run: pytest -q
 
+      - name: Verify OpenAPI schema is up-to-date
+        run: |
+          python scripts/gen-openapi.py
+          git diff --exit-code -- web/src/docs/pages/api/openapi.json || \
+            (echo "::error::openapi.json is out of date — run 'make gen-openapi' and commit the result." && exit 1)
+
   # ---------- 2. Build Python wheel + sdist, publish to PyPI ----------
   pypi:
     name: PyPI publish
