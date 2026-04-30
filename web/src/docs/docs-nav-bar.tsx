@@ -34,19 +34,19 @@ export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
         </span>
         <NavLink
           end
-          className={({ isActive }) => `nav-link nav-hide-sm${isActive ? ' is-active' : ''}`}
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
           to={DOCS_URL}
         >
           Docs
         </NavLink>
         <NavLink
-          className={({ isActive }) => `nav-link nav-hide-sm${isActive ? ' is-active' : ''}`}
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
           to={DOCS_QUICKSTART}
         >
           Quickstart
         </NavLink>
         <NavLink
-          className={({ isActive }) => `nav-link nav-hide-sm${isActive ? ' is-active' : ''}`}
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
           to={DOCS_TRUST}
         >
           Trust

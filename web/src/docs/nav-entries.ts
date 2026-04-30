@@ -38,8 +38,21 @@ export const DOCS_NAV: ReadonlyArray<DocsGroup> = [
   {
     group: 'Get going',
     items: [
-      { to: DOCS_URL, label: 'Overview', icon: ICompass, end: true, secNum: '00', secKind: 'Documentation' },
-      { to: DOCS_QUICKSTART, label: 'Quickstart', icon: IBookOpen, secNum: '01', secKind: 'Get going' },
+      {
+        to: DOCS_URL,
+        label: 'Overview',
+        icon: ICompass,
+        end: true,
+        secNum: '00',
+        secKind: 'Documentation',
+      },
+      {
+        to: DOCS_QUICKSTART,
+        label: 'Quickstart',
+        icon: IBookOpen,
+        secNum: '01',
+        secKind: 'Get going',
+      },
       { to: DOCS_TRUST, label: 'Trust model', icon: IShield, secNum: '02', secKind: 'Trust' },
     ],
   },
@@ -53,9 +66,21 @@ export const DOCS_NAV: ReadonlyArray<DocsGroup> = [
   {
     group: 'Run a server',
     items: [
-      { to: DOCS_DEPLOY, label: 'Deployment', icon: IServer, secNum: '05', secKind: 'Run a server' },
+      {
+        to: DOCS_DEPLOY,
+        label: 'Deployment',
+        icon: IServer,
+        secNum: '05',
+        secKind: 'Run a server',
+      },
       { to: DOCS_API, label: 'OpenAPI', icon: ILogTree, secNum: '06', secKind: 'Run a server' },
-      { to: DOCS_PROTOCOL, label: 'On-wire protocol', icon: IKey, secNum: '07', secKind: 'Run a server' },
+      {
+        to: DOCS_PROTOCOL,
+        label: 'On-wire protocol',
+        icon: IKey,
+        secNum: '07',
+        secKind: 'Run a server',
+      },
     ],
   },
 ]

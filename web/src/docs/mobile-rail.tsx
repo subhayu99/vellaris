@@ -10,7 +10,7 @@ export function MobileRail() {
             key={it.to}
             to={it.to}
             end={it.end}
-            className={({ isActive }) => `docs-rail-chip${isActive ? ' is-active' : ''}`}
+            className={({ isActive }) => `docs-rail-chip ${isActive ? 'is-active' : ''}`}
           >
             <it.icon size={12} />
             <span>{it.label}</span>

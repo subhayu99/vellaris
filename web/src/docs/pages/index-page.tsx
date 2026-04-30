@@ -33,7 +33,7 @@ interface HubCardProps {
 
 function HubCard({ num, title, to, illus, children, featured }: HubCardProps) {
   return (
-    <Link className={`docs-hub-card${featured ? ' featured' : ''}`} to={to}>
+    <Link className={`docs-hub-card ${featured ? 'featured' : ''}`} to={to}>
       <div className="illus">{illus}</div>
       <div className="body">
         <span className="num">{num}</span>
@@ -166,12 +166,7 @@ export function DocsIndexPage() {
             <p className="lead-s">Automations, ETLs, webhook handlers.</p>
             <code>pip install vellaris</code>
           </Link>
-          <a
-            className="docs-tri-card"
-            href={`${REPO_URL}#readme`}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a className="docs-tri-card" href={`${REPO_URL}#readme`} target="_blank" rel="noreferrer">
             <span className="ic">
               <IServer size={18} />
             </span>

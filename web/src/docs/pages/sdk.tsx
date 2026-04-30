@@ -22,8 +22,8 @@ export function SDKPage() {
       <h2>Quick example</h2>
       <CodeBlock lang="python">
         <div>
-          <span className="tok-kw">from</span> vellaris.client <span className="tok-kw">import</span>{' '}
-          Client
+          <span className="tok-kw">from</span> vellaris.client{' '}
+          <span className="tok-kw">import</span> Client
         </div>
         <div>&nbsp;</div>
         <div>
@@ -83,8 +83,7 @@ export function SDKPage() {
         </div>
         <div>&nbsp;</div>
         <div>
-          <span className="tok-kw">async def</span>{' '}
-          <span className="tok-fn">main</span>():
+          <span className="tok-kw">async def</span> <span className="tok-fn">main</span>():
         </div>
         <div>
           {'    '}
@@ -100,8 +99,8 @@ export function SDKPage() {
         </div>
         <div>
           {'        '}
-          <span className="tok-kw">async for</span> d{' '}
-          <span className="tok-kw">in</span> c.<span className="tok-fn">aiter_ls</span>(scope=
+          <span className="tok-kw">async for</span> d <span className="tok-kw">in</span> c.
+          <span className="tok-fn">aiter_ls</span>(scope=
           <span className="tok-str">"all"</span>):
         </div>
         <div>
@@ -157,7 +156,9 @@ decrypted = c.decrypt(download)    # returns DecryptedDocument(filename, plainte
       </p>
 
       <h2>Custom transports</h2>
-      <p>Pass <code>transport=</code> to drive the client against an in-process server in tests:</p>
+      <p>
+        Pass <code>transport=</code> to drive the client against an in-process server in tests:
+      </p>
       <CodeBlock lang="python">
         {`import httpx
 from fastapi.testclient import TestClient
@@ -181,27 +182,41 @@ async def test_round_trip():
         </thead>
         <tbody>
           <tr>
-            <td><code>VellarisAPIError</code></td>
-            <td>Server returned 4xx / 5xx. <code>.status</code> and <code>.detail</code> set.</td>
+            <td>
+              <code>VellarisAPIError</code>
+            </td>
+            <td>
+              Server returned 4xx / 5xx. <code>.status</code> and <code>.detail</code> set.
+            </td>
           </tr>
           <tr>
-            <td><code>VellarisNetworkError</code></td>
+            <td>
+              <code>VellarisNetworkError</code>
+            </td>
             <td>DNS / TLS / CORS / connection refused.</td>
           </tr>
           <tr>
-            <td><code>vellaris.core.DecryptError</code></td>
+            <td>
+              <code>vellaris.core.DecryptError</code>
+            </td>
             <td>Wrong passphrase, tampered blob, AEAD tag mismatch.</td>
           </tr>
           <tr>
-            <td><code>vellaris.core.SignatureError</code></td>
+            <td>
+              <code>vellaris.core.SignatureError</code>
+            </td>
             <td>PSS / Ed25519 verification failed.</td>
           </tr>
           <tr>
-            <td><code>vellaris.core.KdfError</code></td>
+            <td>
+              <code>vellaris.core.KdfError</code>
+            </td>
             <td>Argon2 params invalid (or below the safety floor).</td>
           </tr>
           <tr>
-            <td><code>vellaris.core.WireFormatError</code></td>
+            <td>
+              <code>vellaris.core.WireFormatError</code>
+            </td>
             <td>Blob is malformed / truncated / unknown version.</td>
           </tr>
         </tbody>

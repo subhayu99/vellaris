@@ -13,7 +13,7 @@ export function DocsSidebar() {
               key={to}
               to={to}
               end={end}
-              className={({ isActive }) => `docs-side-link${isActive ? ' is-active' : ''}`}
+              className={({ isActive }) => `docs-side-link ${isActive ? 'is-active' : ''}`}
             >
               <span className="ico">
                 <Icon size={15} />
@@ -28,7 +28,9 @@ export function DocsSidebar() {
           <span className="v">
             <span className="dot" /> v0.3.1 · alpha
           </span>
-          <span className="ext" aria-hidden="true">↗</span>
+          <span className="ext" aria-hidden="true">
+            ↗
+          </span>
         </a>
       </div>
     </aside>

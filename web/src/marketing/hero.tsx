@@ -33,12 +33,7 @@ export function Hero() {
               <Link className="btn btn-primary" to={APP_ROUTE}>
                 Get Vellaris <IArrowRight size={16} />
               </Link>
-              <a
-                className="btn btn-secondary"
-                href={REPO_URL}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a className="btn btn-secondary" href={REPO_URL} target="_blank" rel="noreferrer">
                 <IGitHub size={16} /> View on GitHub
               </a>
             </div>

@@ -15,8 +15,24 @@ export function AuthFlow() {
         aria-label="Auth flow sequence diagram: client posts /auth/challenge, server returns nonce, client signs with private key, server returns bearer token"
       >
         {/* lifelines */}
-        <line x1="160" y1="60" x2="160" y2="320" stroke="var(--accent-line)" strokeWidth="1" strokeDasharray="2 5" />
-        <line x1="720" y1="60" x2="720" y2="320" stroke="var(--accent-line)" strokeWidth="1" strokeDasharray="2 5" />
+        <line
+          x1="160"
+          y1="60"
+          x2="160"
+          y2="320"
+          stroke="var(--accent-line)"
+          strokeWidth="1"
+          strokeDasharray="2 5"
+        />
+        <line
+          x1="720"
+          y1="60"
+          x2="720"
+          y2="320"
+          stroke="var(--accent-line)"
+          strokeWidth="1"
+          strokeDasharray="2 5"
+        />
 
         {/* actor: client */}
         <g transform="translate(80,18)">
@@ -33,7 +49,14 @@ export function AuthFlow() {
             <path d="m4 5 4 4-4 4" />
             <path d="M11 13h6" />
           </g>
-          <text x="44" y="24" fontFamily="var(--font-ui)" fontSize="13" fontWeight="600" fill="var(--fg)">
+          <text
+            x="44"
+            y="24"
+            fontFamily="var(--font-ui)"
+            fontSize="13"
+            fontWeight="600"
+            fill="var(--fg)"
+          >
             client
           </text>
           <text x="44" y="36" fontFamily="var(--font-mono)" fontSize="10" fill="var(--fg-3)">
@@ -58,7 +81,14 @@ export function AuthFlow() {
             <circle cx="3.5" cy="3" r=".7" fill="currentColor" />
             <circle cx="3.5" cy="12" r=".7" fill="currentColor" />
           </g>
-          <text x="44" y="24" fontFamily="var(--font-ui)" fontSize="13" fontWeight="600" fill="var(--fg)">
+          <text
+            x="44"
+            y="24"
+            fontFamily="var(--font-ui)"
+            fontSize="13"
+            fontWeight="600"
+            fill="var(--fg)"
+          >
             vellaris-server
           </text>
           <text x="44" y="36" fontFamily="var(--font-mono)" fontSize="10" fill="var(--fg-3)">
@@ -162,8 +192,24 @@ function FlowArrow({ y, from, to, dir, eyebrow, label, delay, reduced }: FlowArr
   const end = '130%'
   return (
     <g>
-      <line x1={x1} y1={y} x2={x2} y2={y} stroke="var(--accent)" strokeOpacity="0.55" strokeWidth="1.4" />
-      <path d={head} fill="none" stroke="var(--accent)" strokeOpacity="0.7" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <line
+        x1={x1}
+        y1={y}
+        x2={x2}
+        y2={y}
+        stroke="var(--accent)"
+        strokeOpacity="0.55"
+        strokeWidth="1.4"
+      />
+      <path
+        d={head}
+        fill="none"
+        stroke="var(--accent)"
+        strokeOpacity="0.7"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <text
         x={(x1 + x2) / 2}
         y={y - 14}

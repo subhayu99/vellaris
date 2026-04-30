@@ -7,9 +7,7 @@ export function Clients() {
       <div className="container">
         <div className="section-head">
           <div className="eyebrow">Three clients</div>
-          <h2 className="h-section">
-            Use it from the terminal, the browser, or your code.
-          </h2>
+          <h2 className="h-section">Use it from the terminal, the browser, or your code.</h2>
           <p className="lead" style={{ maxWidth: 660 }}>
             Same crypto, same files, same trust boundary. Pick the client that fits the moment.
           </p>

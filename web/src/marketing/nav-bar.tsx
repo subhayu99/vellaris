@@ -40,7 +40,13 @@ export function NavBar({ theme, onToggleTheme }: NavBarProps) {
         <Link className="nav-link nav-hide-sm" to={DOCS_URL}>
           Docs
         </Link>
-        <a className="nav-link" href={REPO_URL} aria-label="GitHub" target="_blank" rel="noreferrer">
+        <a
+          className="nav-link"
+          href={REPO_URL}
+          aria-label="GitHub"
+          target="_blank"
+          rel="noreferrer"
+        >
           <IGitHub size={16} />
           <span className="nav-hide-sm">GitHub</span>
         </a>

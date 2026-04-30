@@ -58,11 +58,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
                 <Link to={DOCS_TRUST}>Trust model</Link>
               </li>
               <li>
-                <a
-                  href={`${REPO_URL}/releases`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href={`${REPO_URL}/releases`} target="_blank" rel="noreferrer">
                   Changelog
                 </a>
               </li>
@@ -100,7 +96,11 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
                 </a>
               </li>
               <li>
-                <a href={`${REPO_URL}/blob/main/README.md#acknowledgements`} target="_blank" rel="noreferrer">
+                <a
+                  href={`${REPO_URL}/blob/main/README.md#acknowledgements`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Acknowledgements
                 </a>
               </li>

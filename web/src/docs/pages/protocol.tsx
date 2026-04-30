@@ -12,10 +12,10 @@ export function ProtocolPage() {
       glyph={<IKey size={28} />}
       lead={
         <>
-          Vellaris&rsquo;s wire formats are documented exactly so a client in any language can
-          read what the Python CLI / SDK / web SPA write, and vice versa. The TS port at{' '}
-          <code>web/src/crypto/</code> is the second implementation — its byte-level interop test
-          (<code>web/tests/interop.test.ts</code>) is the reference cross-implementation check.
+          Vellaris&rsquo;s wire formats are documented exactly so a client in any language can read
+          what the Python CLI / SDK / web SPA write, and vice versa. The TS port at{' '}
+          <code>web/src/crypto/</code> is the second implementation — its byte-level interop test (
+          <code>web/tests/interop.test.ts</code>) is the reference cross-implementation check.
         </>
       }
     >
@@ -61,8 +61,8 @@ export function ProtocolPage() {
       />
       <p>
         The tag is <strong>before</strong> the ciphertext, not appended. This lets a streaming
-        reader verify the tag without buffering the whole blob. Vellaris doesn&rsquo;t stream in
-        v1, but the layout is forward-friendly. Reference: <code>src/vellaris/core/wire.py</code>.
+        reader verify the tag without buffering the whole blob. Vellaris doesn&rsquo;t stream in v1,
+        but the layout is forward-friendly. Reference: <code>src/vellaris/core/wire.py</code>.
       </p>
 
       <h2>Wrapped private key</h2>
@@ -80,21 +80,36 @@ export function ProtocolPage() {
       </CodeBlock>
       <FieldList
         items={[
-          { name: 'version', body: <><code>0x01</code>.</> },
+          {
+            name: 'version',
+            body: (
+              <>
+                <code>0x01</code>.
+              </>
+            ),
+          },
           { name: 'salt', body: <>16 random bytes for Argon2id.</> },
-          { name: 'params_len', body: <><code>uint16</code>, big-endian.</> },
+          {
+            name: 'params_len',
+            body: (
+              <>
+                <code>uint16</code>, big-endian.
+              </>
+            ),
+          },
           {
             name: 'params_json',
             body: (
               <>
                 The literal bytes of{' '}
                 <code>
-                  {'json.dumps({"l":32,"m":262144,"p":4,"t":3}, sort_keys=True, separators=(",",":"))'}
+                  {
+                    'json.dumps({"l":32,"m":262144,"p":4,"t":3}, sort_keys=True, separators=(",",":"))'
+                  }
                 </code>
-                , i.e. <code>{'{"l":32,"m":262144,"p":4,"t":3}'}</code>. Keys are alphabetical
-                (<code>l</code>, <code>m</code>, <code>p</code>, <code>t</code> → key length,
-                memory cost in KiB, parallelism, time cost). Anything else makes the AAD check
-                fail.
+                , i.e. <code>{'{"l":32,"m":262144,"p":4,"t":3}'}</code>. Keys are alphabetical (
+                <code>l</code>, <code>m</code>, <code>p</code>, <code>t</code> → key length, memory
+                cost in KiB, parallelism, time cost). Anything else makes the AAD check fail.
               </>
             ),
           },
@@ -102,18 +117,18 @@ export function ProtocolPage() {
             name: 'inner ciphertext',
             body: (
               <>
-                An AES-GCM envelope (above) whose plaintext is the unencrypted PKCS#8 PEM bytes.
-                The encryption key comes from <code>Argon2id(passphrase, salt, params)</code>.
-                The associated data (AAD) is <code>version || salt || params_json</code> —
-                flipping any of those after wrap invalidates the tag.
+                An AES-GCM envelope (above) whose plaintext is the unencrypted PKCS#8 PEM bytes. The
+                encryption key comes from <code>Argon2id(passphrase, salt, params)</code>. The
+                associated data (AAD) is <code>version || salt || params_json</code> — flipping any
+                of those after wrap invalidates the tag.
               </>
             ),
           },
         ]}
       />
       <p>
-        Reference: <code>src/vellaris/core/wrap.py</code>. Default Argon2id params match RFC 9106
-        / OWASP recommendations: 256 MiB · 3 passes · 4 lanes · 32-byte output.
+        Reference: <code>src/vellaris/core/wrap.py</code>. Default Argon2id params match RFC 9106 /
+        OWASP recommendations: 256 MiB · 3 passes · 4 lanes · 32-byte output.
       </p>
 
       <h2>RSA usage</h2>
@@ -140,7 +155,9 @@ export function ProtocolPage() {
             <td>PSS</td>
             <td>SHA-256 + MGF1(SHA-256)</td>
             <td>32 bytes</td>
-            <td><code>POST /auth/verify</code>.</td>
+            <td>
+              <code>POST /auth/verify</code>.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -148,15 +165,15 @@ export function ProtocolPage() {
         <span className="label">Distinct key handles</span>
         <span>
           OAEP and PSS share the same modulus but must use{' '}
-          <strong>distinct CryptoKey handles</strong> — different padding, different threat
-          model. Re-using one across both is the bug the original PoC shipped with.
+          <strong>distinct CryptoKey handles</strong> — different padding, different threat model.
+          Re-using one across both is the bug the original PoC shipped with.
         </span>
       </div>
       <p>
         PEM serialization is unencrypted PKCS#8 for the private key,{' '}
-        <code>SubjectPublicKeyInfo</code> for the public. The Vellaris reference writes 64-char
-        body lines with <code>\n</code> separators (matching Python&rsquo;s{' '}
-        <code>cryptography</code> default) so blobs round-trip byte-for-byte.
+        <code>SubjectPublicKeyInfo</code> for the public. The Vellaris reference writes 64-char body
+        lines with <code>\n</code> separators (matching Python&rsquo;s <code>cryptography</code>{' '}
+        default) so blobs round-trip byte-for-byte.
       </p>
 
       <h2>Document upload</h2>
@@ -175,17 +192,17 @@ export function ProtocolPage() {
 }`}
       </CodeBlock>
       <p>
-        The owner MUST be in <code>access</code> — the server enforces this. The DEK is a fresh
-        32 random bytes per document, generated client-side. Reference:{' '}
+        The owner MUST be in <code>access</code> — the server enforces this. The DEK is a fresh 32
+        random bytes per document, generated client-side. Reference:{' '}
         <code>src/vellaris/client/crypto.py:encrypt_for_recipients</code>.
       </p>
 
       <h2>Test vectors</h2>
       <p>
-        <code>web/tests/fixtures/</code> ships six binary blobs produced by the Python reference
-        (<code>web/tests/fixtures/generate.py</code> regenerates them). The TS port re-decodes
-        them and asserts byte equality. If you&rsquo;re building a third client, run those same
-        fixtures through your decoder — your suite should pass them.
+        <code>web/tests/fixtures/</code> ships six binary blobs produced by the Python reference (
+        <code>web/tests/fixtures/generate.py</code> regenerates them). The TS port re-decodes them
+        and asserts byte equality. If you&rsquo;re building a third client, run those same fixtures
+        through your decoder — your suite should pass them.
       </p>
       <CodeBlock lang="shell">
         {`public_key.pem            RSA-4096 SPKI
@@ -198,9 +215,8 @@ pss_signature.bin         RSA-PSS(b"challenge-id-bytes-and-nonce", private_key)
 meta.json                 the constants above, JSON-encoded`}
       </CodeBlock>
       <p>
-        The full HTTP API is published as OpenAPI at{' '}
-        <code>https://your-server/openapi.json</code> so you can codegen typed clients in any
-        language.
+        The full HTTP API is published as OpenAPI at <code>https://your-server/openapi.json</code>{' '}
+        so you can codegen typed clients in any language.
       </p>
     </DocsPageShell>
   )

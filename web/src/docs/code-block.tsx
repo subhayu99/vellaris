@@ -62,10 +62,7 @@ export function Shell({ cmd, args = [], comment }: ShellProps) {
       <span className="tok-prompt">$ </span>
       <span className="tok-fn">{cmd}</span>
       {args.map((a, i) => (
-        <span key={i}>
-          {' '}
-          {a.startsWith('-') ? <span className="tok-flag">{a}</span> : a}
-        </span>
+        <span key={i}> {a.startsWith('-') ? <span className="tok-flag">{a}</span> : a}</span>
       ))}
       {comment ? <span className="tok-cmt">{`  # ${comment}`}</span> : null}
     </div>

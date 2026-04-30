@@ -55,7 +55,9 @@ Commands:
           <span className="tok-cmt"># &gt; Passphrase: ********</span>
         </div>
         <div>
-          <span className="tok-cmt"># &gt; Wrapped private key written to ~/.vellaris/keys/&lt;user-id&gt;.key</span>
+          <span className="tok-cmt">
+            # &gt; Wrapped private key written to ~/.vellaris/keys/&lt;user-id&gt;.key
+          </span>
         </div>
         <div>&nbsp;</div>
         <Shell cmd="vellaris" args={['login']} />
@@ -70,7 +72,9 @@ Commands:
       <h2>Files</h2>
       <CodeBlock lang="shell">
         <div>
-          <span className="tok-cmt"># Push a file. --share is repeatable; the owner is auto-included.</span>
+          <span className="tok-cmt">
+            # Push a file. --share is repeatable; the owner is auto-included.
+          </span>
         </div>
         <Shell cmd="vellaris" args={['push', 'report.pdf']} />
         <Shell cmd="vellaris" args={['push', 'report.pdf', '--share', 'bea', '--share', 'cyrus']} />
@@ -88,7 +92,9 @@ Commands:
         <Shell cmd="vellaris" args={['ls', '--json', '|', "jq '.[] | .id'"]} />
         <div>&nbsp;</div>
         <div>
-          <span className="tok-cmt"># Pull. The CLI prints the original filename; -o sets the output path.</span>
+          <span className="tok-cmt">
+            # Pull. The CLI prints the original filename; -o sets the output path.
+          </span>
         </div>
         <Shell cmd="vellaris" args={['pull', '<doc-id>']} />
         <Shell cmd="vellaris" args={['pull', '<doc-id>', '-o', '~/Downloads/']} />
@@ -102,7 +108,9 @@ Commands:
       <h2>Sharing</h2>
       <CodeBlock lang="shell">
         <div>
-          <span className="tok-cmt"># Grant access. Fetches the recipient's public key, OAEP-wraps the DEK,</span>
+          <span className="tok-cmt">
+            # Grant access. Fetches the recipient's public key, OAEP-wraps the DEK,
+          </span>
         </div>
         <div>
           <span className="tok-cmt"># and POSTs the new grant.</span>
@@ -147,27 +155,39 @@ Commands:
         </thead>
         <tbody>
           <tr>
-            <td><code>0</code></td>
+            <td>
+              <code>0</code>
+            </td>
             <td>Success.</td>
           </tr>
           <tr>
-            <td><code>1</code></td>
+            <td>
+              <code>1</code>
+            </td>
             <td>Generic error (parsing, validation, unexpected).</td>
           </tr>
           <tr>
-            <td><code>2</code></td>
+            <td>
+              <code>2</code>
+            </td>
             <td>Network — couldn&rsquo;t reach the server.</td>
           </tr>
           <tr>
-            <td><code>3</code></td>
+            <td>
+              <code>3</code>
+            </td>
             <td>Auth — token expired, signature rejected, no such user.</td>
           </tr>
           <tr>
-            <td><code>4</code></td>
+            <td>
+              <code>4</code>
+            </td>
             <td>Crypto — wrong passphrase, tampered blob, malformed key.</td>
           </tr>
           <tr>
-            <td><code>5</code></td>
+            <td>
+              <code>5</code>
+            </td>
             <td>Conflict — username/email taken, document missing.</td>
           </tr>
         </tbody>

@@ -27,22 +27,30 @@ export function ApiPage() {
         </thead>
         <tbody>
           <tr>
-            <td><code>GET /openapi.json</code></td>
+            <td>
+              <code>GET /openapi.json</code>
+            </td>
             <td>The machine-readable schema. FastAPI emits this.</td>
           </tr>
           <tr>
-            <td><code>GET /docs</code></td>
+            <td>
+              <code>GET /docs</code>
+            </td>
             <td>Swagger UI bundled with the server.</td>
           </tr>
           <tr>
-            <td><code>GET /redoc</code></td>
+            <td>
+              <code>GET /redoc</code>
+            </td>
             <td>ReDoc rendering of the same schema.</td>
           </tr>
           <tr>
-            <td><code>GET /healthz</code></td>
             <td>
-              Liveness + readiness probe. Returns <code>{'{"status":"ok"}'}</code> when the DB
-              is reachable.
+              <code>GET /healthz</code>
+            </td>
+            <td>
+              Liveness + readiness probe. Returns <code>{'{"status":"ok"}'}</code> when the DB is
+              reachable.
             </td>
           </tr>
         </tbody>
@@ -51,14 +59,16 @@ export function ApiPage() {
       <div className="docs-callout">
         <span className="label">Heads up</span>
         <span>
-          The schema is generated per-deployment, so the URL you visit is your server&rsquo;s
-          server — e.g. <code>https://vault.example.com/openapi.json</code>. There is no central
-          registry; the schema is whatever code the server is running.
+          The schema is generated per-deployment, so the URL you visit is your server&rsquo;s server
+          — e.g. <code>https://vault.example.com/openapi.json</code>. There is no central registry;
+          the schema is whatever code the server is running.
         </span>
       </div>
 
       <h2>Codegen example</h2>
-      <p><code>openapi-typescript</code> turns the schema into a typed TS module:</p>
+      <p>
+        <code>openapi-typescript</code> turns the schema into a typed TS module:
+      </p>
       <CodeBlock lang="shell">
         {`pnpm dlx openapi-typescript https://vault.example.com/openapi.json -o vellaris-types.ts`}
       </CodeBlock>
@@ -88,8 +98,8 @@ export function ApiPage() {
       <h2>Auth</h2>
       <p>
         Every request after <code>POST /auth/verify</code> carries{' '}
-        <code>Authorization: Bearer &lt;token&gt;</code>. Tokens are opaque and time-bounded;
-        treat them as cookies. The full challenge flow is documented in the{' '}
+        <code>Authorization: Bearer &lt;token&gt;</code>. Tokens are opaque and time-bounded; treat
+        them as cookies. The full challenge flow is documented in the{' '}
         <a href={DOCS_PROTOCOL}>on-wire protocol</a>.
       </p>
     </DocsPageShell>

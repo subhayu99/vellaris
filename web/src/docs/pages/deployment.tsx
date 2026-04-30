@@ -79,63 +79,109 @@ export function DeploymentPage() {
         </thead>
         <tbody>
           <tr>
-            <td><code>VELLARIS_HOST</code></td>
-            <td><code>0.0.0.0</code></td>
+            <td>
+              <code>VELLARIS_HOST</code>
+            </td>
+            <td>
+              <code>0.0.0.0</code>
+            </td>
             <td>Bind address.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_PORT</code></td>
-            <td><code>8000</code></td>
+            <td>
+              <code>VELLARIS_PORT</code>
+            </td>
+            <td>
+              <code>8000</code>
+            </td>
             <td>Bind port.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_DATABASE_URL</code></td>
-            <td><code>sqlite+aiosqlite:///./vellaris.db</code></td>
-            <td>Use <code>postgresql+psycopg://…</code> in prod.</td>
+            <td>
+              <code>VELLARIS_DATABASE_URL</code>
+            </td>
+            <td>
+              <code>sqlite+aiosqlite:///./vellaris.db</code>
+            </td>
+            <td>
+              Use <code>postgresql+psycopg://…</code> in prod.
+            </td>
           </tr>
           <tr>
-            <td><code>VELLARIS_BLOB_BACKEND</code></td>
-            <td><code>local</code></td>
-            <td><code>local</code> or <code>s3</code>.</td>
+            <td>
+              <code>VELLARIS_BLOB_BACKEND</code>
+            </td>
+            <td>
+              <code>local</code>
+            </td>
+            <td>
+              <code>local</code> or <code>s3</code>.
+            </td>
           </tr>
           <tr>
-            <td><code>VELLARIS_BLOB_LOCAL_DIR</code></td>
-            <td><code>./blobs</code></td>
+            <td>
+              <code>VELLARIS_BLOB_LOCAL_DIR</code>
+            </td>
+            <td>
+              <code>./blobs</code>
+            </td>
             <td>Local backend storage path.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_BLOB_S3_BUCKET</code></td>
+            <td>
+              <code>VELLARIS_BLOB_S3_BUCKET</code>
+            </td>
             <td>(unset)</td>
             <td>S3 bucket for ciphertext blobs.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_BLOB_S3_REGION</code></td>
-            <td><code>us-east-1</code></td>
+            <td>
+              <code>VELLARIS_BLOB_S3_REGION</code>
+            </td>
+            <td>
+              <code>us-east-1</code>
+            </td>
             <td>—</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_BLOB_S3_ENDPOINT</code></td>
+            <td>
+              <code>VELLARIS_BLOB_S3_ENDPOINT</code>
+            </td>
             <td>(unset)</td>
             <td>Override for MinIO / R2 / B2.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_AUDIT_SIGNING_KEY</code></td>
+            <td>
+              <code>VELLARIS_AUDIT_SIGNING_KEY</code>
+            </td>
             <td>(generated on first start)</td>
             <td>Ed25519 raw key, base64. Persist this.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_MAX_UPLOAD_BYTES</code></td>
-            <td><code>5_368_709_120</code> (5 GiB)</td>
+            <td>
+              <code>VELLARIS_MAX_UPLOAD_BYTES</code>
+            </td>
+            <td>
+              <code>5_368_709_120</code> (5 GiB)
+            </td>
             <td>Per-file ceiling.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_RATE_LIMIT_PER_IP</code></td>
-            <td><code>120/min</code></td>
+            <td>
+              <code>VELLARIS_RATE_LIMIT_PER_IP</code>
+            </td>
+            <td>
+              <code>120/min</code>
+            </td>
             <td>Soft limit.</td>
           </tr>
           <tr>
-            <td><code>VELLARIS_CORS_ORIGINS</code></td>
-            <td><code>*</code> (dev), <code>[]</code> (prod)</td>
+            <td>
+              <code>VELLARIS_CORS_ORIGINS</code>
+            </td>
+            <td>
+              <code>*</code> (dev), <code>[]</code> (prod)
+            </td>
             <td>Comma-separated for the SPA.</td>
           </tr>
         </tbody>
@@ -175,7 +221,9 @@ docker compose -f docker/compose.yaml up -d`}
       </p>
 
       <h2>Kubernetes — Helm chart sketch</h2>
-      <p>A minimal <code>values.yaml</code>:</p>
+      <p>
+        A minimal <code>values.yaml</code>:
+      </p>
       <CodeBlock lang="yaml">
         {`image:
   repository: ghcr.io/subhayu99/vellaris
@@ -206,8 +254,8 @@ resources:
   limits:   { cpu: 1000m, memory: 1Gi }`}
       </CodeBlock>
       <p>
-        A real chart isn&rsquo;t published yet — drop the manifests at{' '}
-        <code>deploy/k8s/</code> when you do this.
+        A real chart isn&rsquo;t published yet — drop the manifests at <code>deploy/k8s/</code> when
+        you do this.
       </p>
 
       <h2>Fly.io — one-click</h2>
@@ -266,8 +314,8 @@ railway up`}
 
       <h2>Health check</h2>
       <p>
-        <code>GET /healthz</code> returns <code>{'{"status":"ok"}'}</code> when the DB is
-        reachable. Use it as your liveness + readiness probe.
+        <code>GET /healthz</code> returns <code>{'{"status":"ok"}'}</code> when the DB is reachable.
+        Use it as your liveness + readiness probe.
       </p>
     </DocsPageShell>
   )

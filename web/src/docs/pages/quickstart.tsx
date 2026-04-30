@@ -66,8 +66,8 @@ export function QuickstartPage() {
         <Shell cmd="vellaris" args={['rm', '<doc-id>']} />
       </CodeBlock>
       <p>
-        The keystore lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The config lives
-        at <code>~/.vellaris/config.toml</code>.
+        The keystore lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The config lives at{' '}
+        <code>~/.vellaris/config.toml</code>.
       </p>
 
       <h2>Server in 5 minutes</h2>
@@ -107,38 +107,30 @@ docker compose -f docker/compose.yaml up -d`}
 
       <h2>Web UI</h2>
       <p>
-        The SPA is a static build — drop it on any HTTPS host and point it at your Vellaris
-        server.
+        The SPA is a static build — drop it on any HTTPS host and point it at your Vellaris server.
       </p>
       <p>
         The official build is hosted at{' '}
         <a href="https://subhayu99.github.io/vellaris" target="_blank" rel="noreferrer">
           subhayu99.github.io/vellaris
         </a>
-        . Each release also ships a self-host tarball <code>vellaris-web-vX.Y.Z.tar.gz</code>{' '}
-        under{' '}
-        <a
-          href="https://github.com/subhayu99/vellaris/releases"
-          target="_blank"
-          rel="noreferrer"
-        >
+        . Each release also ships a self-host tarball <code>vellaris-web-vX.Y.Z.tar.gz</code> under{' '}
+        <a href="https://github.com/subhayu99/vellaris/releases" target="_blank" rel="noreferrer">
           GitHub Releases
         </a>
         .
       </p>
       <p>
-        First load asks for your server&rsquo;s URL, runs <code>GET /healthz</code>, and caches
-        the URL in <code>localStorage</code>. After signup the wrapped private key is stored
-        locally too. <strong>localStorage is per-origin</strong> — two SPA deployments are
-        independent.
+        First load asks for your server&rsquo;s URL, runs <code>GET /healthz</code>, and caches the
+        URL in <code>localStorage</code>. After signup the wrapped private key is stored locally
+        too. <strong>localStorage is per-origin</strong> — two SPA deployments are independent.
       </p>
 
       <div className="docs-callout is-warn">
         <span className="label">If you forget your passphrase</span>
         <span>
-          Your files are gone. There is no recovery flow — by design. Use a password manager or
-          run <code>vellaris key export -o backup.key</code> and store the wrapped key somewhere
-          safe.
+          Your files are gone. There is no recovery flow — by design. Use a password manager or run{' '}
+          <code>vellaris key export -o backup.key</code> and store the wrapped key somewhere safe.
         </span>
       </div>
     </DocsPageShell>
