@@ -447,17 +447,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#config" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Config
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#exit-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -628,17 +617,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#config" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Config
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#exit-codes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -691,40 +669,45 @@
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>key<span class="w">           </span>Manage<span class="w"> </span><span class="nb">local</span><span class="w"> </span>+<span class="w"> </span>remote-synced<span class="w"> </span>wrapped<span class="w"> </span>private<span class="w"> </span>keys.
 </code></pre></div>
 <h2 id="auth">Auth<a class="headerlink" href="#auth" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Configure the server URL once.</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>vellaris<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>server<span class="w"> </span>https://vault.example.com
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>vellaris<span class="w"> </span>signup<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--email<span class="w"> </span>alice@example.com
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># &gt; Generating RSA-4096 keypair…</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># &gt; Passphrase: ********</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># &gt; Confirm:    ********</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># &gt; Wrapped private key written to ~/.vellaris/keys/&lt;user-id&gt;.key</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>vellaris<span class="w"> </span>login
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># &gt; Username: alice</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># &gt; Passphrase: ********</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># &gt; Logged in as alice on https://vault.example.com</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>vellaris<span class="w"> </span>whoami
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># alice (alice@example.com) on https://vault.example.com</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>vellaris<span class="w"> </span><span class="nb">logout</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Sign up. --server is required; the URL is saved to ~/.vellaris/config.toml.</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Username, email, and passphrase are prompted unless passed as flags.</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>vellaris<span class="w"> </span>signup<span class="w"> </span>--server<span class="w"> </span>https://vault.example.com
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Signing up alice at https://vault.example.com...</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># ✓ signed up as alice (id 9a4b21f8-...)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Log in. Server + username come from the saved config; override with flags.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>vellaris<span class="w"> </span>login
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>vellaris<span class="w"> </span>login<span class="w"> </span>--server<span class="w"> </span>https://vault.example.com
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>vellaris<span class="w"> </span>login<span class="w"> </span>--username<span class="w"> </span>alice
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># ✓ logged in as alice</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>vellaris<span class="w"> </span>whoami
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># username: alice</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># email:    alice@example.com</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># id:       9a4b21f8-...</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># server:   https://vault.example.com</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>vellaris<span class="w"> </span><span class="nb">logout</span>
 </code></pre></div>
+<p>There is no <code>vellaris config</code> command. The server URL is set the first
+time you run <code>vellaris signup --server &lt;url&gt;</code> and re-read on subsequent
+commands. To switch servers later, pass <code>--server</code> on <code>vellaris login</code>
+or edit <code>~/.vellaris/config.toml</code> directly.</p>
 <h2 id="files">Files<a class="headerlink" href="#files" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Push a file. --share is repeatable; the owner is auto-included.</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Push a file. --share / -s is repeatable; the owner is auto-included.</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf<span class="w"> </span>--share<span class="w"> </span>bea<span class="w"> </span>--share<span class="w"> </span>cyrus
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf<span class="w"> </span>--share<span class="w"> </span>bea<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Q1 financials, NDA only&quot;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf<span class="w"> </span>-s<span class="w"> </span>bea<span class="w"> </span>-s<span class="w"> </span>cyrus
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># List your view.</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># List your view (--scope: mine, shared, all — defaults to all).</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>vellaris<span class="w"> </span>ls
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>vellaris<span class="w"> </span>ls<span class="w"> </span>--scope<span class="w"> </span>mine
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>vellaris<span class="w"> </span>ls<span class="w"> </span>--scope<span class="w"> </span>shared
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>vellaris<span class="w"> </span>ls<span class="w"> </span>--json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[] | .id&#39;</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Pull. The CLI prints the original filename; -o sets the output path.</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Pull. Default writes the original filename into CWD; --out / -o</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># overrides with a specific file path.</span>
 <a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>-o<span class="w"> </span>~/Downloads/
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>-o<span class="w"> </span>./report.pdf
 <a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
 <a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># Delete a document you own. Recipients lose access; what they already</span>
 <a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="c1"># downloaded is theirs forever (revoke is forward-only).</span>
@@ -741,11 +724,11 @@
 <h2 id="key-management">Key management<a class="headerlink" href="#key-management" title="Permanent link">&para;</a></h2>
 <p>The wrapped private key lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. It's
 useless without your passphrase. To move between machines:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Export to a file you can carry (still wrapped).</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>vellaris<span class="w"> </span>key<span class="w"> </span><span class="nb">export</span><span class="w"> </span>-o<span class="w"> </span>alice.key
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Export uses a positional path — no -o flag.</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>vellaris<span class="w"> </span>key<span class="w"> </span><span class="nb">export</span><span class="w"> </span>./alice.key
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Import on the new machine.</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>vellaris<span class="w"> </span>key<span class="w"> </span>import<span class="w"> </span>alice.key
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Import requires --user since you may not be logged in yet.</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>vellaris<span class="w"> </span>key<span class="w"> </span>import<span class="w"> </span>./alice.key<span class="w"> </span>--user<span class="w"> </span>&lt;user-uuid&gt;
 </code></pre></div>
 <p>Or sync via the server (opt-in — the server stores opaque ciphertext):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Push your wrapped key to the server.</span>
@@ -756,11 +739,6 @@ useless without your passphrase. To move between machines:</p>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Delete the server copy.</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>vellaris<span class="w"> </span>key<span class="w"> </span>sync<span class="w"> </span>delete
-</code></pre></div>
-<h2 id="config">Config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Inspect / edit ~/.vellaris/config.toml.</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>vellaris<span class="w"> </span>config<span class="w"> </span>get<span class="w"> </span>server
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>vellaris<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>server<span class="w"> </span>https://vault.example.com
 </code></pre></div>
 <h2 id="exit-codes">Exit codes<a class="headerlink" href="#exit-codes" title="Permanent link">&para;</a></h2>
 <table>
@@ -777,34 +755,21 @@ useless without your passphrase. To move between machines:</p>
 </tr>
 <tr>
 <td style="text-align: right;">1</td>
-<td>Generic error (parsing, validation, unexpected)</td>
+<td>Operation failed — server returned 4xx/5xx, decryption failed, document missing, etc.</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td>Network — couldn't reach the server</td>
-</tr>
-<tr>
-<td style="text-align: right;">3</td>
-<td>Auth — token expired, signature rejected, no such user</td>
-</tr>
-<tr>
-<td style="text-align: right;">4</td>
-<td>Crypto — wrong passphrase, tampered blob, malformed key</td>
-</tr>
-<tr>
-<td style="text-align: right;">5</td>
-<td>Conflict — username/email taken, document missing</td>
+<td>Missing required input — e.g. <code>vellaris login</code> with no saved server URL</td>
 </tr>
 </tbody>
 </table>
 <p>Use these in scripts:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">if</span><span class="w"> </span>!<span class="w"> </span>vellaris<span class="w"> </span>pull<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$id</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="nv">$?</span><span class="w"> </span><span class="k">in</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="m">2</span><span class="o">)</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;server unreachable&quot;</span><span class="w"> </span><span class="p">;;</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="m">3</span><span class="o">)</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;logged out — run vellaris login&quot;</span><span class="w"> </span><span class="p">;;</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span>*<span class="o">)</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;see vellaris error output&quot;</span><span class="w"> </span><span class="p">;;</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="k">esac</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="k">fi</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">if</span><span class="w"> </span>!<span class="w"> </span>vellaris<span class="w"> </span>pull<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$id</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="nv">$?</span><span class="w"> </span><span class="k">in</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="m">2</span><span class="o">)</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;missing server / user — run vellaris signup --server first&quot;</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span>*<span class="o">)</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;pull failed — see vellaris error output above&quot;</span><span class="w"> </span><span class="p">;;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="k">esac</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">fi</span>
 </code></pre></div>
 
 

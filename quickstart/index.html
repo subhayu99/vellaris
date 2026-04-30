@@ -664,33 +664,42 @@
 control, that only the people you chose can read.</p>
 <h2 id="cli-in-60-seconds">CLI in 60 seconds<a class="headerlink" href="#cli-in-60-seconds" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>vellaris
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Point the CLI at a Vellaris server you trust.</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>vellaris<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>server<span class="w"> </span>https://vault.example.com
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Sign up. The CLI generates an RSA-4096 keypair locally and asks for a</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># passphrase. The passphrase never leaves your machine.</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>vellaris<span class="w"> </span>signup<span class="w"> </span>--username<span class="w"> </span>alice<span class="w"> </span>--email<span class="w"> </span>alice@example.com
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Push a file, sharing it with bea and cyrus.</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf<span class="w"> </span>--share<span class="w"> </span>bea<span class="w"> </span>--share<span class="w"> </span>cyrus
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># or: uv tool install vellaris</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Sign up. --server is required and gets saved for future commands. The</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># CLI prompts for username, email, and a passphrase; generates an</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># RSA-4096 keypair locally; the passphrase never leaves your machine.</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>vellaris<span class="w"> </span>signup<span class="w"> </span>--server<span class="w"> </span>https://vault.example.com
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Open a session. Server + username are remembered from signup; pass</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># --server / --username only to override.</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>vellaris<span class="w"> </span>login
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># List what you can read on this server.</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>vellaris<span class="w"> </span>ls
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># Push a file, sharing it with bea and cyrus.</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>vellaris<span class="w"> </span>push<span class="w"> </span>report.pdf<span class="w"> </span>--share<span class="w"> </span>bea<span class="w"> </span>--share<span class="w"> </span>cyrus
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># Pull a file someone shared with you.</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>-o<span class="w"> </span>~/Downloads/
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1"># List what you can read on this server.</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>vellaris<span class="w"> </span>ls
 <a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Hand off access.</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>vellaris<span class="w"> </span>share<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>dana
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>vellaris<span class="w"> </span>revoke<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>bea
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1"># Delete a document you own (everyone loses access — they keep what they</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># already downloaded; revoke is forward-only).</span>
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>vellaris<span class="w"> </span>rm<span class="w"> </span>&lt;doc-id&gt;
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Pull a file someone shared with you. Default writes the original</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># filename into CWD; -o overrides with a specific file path.</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>vellaris<span class="w"> </span>pull<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>-o<span class="w"> </span>./report.pdf
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># Hand off access.</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>vellaris<span class="w"> </span>share<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>dana
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>vellaris<span class="w"> </span>revoke<span class="w"> </span>&lt;doc-id&gt;<span class="w"> </span>bea
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="c1"># Delete a document you own (everyone loses access — they keep what they</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="c1"># already downloaded; revoke is forward-only).</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>vellaris<span class="w"> </span>rm<span class="w"> </span>&lt;doc-id&gt;
 </code></pre></div>
-<p>The keystore lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The config lives at
-<code>~/.vellaris/config.toml</code>.</p>
+<p>The wrapped key blob lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The
+configured server URL and the most-recent username are persisted to
+<code>~/.vellaris/config.toml</code> on signup; <code>vellaris login</code> reads them back
+automatically. There is no <code>vellaris config</code> command — to switch
+servers later, pass <code>--server</code> on <code>vellaris login</code> or edit the config
+file directly.</p>
 <h2 id="server-in-5-minutes">Server in 5 minutes<a class="headerlink" href="#server-in-5-minutes" title="Permanent link">&para;</a></h2>
 <p>The server is one Docker container plus a Postgres (or SQLite for dev).</p>
 <h3 id="docker-run-single-container-sqlite">docker run (single-container, SQLite)<a class="headerlink" href="#docker-run-single-container-sqlite" title="Permanent link">&para;</a></h3>
