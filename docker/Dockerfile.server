@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1.7
 # Multi-stage build for the Vellaris server.
-# Final image runs `vellaris-server` as a non-root user.
+#
+# Targets:
+#   runtime-slim — sqlite + local FS only (~120 MB).      Default tag (:VERSION).
+#   runtime-full — every DB driver + cloud storage (~350 MB). Tag (:VERSION-full).
 
 # ---------- builder ----------
 FROM python:3.12-slim AS builder
@@ -18,12 +21,18 @@ RUN apt-get update \
 
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
+COPY alembic ./alembic
+COPY alembic.ini ./
 
+# Slim wheels = vellaris[server,sqlite] only.
 RUN pip install --upgrade pip \
-    && pip wheel --wheel-dir /build/wheels ".[server]"
+    && pip wheel --wheel-dir /build/wheels-slim ".[server,sqlite]"
 
-# ---------- runtime ----------
-FROM python:3.12-slim AS runtime
+# Full wheels = adds all DBs + cloud storage.
+RUN pip wheel --wheel-dir /build/wheels-full ".[server,all-db,all-storage]"
+
+# ---------- runtime-slim ----------
+FROM python:3.12-slim AS runtime-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -37,16 +46,30 @@ RUN groupadd --system vellaris \
 
 WORKDIR /app
 
-COPY --from=builder /build/wheels /tmp/wheels
-RUN pip install --no-index --find-links=/tmp/wheels vellaris[server] \
+COPY --from=builder /build/wheels-slim /tmp/wheels
+RUN pip install --no-index --find-links=/tmp/wheels vellaris[server,sqlite] \
     && rm -rf /tmp/wheels
+
+# Pre-create the default data directory so named-volume mounts inherit ownership.
+RUN mkdir -p /data/blobs && chown -R vellaris:vellaris /data
 
 USER vellaris
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# Auto-migrate runs before uvicorn binds; bump start-period so the liveness
+# probe doesn't fire mid-migration on a cold DB.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz').read()" \
         || exit 1
 
 CMD ["vellaris-server"]
+
+# ---------- runtime-full ----------
+FROM runtime-slim AS runtime-full
+
+USER root
+COPY --from=builder /build/wheels-full /tmp/wheels-full
+RUN pip install --no-index --find-links=/tmp/wheels-full vellaris[server,all-db,all-storage] \
+    && rm -rf /tmp/wheels-full
+USER vellaris
