@@ -99,6 +99,10 @@ Issues = "https://github.com/subhayu99/vellaris/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/vellaris"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"alembic" = "vellaris/_alembic"
+"alembic.ini" = "vellaris/server/alembic.ini"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "src/vellaris",
