@@ -1,0 +1,65 @@
+.sdk-recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.sdk-recipe-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 150ms, background 150ms;
+}
+.sdk-recipe-tile:hover { border-color: var(--fg, rgba(255, 255, 255, 0.4)); }
+.sdk-recipe-tile-active {
+  border-color: var(--accent, #cba65a);
+  background: rgba(203, 166, 90, 0.05);
+}
+.sdk-recipe-tile strong { font-size: 0.95rem; }
+.sdk-recipe-tile span { font-size: 0.8rem; opacity: 0.75; }
+
+.sdk-args-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.sdk-args-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+.sdk-args-grid input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 5px;
+  background: var(--bg-elev, rgba(255, 255, 255, 0.05));
+  color: var(--fg, inherit);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+}
+.sdk-variant-radios {
+  border: none;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+}
+.sdk-variant-radios legend { font-weight: 600; margin-bottom: 0.35rem; }
+.sdk-variant-radios label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}

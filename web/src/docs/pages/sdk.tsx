@@ -1,9 +1,36 @@
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { IBraces } from '../../marketing/icons.tsx'
 import { DOCS_SDK } from '../../marketing/links.ts'
 import { CodeBlock } from '../code-block.tsx'
 import { DocsPageShell } from '../page-shell.tsx'
+import { RecipePicker } from './sdk-builder/components/RecipePicker'
+import { SdkConfigForm } from './sdk-builder/components/SdkConfigForm'
+import { SnippetBox } from './install/components/SnippetBox'
+import {
+  decodeStateFromUrl,
+  defaultSdkBuilderState,
+  encodeStateToUrl,
+  type SdkBuilderState,
+} from './sdk-builder/state'
+import { generateSdkSnippet } from './sdk-builder/templates'
+import './sdk-builder/sdk-builder.css'
 
 export function SDKPage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [state, setState] = useState<SdkBuilderState>(() =>
+    location.search ? decodeStateFromUrl(location.search) : defaultSdkBuilderState,
+  )
+  useEffect(() => {
+    const newSearch = encodeStateToUrl(state)
+    if (newSearch !== location.search) {
+      navigate({ search: newSearch }, { replace: true })
+    }
+  }, [state, location.search, navigate])
+
+  const snippet = useMemo(() => generateSdkSnippet(state), [state])
+
   return (
     <DocsPageShell
       to={DOCS_SDK}
@@ -17,6 +44,16 @@ export function SDKPage() {
         </>
       }
     >
+      <h2>Generate a starter snippet</h2>
+      <p>
+        Pick a recipe, fill in the args, copy the result. Bookmark the URL to share a configured
+        snippet.
+      </p>
+      <RecipePicker value={state.recipe} onChange={(recipe) => setState((p) => ({ ...p, recipe }))} />
+      <SdkConfigForm state={state} onChange={(patch) => setState((p) => ({ ...p, ...patch }))} />
+      <SnippetBox title="Run this Python" contents={snippet} />
+
+      <h2>Reference</h2>
       <CodeBlock lang="shell">{`pip install vellaris`}</CodeBlock>
 
       <h2>Quick example</h2>
