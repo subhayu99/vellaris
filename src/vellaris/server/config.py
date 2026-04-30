@@ -8,7 +8,7 @@ them at deploy time.
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from pathlib import Path
 
 from pydantic import Field, field_validator
@@ -27,13 +27,18 @@ class VellarisSettings(BaseSettings):
     )
 
     # --- network ---
-    host: str = Field(default="0.0.0.0")
+    host: str = Field(default="0.0.0.0", description="Uvicorn bind address.")
     port: int = Field(default=8000, ge=1, le=65535)
-    cors_allow_origins: list[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: ["*"], description="CORS allow-list. Tighten in production."
+    )
 
     # --- database ---
-    database_url: str = Field(default="sqlite+aiosqlite:///./vellaris.db")
-    database_echo: bool = Field(default=False)
+    database_url: str = Field(
+        default="sqlite+aiosqlite:///./vellaris.db",
+        description="SQLAlchemy URL — pick postgresql+asyncpg://, mysql+asyncmy://, or sqlite+aiosqlite://",
+    )
+    database_echo: bool = Field(default=False, description="Log SQL statements (dev only).")
     auto_migrate: bool = Field(
         default=True,
         description="Run `alembic upgrade head` on startup. Disable in blue/green pipelines.",
@@ -59,12 +64,18 @@ class VellarisSettings(BaseSettings):
     rate_limit_burst: int = Field(default=20, ge=1)
 
     # --- audit log ---
-    audit_signing_key_path: Path | None = Field(default=None)
+    audit_signing_key_path: Path | None = Field(
+        default=None,
+        description=(
+            "Path to a 32-byte raw Ed25519 private-key file. If unset, "
+            "a fresh key is generated in memory at startup (dev only)."
+        ),
+    )
 
     @field_validator("blob_options_json")
     @classmethod
     def _validate_blob_options_json(cls, v: str | None) -> str | None:
-        if v is None or v == "":
+        if not v or not v.strip():
             return None
         try:
             parsed = json.loads(v)
@@ -74,7 +85,7 @@ class VellarisSettings(BaseSettings):
             raise ValueError("VELLARIS_BLOB_OPTIONS_JSON must decode to a JSON object")
         return v
 
-    @property
+    @cached_property
     def blob_options(self) -> dict[str, object]:
         """Parsed storage_options dict, or empty if unset."""
         if not self.blob_options_json:
