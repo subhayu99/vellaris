@@ -38,7 +38,7 @@ def server(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     db_path = tmp_path / "vellaris-test.db"
     blob_root = tmp_path / "blobs"
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
-    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(blob_root))
+    monkeypatch.setenv("VELLARIS_BLOB_URL", f"file://{blob_root.as_posix()}")
     reset_settings_cache()
     reset_engine_cache()
     reset_blob_store_cache()

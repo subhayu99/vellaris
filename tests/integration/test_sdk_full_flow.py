@@ -23,7 +23,7 @@ CHEAP = Argon2Params(memory_cost_kib=8, time_cost=1, parallelism=1, key_length=3
 async def server_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[object]:
     """Build a FastAPI app pointing at per-test SQLite + blob_root + VELLARIS_HOME."""
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'sdk.db'}")
-    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(tmp_path / "blobs"))
+    monkeypatch.setenv("VELLARIS_BLOB_URL", f"file://{(tmp_path / 'blobs').as_posix()}")
     monkeypatch.setenv("VELLARIS_HOME", str(tmp_path / "vellaris"))
 
     # Import inside fixture so monkey-patched env is picked up.

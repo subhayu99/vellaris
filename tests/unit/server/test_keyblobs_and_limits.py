@@ -104,7 +104,7 @@ def small_upload_server(
     db_path = tmp_path / "small.db"  # type: ignore[operator]
     blob_root = tmp_path / "blobs"  # type: ignore[operator]
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{db_path}")
-    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(blob_root))
+    monkeypatch.setenv("VELLARIS_BLOB_URL", f"file://{blob_root.as_posix()}")  # type: ignore[union-attr]
     monkeypatch.setenv("VELLARIS_MAX_UPLOAD_BYTES", "100")  # tiny
 
     from vellaris.server.config import reset_settings_cache
@@ -137,7 +137,7 @@ def test_upload_size_cap_returns_413(small_upload_server: TestClient) -> None:
 def test_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
     """Configure a tiny burst and confirm the N+1 request is rejected."""
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'rl.db'}")
-    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(tmp_path / "blobs"))
+    monkeypatch.setenv("VELLARIS_BLOB_URL", f"file://{(tmp_path / 'blobs').as_posix()}")
     monkeypatch.setenv("VELLARIS_RATE_LIMIT_PER_MINUTE", "1")
     monkeypatch.setenv("VELLARIS_RATE_LIMIT_BURST", "2")
 

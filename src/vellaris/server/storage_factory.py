@@ -1,4 +1,4 @@
-"""Pick a BlobStore implementation based on settings."""
+"""Build the configured BlobStore from settings."""
 
 from __future__ import annotations
 
@@ -10,21 +10,16 @@ from vellaris.server.storage_fsspec import FsspecBlobStore
 
 
 @lru_cache(maxsize=4)
-def _store_for(blob_backend: str, blob_root: str) -> BlobStore:
-    if blob_backend == "local":
-        store: BlobStore = FsspecBlobStore(f"file://{blob_root}")
-        return store
-    if blob_backend == "s3":
-        from vellaris.server.storage_s3 import S3BlobStore
+def _store_for(blob_url: str, blob_options_json: str | None) -> BlobStore:
+    import json
 
-        s3_store: BlobStore = S3BlobStore.from_settings(get_settings())
-        return s3_store
-    raise ValueError(f"unknown blob backend: {blob_backend}")
+    options = json.loads(blob_options_json) if blob_options_json else {}
+    return FsspecBlobStore(blob_url, storage_options=options)
 
 
 def get_blob_store(settings: VellarisSettings | None = None) -> BlobStore:
     s = settings or get_settings()
-    return _store_for(s.blob_backend, str(s.blob_root))
+    return _store_for(s.blob_url, s.blob_options_json)
 
 
 def reset_blob_store_cache() -> None:

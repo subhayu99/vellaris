@@ -38,11 +38,22 @@ class FsspecBlobStore:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f"data must be bytes, got {type(data).__name__}")
         path = self._path(key)
-        # fsspec's open() is the cross-backend write. For LocalFS it goes
-        # through the kernel; for cloud backends s3fs/gcsfs/adlfs implement
-        # multi-part upload under the hood.
-        with self._fs.open(path, "wb") as f:
-            f.write(bytes(data))
+        if isinstance(self._fs, LocalFileSystem):
+            # Atomic write via temp+rename so a crash mid-write doesn't leave a
+            # half-blob at the canonical key path. Cloud backends (s3fs/gcsfs/adlfs)
+            # are already atomic via their multipart commit protocols, so direct
+            # write is safe there.
+            import os
+
+            tmp = f"{path}.tmp"
+            with self._fs.open(tmp, "wb") as f:
+                f.write(bytes(data))
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, path)
+        else:
+            with self._fs.open(path, "wb") as f:
+                f.write(bytes(data))
 
     def get(self, key: str) -> bytes:
         path = self._path(key)

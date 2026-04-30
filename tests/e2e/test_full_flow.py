@@ -60,7 +60,7 @@ def captured_server(
 ) -> tuple[TestClient, list[bytes]]:
     """A TestClient whose middleware captures every request + response body verbatim."""
     monkeypatch.setenv("VELLARIS_DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'e2e.db'}")
-    monkeypatch.setenv("VELLARIS_BLOB_ROOT", str(tmp_path / "blobs"))
+    monkeypatch.setenv("VELLARIS_BLOB_URL", f"file://{(tmp_path / 'blobs').as_posix()}")
     monkeypatch.setenv("VELLARIS_RATE_LIMIT_PER_MINUTE", "10000")  # disable throttling
     monkeypatch.setenv("VELLARIS_RATE_LIMIT_BURST", "10000")
     reset_settings_cache()
