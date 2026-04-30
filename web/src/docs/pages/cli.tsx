@@ -1,9 +1,38 @@
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ITerminal } from '../../marketing/icons.tsx'
 import { DOCS_CLI } from '../../marketing/links.ts'
 import { CodeBlock, Shell } from '../code-block.tsx'
 import { DocsPageShell } from '../page-shell.tsx'
+import { CommandPicker } from './cli-builder/components/CommandPicker'
+import { ArgsForm } from './cli-builder/components/ArgsForm'
+import { SnippetBox } from './install/components/SnippetBox'
+import {
+  decodeStateFromUrl,
+  defaultCliBuilderState,
+  encodeStateToUrl,
+  type CliBuilderState,
+} from './cli-builder/state'
+import { generateCliCommand } from './cli-builder/templates'
+import './cli-builder/cli-builder.css'
 
 export function CLIReferencePage() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const [state, setState] = useState<CliBuilderState>(() => {
+    return location.search ? decodeStateFromUrl(location.search) : defaultCliBuilderState
+  })
+
+  useEffect(() => {
+    const newSearch = encodeStateToUrl(state)
+    if (newSearch !== location.search) {
+      navigate({ search: newSearch }, { replace: true })
+    }
+  }, [state, location.search, navigate])
+
+  const cmd = useMemo(() => generateCliCommand(state), [state])
+
   return (
     <DocsPageShell
       to={DOCS_CLI}
@@ -16,6 +45,16 @@ export function CLIReferencePage() {
         </>
       }
     >
+      <h2>Build a command</h2>
+      <p>
+        Pick a command, fill in the args, copy the result. Bookmark the URL to share a configured
+        invocation.
+      </p>
+      <CommandPicker value={state.command} onChange={(command) => setState((p) => ({ ...p, command }))} />
+      <ArgsForm state={state} onChange={(patch) => setState((p) => ({ ...p, ...patch }))} />
+      <SnippetBox title="Run this" contents={`$ ${cmd}`} />
+
+      <h2>Reference</h2>
       <CodeBlock lang="shell">
         {`$ vellaris --help
 Usage: vellaris [OPTIONS] COMMAND [ARGS]...
