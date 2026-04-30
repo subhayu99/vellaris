@@ -97,8 +97,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute image tags
-        id: meta
+      - name: Compute slim image tags
+        id: meta_slim
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
@@ -108,19 +108,48 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
 
-      - name: Build and push (linux/amd64, linux/arm64)
+      - name: Compute full image tags
+        id: meta_full
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: |
+            suffix=-full,onlatest=true
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - name: Build and push slim (linux/amd64, linux/arm64)
         uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile.server
+          target: runtime-slim
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta_slim.outputs.tags }}
+          labels: ${{ steps.meta_slim.outputs.labels }}
           provenance: true
           sbom: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=slim
+          cache-to: type=gha,mode=max,scope=slim
+
+      - name: Build and push full (linux/amd64, linux/arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.server
+          target: runtime-full
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta_full.outputs.tags }}
+          labels: ${{ steps.meta_full.outputs.labels }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=full
+          cache-to: type=gha,mode=max,scope=full
 
   # ---------- 4. Build the SPA, attach a tarball to the release, deploy to Pages ----------
   spa:
