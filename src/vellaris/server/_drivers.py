@@ -17,7 +17,6 @@ class DriverNotInstalledError(RuntimeError):
 _DRIVER_MAP: dict[str, tuple[str, str]] = {
     "sqlite+aiosqlite": ("aiosqlite", "sqlite"),
     "postgresql+asyncpg": ("asyncpg", "postgres"),
-    "postgresql+psycopg": ("psycopg", "postgres"),  # legacy users
     "mysql+asyncmy": ("asyncmy", "mysql"),
     "mariadb+asyncmy": ("asyncmy", "mysql"),
 }

@@ -43,3 +43,4 @@ def test_check_async_driver_raises_when_missing(monkeypatch: pytest.MonkeyPatch)
     assert "asyncpg" in msg
     assert "vellaris[postgres]" in msg
     assert ":0.5.0-full" in msg
+    assert "postgresql+asyncpg://u:p@h/db" in msg
