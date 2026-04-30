@@ -110,3 +110,31 @@
   outline: 2px solid var(--accent, #cba65a);
   outline-offset: 2px;
 }
+
+.install-panel-advanced details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.install-panel-advanced details summary::-webkit-details-marker {
+  display: none;
+}
+.install-panel-advanced details summary h3 { margin: 0; font-size: 1rem; }
+.install-panel-advanced details[open] summary h3::after { content: " ▾"; opacity: 0.5; }
+.install-panel-advanced details:not([open]) summary h3::after { content: " ▸"; opacity: 0.5; }
+.install-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.install-advanced-grid input[type='number'] { width: 100%; box-sizing: border-box; }
+.install-page input[type='checkbox'] {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  accent-color: var(--accent, #cba65a);
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
