@@ -35,8 +35,7 @@ def driver_for_url(url: str) -> tuple[str, str]:
     if scheme not in _DRIVER_MAP:
         known = ", ".join(sorted(_DRIVER_MAP))
         raise ValueError(
-            f"cannot infer async driver from URL scheme {scheme!r}; "
-            f"supported: {known}"
+            f"cannot infer async driver from URL scheme {scheme!r}; supported: {known}"
         )
     return _DRIVER_MAP[scheme]
 
