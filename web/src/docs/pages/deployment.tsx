@@ -6,6 +6,7 @@ import { CodeBlock } from '../code-block.tsx'
 import { DocsPageShell } from '../page-shell.tsx'
 import { RunModePicker } from './install/components/RunModePicker'
 import { BackendPickers } from './install/components/BackendPickers'
+import { AdvancedPanel } from './install/components/AdvancedPanel'
 import { ConfigPanel } from './install/components/ConfigPanel'
 import { CredsPanel } from './install/components/CredsPanel'
 import { SnippetBox } from './install/components/SnippetBox'
@@ -20,7 +21,7 @@ import {
   saveCredsToLocalStorage,
   type InstallState,
 } from './install/state'
-import { generateExportBlock, generateRunSnippet } from './install/templates'
+import { generateExportBlock, generateProxySnippet, generateRunSnippet } from './install/templates'
 import './install/install.css'
 
 const VERSION = '0.5.0'
@@ -63,6 +64,7 @@ export function DeploymentPage() {
 
   const exportBlock = useMemo(() => generateExportBlock(state, VERSION), [state])
   const runSnippet = useMemo(() => generateRunSnippet(state, VERSION), [state])
+  const proxySnippet = useMemo(() => generateProxySnippet(state), [state])
 
   return (
     <DocsPageShell
@@ -88,6 +90,8 @@ export function DeploymentPage() {
 
         <CredsPanel state={state} onChange={patch} onForgetEverything={forgetAll} />
 
+        <AdvancedPanel state={state} onChange={patch} />
+
         {state.credsMode === 'export' && exportBlock && (
           <SnippetBox title="1. Set credentials in your shell" contents={exportBlock} />
         )}
@@ -101,6 +105,10 @@ export function DeploymentPage() {
           contents={runSnippet}
           warn={state.credsMode === 'inline'}
         />
+
+        {proxySnippet && (
+          <SnippetBox title={proxySnippet.title} contents={proxySnippet.contents} />
+        )}
       </div>
 
       <section>

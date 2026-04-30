@@ -37,6 +37,24 @@ export function RunModePicker({
         />
         Python (pip)
       </label>
+      <label>
+        <input
+          type="radio"
+          name="run-mode"
+          checked={value === 'helm'}
+          onChange={() => onChange('helm')}
+        />
+        Helm (values.yaml)
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="run-mode"
+          checked={value === 'systemd'}
+          onChange={() => onChange('systemd')}
+        />
+        systemd unit
+      </label>
     </fieldset>
   )
 }
