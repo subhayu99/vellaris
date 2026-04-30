@@ -1,0 +1,18 @@
+.install-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.install-panel { border: 1px solid var(--border-color, #2c2c40); border-radius: 8px; padding: 1.25rem; }
+.install-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.install-panel-header h3 { margin: 0; font-size: 1rem; }
+.install-panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem 1rem; }
+.install-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.install-fieldset { border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.install-fieldset legend { font-weight: 600; padding: 0; margin-bottom: 0.5rem; }
+.install-fieldset label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+.install-fineprint { font-size: 0.8rem; opacity: 0.75; margin-top: 0.75rem; margin-bottom: 0; }
+.install-hint { font-weight: 400; opacity: 0.7; font-size: 0.8em; }
+.install-warn { color: #cba65a; }
+.install-snippet { border: 1px solid var(--border-color, #2c2c40); border-radius: 8px; padding: 1rem; }
+.install-snippet header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.install-snippet h4 { margin: 0; font-size: 0.9rem; }
+.install-snippet pre { margin: 0; max-height: 480px; overflow: auto; font-size: 0.85rem; }
+.install-snippet-warn { border-color: #cba65a; }
+.install-link-button { background: none; border: none; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; }
