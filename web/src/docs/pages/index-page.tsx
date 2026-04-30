@@ -106,16 +106,21 @@ export function DocsIndexPage() {
             the load.
           </HubCard>
           <HubCard num="03 · CLIENT" title="CLI" to={DOCS_CLI} illus={<IllusCLI />}>
-            Every <code>vellaris ...</code> command, by example.
+            Interactive command builder — pick a subcommand, fill flags, copy. Plus a flag-by-flag
+            reference for every <code>vellaris ...</code> command.
           </HubCard>
           <HubCard num="04 · CLIENT" title="Python SDK" to={DOCS_SDK} illus={<IllusSDK />}>
-            Same path the CLI uses, exposed for scripts and notebooks.
+            Interactive starter generator — pick a recipe (upload / share / download / list /
+            revoke), pick async or sync, copy a runnable snippet. Plus full API reference.
           </HubCard>
           <HubCard num="05 · SERVER" title="Deployment" to={DOCS_DEPLOY} illus={<IllusDeploy />}>
-            Docker, Compose with Postgres, Helm sketch, fly.io, Railway. What to back up.
+            Interactive config builder — pick run mode, DB, storage, advanced options (rate limits,
+            CORS, TLS, reverse proxy), and copy a tailored Docker / Compose / Helm / systemd
+            snippet.
           </HubCard>
           <HubCard num="06 · SERVER" title="OpenAPI" to={DOCS_API} illus={<IllusAPI />}>
-            The typed contract at <code>/openapi.json</code> — codegen-ready.
+            Interactive endpoint playground — schema-driven; pick an endpoint, fill params, copy
+            curl / Python httpx / JS fetch. Schema at <code>/openapi.json</code> is codegen-ready.
           </HubCard>
           <HubCard
             num="07 · SERVER"

@@ -6,7 +6,7 @@ GCS, Azure). Every operator-facing knob is a `VELLARIS_*` env var.
 
 ## The fast path
 
-For most users, the [`/docs/install` configurator](/docs/install)
+For most users, the [`/docs/deployment` configurator](/docs/deployment)
 generates a tailored `docker run` / `docker-compose` / `pip install`
 snippet for your DB + storage combination.
 

@@ -14,9 +14,19 @@
   - `:0.5.0` (slim, ~120 MB) — sqlite + local FS only.
   - `:0.5.0-full` (~350 MB) — every DB driver + every cloud storage backend.
 - **`/docs/install` configurator** — pick run mode + DB + storage + image and copy a tailored `docker run` / `compose.yaml` / `Dockerfile` / `pip install` snippet.
+- **Interactive CLI command builder** at `/docs/cli` — pick a command, fill args, copy.
+- **Interactive SDK starter generator** at `/docs/sdk` — pick a recipe (upload / upload-and-share / download / list / share / revoke), pick async/sync, copy a runnable Python snippet.
+- **Interactive API endpoint playground** at `/docs/api` — schema-driven generator (auto-built from FastAPI's OpenAPI); emits curl / Python httpx / JS fetch snippets per endpoint.
+- **Advanced configuration panel** on `/docs/deployment` — rate limits, sessions, CORS, audit-key handling, replicas, reverse proxy (Caddy/nginx/Traefik), TLS.
+- **Helm `values.yaml` and systemd unit file** as run-mode outputs in the deployment configurator.
+- **Reverse-proxy snippet** (Caddyfile / nginx / Traefik labels) emitted alongside the main snippet when a proxy is configured.
 - **Auto-migrations on startup** — controlled by `VELLARIS_AUTO_MIGRATE` (default `1`). Set to `0` for blue/green pipelines.
 - **`vellaris-server migrate` subcommand** for explicit migration runs.
 - **Pip extras:** `[sqlite]`, `[postgres]`, `[mysql]`, `[s3]`, `[gcs]`, `[azure]`, `[all-db]`, `[all-storage]`, `[all]`.
+
+### Changed
+
+- `/docs/install` is now `/docs/deployment`. The old URL redirects.
 
 ### Fixed
 

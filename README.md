@@ -86,7 +86,7 @@ docker pull ghcr.io/subhayu99/vellaris:0.5.0-full
 ```
 
 For a tailored configuration (e.g. Postgres + S3 only) and a copy-paste
-docker run command, use the [install configurator](https://subhayu99.github.io/vellaris/docs/install).
+docker run command, use the [deployment configurator](https://subhayu99.github.io/vellaris/docs/deployment).
 
 ## License
 

@@ -48,5 +48,5 @@ def check_async_driver(url: str) -> None:
             f"VELLARIS_DATABASE_URL={url!r} requires the {module!r} package.\n"
             f"  pip:    pip install 'vellaris[{extra}]'\n"
             f"  docker: pull ghcr.io/subhayu99/vellaris:0.5.0-full "
-            f"(or build a custom slim+{extra} image — see /docs/install)"
+            f"(or build a custom slim+{extra} image — see /docs/deployment)"
         )

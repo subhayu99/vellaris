@@ -1,4 +1,4 @@
-/* State for /docs/install. Persisted in URL query params (non-secrets only)
+/* State for /docs/deployment. Persisted in URL query params (non-secrets only)
  * so configurations are bookmarkable/shareable. Credential values, when the
  * user opts into 'inline' mode, live in localStorage under a separate key
  * and NEVER touch the URL. */
