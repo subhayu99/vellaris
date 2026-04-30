@@ -14,7 +14,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
   const [buildCopied, setBuildCopied] = useState(false)
   const onCopyBuild = async () => {
     try {
-      await navigator.clipboard.writeText('vellaris · v0.3.0')
+      await navigator.clipboard.writeText('vellaris · v0.4.0')
     } catch {
       /* clipboard unavailable */
     }
@@ -117,7 +117,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
             onClick={onCopyBuild}
             type="button"
           >
-            vellaris · v0.3.0
+            vellaris · v0.4.0
             {buildCopied && <span>✓</span>}
           </button>
         </div>

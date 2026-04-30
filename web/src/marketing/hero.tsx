@@ -63,7 +63,7 @@ export function Hero() {
 
 const HERO_SCRIPT: ReadonlyArray<TermLine> = [
   { kind: 'cmd', text: 'pip install vellaris' },
-  { kind: 'out', check: true, text: 'Installed vellaris 0.3.0', meta: '(client + cli)' },
+  { kind: 'out', check: true, text: 'Installed vellaris 0.4.0', meta: '(client + cli)' },
   { kind: 'blank' },
   { kind: 'cmd', text: 'vellaris signup alice@example.com' },
   { kind: 'out', check: true, text: 'Generated keypair', meta: 'fingerprint 9a:4b:21:f8:c0:e3' },
