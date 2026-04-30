@@ -1,3 +1,9 @@
+## 0.5.1 — 2026-04-30
+
+### Fixed
+
+- **PyPI sdist→wheel build.** The `[tool.hatch.build.targets.sdist]` `include` list was missing `alembic/` and `alembic.ini`, so the strict-mode "build wheel from sdist" check that PyPI runs on publish couldn't satisfy the wheel's `force-include` block. v0.5.0 never published to PyPI as a result; v0.5.1 is the same code with the packaging fix.
+
 ## 0.5.0 — 2026-04-30
 
 ### Breaking changes

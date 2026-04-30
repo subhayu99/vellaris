@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vellaris"
-version = "0.5.0"
+version = "0.5.1"
 description = "End-to-end encrypted document sharing you self-host."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -106,6 +106,8 @@ packages = ["src/vellaris"]
 [tool.hatch.build.targets.sdist]
 include = [
     "src/vellaris",
+    "alembic",
+    "alembic.ini",
     "tests",
     "README.md",
     "LICENSE",
