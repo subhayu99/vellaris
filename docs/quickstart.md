@@ -7,13 +7,16 @@ control, that only the people you chose can read.
 
 ```bash
 pip install vellaris
+# or: uv tool install vellaris
 
-# Point the CLI at a Vellaris server you trust.
-vellaris config set server https://vault.example.com
+# Sign up. --server is required and gets saved for future commands. The
+# CLI prompts for username, email, and a passphrase; generates an
+# RSA-4096 keypair locally; the passphrase never leaves your machine.
+vellaris signup --server https://vault.example.com
 
-# Sign up. The CLI generates an RSA-4096 keypair locally and asks for a
-# passphrase. The passphrase never leaves your machine.
-vellaris signup --username alice --email alice@example.com
+# Open a session. Server + username are remembered from signup; pass
+# --server / --username only to override.
+vellaris login
 
 # Push a file, sharing it with bea and cyrus.
 vellaris push report.pdf --share bea --share cyrus
@@ -21,8 +24,10 @@ vellaris push report.pdf --share bea --share cyrus
 # List what you can read on this server.
 vellaris ls
 
-# Pull a file someone shared with you.
-vellaris pull <doc-id> -o ~/Downloads/
+# Pull a file someone shared with you. Default writes the original
+# filename into CWD; -o overrides with a specific file path.
+vellaris pull <doc-id>
+vellaris pull <doc-id> -o ./report.pdf
 
 # Hand off access.
 vellaris share <doc-id> dana
@@ -33,8 +38,12 @@ vellaris revoke <doc-id> bea
 vellaris rm <doc-id>
 ```
 
-The keystore lives at `~/.vellaris/keys/<user-id>.key`. The config lives at
-`~/.vellaris/config.toml`.
+The wrapped key blob lives at `~/.vellaris/keys/<user-id>.key`. The
+configured server URL and the most-recent username are persisted to
+`~/.vellaris/config.toml` on signup; `vellaris login` reads them back
+automatically. There is no `vellaris config` command — to switch
+servers later, pass `--server` on `vellaris login` or edit the config
+file directly.
 
 ## Server in 5 minutes
 

@@ -227,7 +227,7 @@ docker compose -f docker/compose.yaml up -d`}
       <CodeBlock lang="yaml">
         {`image:
   repository: ghcr.io/subhayu99/vellaris
-  tag: v0.4.0
+  tag: v0.4.1
   pullPolicy: IfNotPresent
 
 replicaCount: 2

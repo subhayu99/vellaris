@@ -26,7 +26,7 @@ export function DocsSidebar() {
       <div className="docs-side-foot">
         <a href={`${REPO_URL}/releases`} target="_blank" rel="noreferrer">
           <span className="v">
-            <span className="dot" /> v0.4.0 · alpha
+            <span className="dot" /> v0.4.1 · alpha
           </span>
           <span className="ext" aria-hidden="true">
             ↗
