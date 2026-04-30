@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(() => {
@@ -83,18 +83,20 @@ export function useTypewriter(
   const { startWhenVisible = false, loopAfterMs, watchSelector } = options
   const reduced = useReducedMotion()
   const [state, setState] = useState<TypewriterState>({ line: 0, char: 0, held: 0 })
-  const [armed, setArmed] = useState(!startWhenVisible)
-  const armedRef = useRef(armed)
-  armedRef.current = armed
+  /* If we don't need to wait for visibility, or the caller didn't give
+   * us a selector, treat as armed from the first render — avoids a
+   * setState-in-effect to do the same post-mount. */
+  const [armed, setArmed] = useState(() => !startWhenVisible || !watchSelector)
 
   useEffect(() => {
-    if (!startWhenVisible) return
-    if (!watchSelector) {
-      setArmed(true)
-      return
-    }
+    if (!startWhenVisible || !watchSelector) return
     const el = document.querySelector(watchSelector)
     if (!el) {
+      // No element to watch — fail open and arm immediately. The lint
+      // rule warns about setState in an effect; this is a one-shot init
+      // path that depends on a runtime DOM lookup we can't do during
+      // render, so disable the rule here.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setArmed(true)
       return
     }
@@ -113,6 +115,8 @@ export function useTypewriter(
 
   useEffect(() => {
     if (reduced) {
+      // Reduced-motion: skip the typewriter and show every line at once.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState({ line: script.length, char: 0, held: 0 })
       return
     }
