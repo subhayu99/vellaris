@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vellaris"
-version = "0.4.1"
+version = "0.5.0"
 description = "End-to-end encrypted document sharing you self-host."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -41,12 +41,20 @@ server = [
     "sqlalchemy[asyncio]>=2.0",
     "greenlet>=3.0",
     "alembic>=1.13",
-    "psycopg[binary]>=3.2",
     "pydantic-settings>=2.5",
     "pydantic[email]>=2.8",
     "python-multipart>=0.0.12",
-    "boto3>=1.35",
+    "fsspec>=2024.10",
 ]
+sqlite = ["aiosqlite>=0.20"]
+postgres = ["asyncpg>=0.29", "psycopg2-binary>=2.9"]
+mysql = ["asyncmy>=0.2.10", "pymysql>=1.1"]
+s3 = ["s3fs>=2024.10"]
+gcs = ["gcsfs>=2024.10"]
+azure = ["adlfs>=2024.7"]
+all-db = ["vellaris[sqlite,postgres,mysql]"]
+all-storage = ["vellaris[s3,gcs,azure]"]
+all = ["vellaris[server,all-db,all-storage]"]
 dev = [
     "ruff>=0.6",
     "mypy>=1.11",
@@ -56,6 +64,7 @@ dev = [
     "pre-commit>=3.8",
     "mkdocs>=1.6",
     "mkdocs-material>=9.5",
+    # Server (mirrors [server])
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "sqlmodel>=0.0.22",
@@ -66,8 +75,15 @@ dev = [
     "pydantic-settings>=2.5",
     "pydantic[email]>=2.8",
     "python-multipart>=0.0.12",
+    "fsspec>=2024.10",
+    # Drivers (everything bundled for tests)
     "aiosqlite>=0.20",
-    "boto3>=1.35",
+    "asyncpg>=0.29",
+    "psycopg2-binary>=2.9",
+    "asyncmy>=0.2.10",
+    "pymysql>=1.1",
+    # Storage
+    "s3fs>=2024.10",
     "moto[s3]>=5.0",
 ]
 
