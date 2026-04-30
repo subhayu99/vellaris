@@ -11,8 +11,8 @@ export function Architecture() {
           <div className="eyebrow">Architecture</div>
           <h2 className="h-section">There is no &ldquo;we&rdquo;. The server is yours.</h2>
           <p className="lead" style={{ maxWidth: 660 }}>
-            The most important thing on this page. The trust boundary is the box you control —
-            and the server is built so it physically cannot read what you store on it.
+            The most important thing on this page. The trust boundary is the box you control — and
+            the server is built so it physically cannot read what you store on it.
           </p>
         </div>
 
@@ -38,7 +38,9 @@ export function Architecture() {
                   <span>audit log · ed25519 signed</span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}
+              >
                 <span
                   className="chip"
                   style={{
@@ -139,21 +141,31 @@ function ArchSVG({ reduced }: { reduced: boolean }) {
   // hand side reads "plaintext (impossible)".
   return (
     <div style={{ position: 'relative' }}>
-      <svg
-        className="arch-svg"
-        viewBox="0 0 900 220"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
+      <svg className="arch-svg" viewBox="0 0 900 220" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <pattern id="dot" width="6" height="6" patternUnits="userSpaceOnUse">
             <circle cx="3" cy="3" r="1" fill="var(--accent-line)" />
           </pattern>
         </defs>
         {/* three dotted vertical paths */}
-        <path d="M150 0 L150 220" stroke="var(--accent-line)" strokeWidth="1" strokeDasharray="2 5" />
-        <path d="M450 0 L450 220" stroke="var(--accent-line)" strokeWidth="1" strokeDasharray="2 5" />
-        <path d="M750 0 L750 220" stroke="var(--accent-line)" strokeWidth="1" strokeDasharray="2 5" />
+        <path
+          d="M150 0 L150 220"
+          stroke="var(--accent-line)"
+          strokeWidth="1"
+          strokeDasharray="2 5"
+        />
+        <path
+          d="M450 0 L450 220"
+          stroke="var(--accent-line)"
+          strokeWidth="1"
+          strokeDasharray="2 5"
+        />
+        <path
+          d="M750 0 L750 220"
+          stroke="var(--accent-line)"
+          strokeWidth="1"
+          strokeDasharray="2 5"
+        />
 
         {/* invisible paths for textPaths to follow */}
         <path id="arch-path-1" d="M150 0 L150 220" fill="none" />

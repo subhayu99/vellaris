@@ -13,9 +13,9 @@ export function GetStarted() {
               Read every line.
             </h2>
             <p className="lead" style={{ maxWidth: 480 }}>
-              Vellaris is open source. The crypto is in the open. The data model is in the open.
-              The server is in the open. If anything here is wrong, you can prove it &mdash;
-              and we&rsquo;ll fix it.
+              Vellaris is open source. The crypto is in the open. The data model is in the open. The
+              server is in the open. If anything here is wrong, you can prove it &mdash; and
+              we&rsquo;ll fix it.
             </p>
 
             <div className="repo-meta" style={{ marginTop: 28, maxWidth: 480 }}>

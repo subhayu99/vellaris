@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { useTypewriter, type TermLine } from './hooks.ts'
 import { Terminal } from './terminal.tsx'
-import { DOCS_URL } from './links.ts'
+import { DOCS_API, DOCS_QUICKSTART, DOCS_TRUST } from './links.ts'
 
 const LIVING_SCRIPT: ReadonlyArray<TermLine> = [
   { kind: 'cmd', text: 'vellaris signup eve@maritime-co.dev' },
@@ -59,9 +60,9 @@ export function LivingTerminal() {
           />
         </div>
         <div className="living-links">
-          <a href={`${DOCS_URL}/quickstart`}>→ Read the full quickstart</a>
-          <a href={`${DOCS_URL}/api`}>→ Browse the API spec</a>
-          <a href={`${DOCS_URL}/security`}>→ Skim the threat model</a>
+          <Link to={DOCS_QUICKSTART}>→ Read the full quickstart</Link>
+          <Link to={DOCS_API}>→ Browse the API spec</Link>
+          <Link to={DOCS_TRUST}>→ Skim the trust model</Link>
         </div>
       </div>
     </section>

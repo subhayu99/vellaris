@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { VSigil } from '../components/v-sigil.tsx'
 import { IMoon, ISun } from './icons.tsx'
-import { DOCS_URL, REPO_URL } from './links.ts'
+import { DOCS_API, DOCS_QUICKSTART, DOCS_TRUST, DOCS_URL, REPO_URL } from './links.ts'
 import type { ThemeName } from './hooks.ts'
 
 interface FooterProps {
@@ -48,16 +49,18 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
             <h4>Vellaris</h4>
             <ul>
               <li>
-                <a href={DOCS_URL}>Docs</a>
+                <Link to={DOCS_URL}>Docs</Link>
               </li>
               <li>
-                <a href={`${DOCS_URL}/quickstart`}>Quickstart</a>
+                <Link to={DOCS_QUICKSTART}>Quickstart</Link>
               </li>
               <li>
-                <a href={`${DOCS_URL}/security`}>Threat model</a>
+                <Link to={DOCS_TRUST}>Trust model</Link>
               </li>
               <li>
-                <a href={`${DOCS_URL}/changelog`}>Changelog</a>
+                <a href={`${REPO_URL}/releases`} target="_blank" rel="noreferrer">
+                  Changelog
+                </a>
               </li>
             </ul>
           </div>
@@ -70,7 +73,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
                 </a>
               </li>
               <li>
-                <a href={`${DOCS_URL}/api`}>OpenAPI spec</a>
+                <Link to={DOCS_API}>OpenAPI spec</Link>
               </li>
               <li>
                 <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer">
@@ -93,7 +96,11 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
                 </a>
               </li>
               <li>
-                <a href={`${REPO_URL}/blob/main/README.md#acknowledgements`} target="_blank" rel="noreferrer">
+                <a
+                  href={`${REPO_URL}/blob/main/README.md#acknowledgements`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Acknowledgements
                 </a>
               </li>

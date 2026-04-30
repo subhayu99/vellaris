@@ -1,12 +1,5 @@
 import type { ReactNode } from 'react'
-import {
-  IBadgeOSS,
-  ICode,
-  IKey,
-  ILock,
-  ILogTree,
-  IServer,
-} from './icons.tsx'
+import { IBadgeOSS, ICode, IKey, ILock, ILogTree, IServer } from './icons.tsx'
 
 interface FeatureCell {
   icon: ReactNode

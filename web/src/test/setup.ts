@@ -96,6 +96,7 @@ class StubIntersectionObserver {
   thresholds: ReadonlyArray<number> = []
 }
 if (typeof globalThis.IntersectionObserver === 'undefined') {
-  ;(globalThis as unknown as { IntersectionObserver: typeof IntersectionObserver }).IntersectionObserver =
-    StubIntersectionObserver as unknown as typeof IntersectionObserver
+  ;(
+    globalThis as unknown as { IntersectionObserver: typeof IntersectionObserver }
+  ).IntersectionObserver = StubIntersectionObserver as unknown as typeof IntersectionObserver
 }

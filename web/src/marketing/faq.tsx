@@ -11,8 +11,8 @@ const ITEMS: ReadonlyArray<FAQEntry> = [
     q: 'What if I lose my passphrase?',
     a: (
       <>
-        Your files are gone. There is no recovery path. The passphrase never leaves your device.
-        Use a password manager, write it down, keep a backup of your wrapped key file with{' '}
+        Your files are gone. There is no recovery path. The passphrase never leaves your device. Use
+        a password manager, write it down, keep a backup of your wrapped key file with{' '}
         <code>vellaris key export</code>.
       </>
     ),
@@ -21,9 +21,9 @@ const ITEMS: ReadonlyArray<FAQEntry> = [
     q: 'What does the server actually see?',
     a: (
       <>
-        Encrypted blob sizes, encrypted blob hashes, recipient user IDs, access timestamps, and
-        the signed audit log. Not file contents, not filenames (they&rsquo;re encrypted), not your
-        DEKs, not your passphrase.
+        Encrypted blob sizes, encrypted blob hashes, recipient user IDs, access timestamps, and the
+        signed audit log. Not file contents, not filenames (they&rsquo;re encrypted), not your DEKs,
+        not your passphrase.
       </>
     ),
   },
@@ -41,10 +41,10 @@ const ITEMS: ReadonlyArray<FAQEntry> = [
     q: 'What happens when I revoke a user from a document?',
     a: (
       <>
-        Their entry is removed from the access table — they can no longer request the encrypted
-        DEK. But if they already downloaded and decrypted the file, that copy is out of our hands.
-        To force a fresh barrier, use <code>vellaris rotate &lt;doc&gt;</code> to re-encrypt with a
-        new key (v1.x).
+        Their entry is removed from the access table — they can no longer request the encrypted DEK.
+        But if they already downloaded and decrypted the file, that copy is out of our hands. To
+        force a fresh barrier, use <code>vellaris rotate &lt;doc&gt;</code> to re-encrypt with a new
+        key (v1.x).
       </>
     ),
   },
@@ -52,9 +52,9 @@ const ITEMS: ReadonlyArray<FAQEntry> = [
     q: 'What about quantum?',
     a: (
       <>
-        RSA-4096 is not post-quantum. v2.0 will offer ML-KEM 768. Rotation tooling will be
-        provided. Nothing you store today will be readable to a server admin even after the
-        rotation; old envelopes stay sealed.
+        RSA-4096 is not post-quantum. v2.0 will offer ML-KEM 768. Rotation tooling will be provided.
+        Nothing you store today will be readable to a server admin even after the rotation; old
+        envelopes stay sealed.
       </>
     ),
   },

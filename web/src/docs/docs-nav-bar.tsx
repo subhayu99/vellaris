@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { VSigil } from '../components/v-sigil.tsx'
-import { IGitHub, IMoon, ISun } from './icons.tsx'
-import type { ThemeName } from './hooks.ts'
-import { APP_ROUTE, DOCS_TRUST, DOCS_URL, REPO_URL } from './links.ts'
+/* Docs-flavoured nav. Mirrors the marketing nav's chrome (sticky, blur,
+ * status pill, theme toggle) but the section anchors target /docs
+ * routes instead of #ids on the landing page. */
 
-interface NavBarProps {
+import { useEffect, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
+import { VSigil } from '../components/v-sigil.tsx'
+import { IGitHub, IMoon, ISun } from '../marketing/icons.tsx'
+import type { ThemeName } from '../marketing/hooks.ts'
+import { APP_ROUTE, DOCS_QUICKSTART, DOCS_TRUST, DOCS_URL, REPO_URL } from '../marketing/links.ts'
+
+interface DocsNavBarProps {
   theme: ThemeName
   onToggleTheme: () => void
 }
 
-export function NavBar({ theme, onToggleTheme }: NavBarProps) {
+export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
   const [stuck, setStuck] = useState(false)
   useEffect(() => {
     const onScroll = () => setStuck(window.scrollY > 8)
@@ -20,26 +24,33 @@ export function NavBar({ theme, onToggleTheme }: NavBarProps) {
   }, [])
   return (
     <nav className={`nav ${stuck ? 'is-stuck' : ''}`} aria-label="Primary">
-      <a className="nav-brand" href="#top">
+      <Link className="nav-brand" to="/">
         <VSigil size={26} />
         <span className="wordmark">vellaris</span>
-      </a>
+      </Link>
       <div className="nav-links">
         <span className="status-pill nav-hide-sm">
-          <span className="dot" /> all systems normal
+          <span className="dot" /> docs · v0.3.1
         </span>
-        <a className="nav-link nav-hide-sm" href="#how">
-          How it works
-        </a>
-        <a className="nav-link nav-hide-sm" href="#architecture">
-          Architecture
-        </a>
-        <Link className="nav-link nav-hide-sm" to={DOCS_TRUST}>
-          Trust
-        </Link>
-        <Link className="nav-link nav-hide-sm" to={DOCS_URL}>
+        <NavLink
+          end
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
+          to={DOCS_URL}
+        >
           Docs
-        </Link>
+        </NavLink>
+        <NavLink
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
+          to={DOCS_QUICKSTART}
+        >
+          Quickstart
+        </NavLink>
+        <NavLink
+          className={({ isActive }) => `nav-link nav-hide-sm ${isActive ? 'is-active' : ''}`}
+          to={DOCS_TRUST}
+        >
+          Trust
+        </NavLink>
         <a
           className="nav-link"
           href={REPO_URL}

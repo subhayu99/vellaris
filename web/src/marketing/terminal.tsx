@@ -65,7 +65,7 @@ function TermLineView({ idx, line, progress }: TermLineViewProps) {
           <span style={{ display: 'inline-block', width: '1.4em' }} />
         )}
         <span>{line.text}</span>
-        {line.meta && <span className="meta">  {line.meta}</span>}
+        {line.meta && <span className="meta"> {line.meta}</span>}
       </div>
     )
   }
@@ -74,9 +74,7 @@ function TermLineView({ idx, line, progress }: TermLineViewProps) {
       <div className="term-line term-encrypting">
         <span className="thread" aria-hidden="true" />
         <span style={{ color: 'var(--gold-soft)' }}>{line.text}</span>
-        {line.meta && (
-          <span style={{ color: 'rgba(247,241,227,0.45)' }}>· {line.meta}</span>
-        )}
+        {line.meta && <span style={{ color: 'rgba(247,241,227,0.45)' }}>· {line.meta}</span>}
       </div>
     )
   }
