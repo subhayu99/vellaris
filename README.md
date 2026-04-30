@@ -71,11 +71,22 @@ contract at `/openapi.json`.
 
 ## Run a server
 
+### Docker
+
+Pull the slim image (~120 MB, SQLite + local FS only):
+
 ```bash
-docker run -p 8000:8000 ghcr.io/subhayu99/vellaris:latest
+docker pull ghcr.io/subhayu99/vellaris:0.5.0
 ```
 
-Or `docker compose -f docker/compose.yaml up` for a Postgres-backed dev stack.
+Or the full image (~350 MB, every DB and cloud storage backend bundled):
+
+```bash
+docker pull ghcr.io/subhayu99/vellaris:0.5.0-full
+```
+
+For a tailored configuration (e.g. Postgres + S3 only) and a copy-paste
+docker run command, use the [install configurator](https://subhayu99.github.io/vellaris/docs/install).
 
 ## License
 

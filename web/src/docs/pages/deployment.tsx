@@ -11,9 +11,9 @@ export function DeploymentPage() {
       glyph={<IServer size={28} />}
       lead={
         <>
-          The Vellaris server is a single FastAPI process plus a database (Postgres in production,
-          SQLite for dev / single-user). Blobs go to local disk by default; flip a flag to push to
-          S3-compatible storage.
+          Vellaris is a single FastAPI process plus a database (Postgres / MySQL / SQLite) and a
+          blob store (any fsspec backend — local FS, S3-compatible, GCS, Azure). Every
+          operator-facing knob is a <code>VELLARIS_*</code> env var.
         </>
       }
     >
@@ -30,11 +30,11 @@ export function DeploymentPage() {
         </thead>
         <tbody>
           <tr>
-            <td>Single user, dev</td>
+            <td>Single user</td>
             <td>256 MB</td>
             <td>1 vCPU</td>
             <td>1 GB</td>
-            <td>SQLite + local disk.</td>
+            <td>SQLite + local FS, slim image.</td>
           </tr>
           <tr>
             <td>10 users</td>
@@ -48,7 +48,7 @@ export function DeploymentPage() {
             <td>1 GB</td>
             <td>2 vCPU</td>
             <td>matches data</td>
-            <td>S3 backend recommended.</td>
+            <td>S3-compatible storage recommended.</td>
           </tr>
           <tr>
             <td>1000+ users</td>
@@ -59,16 +59,9 @@ export function DeploymentPage() {
           </tr>
         </tbody>
       </table>
-      <p>
-        The server is stateless apart from the DB + blob store, so horizontal scaling is &ldquo;add
-        replicas behind a load balancer&rdquo;.
-      </p>
 
       <h2>Configuration</h2>
-      <p>
-        All config flows through environment variables. The full list is in{' '}
-        <code>src/vellaris/server/config.py</code>; the most important ones:
-      </p>
+      <p>All config flows through environment variables:</p>
       <table>
         <thead>
           <tr>
@@ -104,85 +97,128 @@ export function DeploymentPage() {
               <code>sqlite+aiosqlite:///./vellaris.db</code>
             </td>
             <td>
-              Use <code>postgresql+psycopg://…</code> in prod.
+              SQLAlchemy URL — <code>postgresql+asyncpg://…</code>, <code>mysql+asyncmy://…</code>,
+              or <code>sqlite+aiosqlite://…</code>
             </td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_BLOB_BACKEND</code>
+              <code>VELLARIS_AUTO_MIGRATE</code>
             </td>
             <td>
-              <code>local</code>
+              <code>1</code>
             </td>
             <td>
-              <code>local</code> or <code>s3</code>.
+              Run <code>alembic upgrade head</code> on startup. Set <code>0</code> for blue/green
+              pipelines.
             </td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_BLOB_LOCAL_DIR</code>
+              <code>VELLARIS_BLOB_URL</code>
             </td>
             <td>
-              <code>./blobs</code>
+              <code>file://./var/blobs</code>
             </td>
-            <td>Local backend storage path.</td>
+            <td>
+              fsspec URL — <code>file://</code>, <code>s3://</code>, <code>gs://</code>,{' '}
+              <code>az://</code>, <code>memory://</code>
+            </td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_BLOB_S3_BUCKET</code>
+              <code>VELLARIS_BLOB_OPTIONS_JSON</code>
             </td>
             <td>(unset)</td>
-            <td>S3 bucket for ciphertext blobs.</td>
+            <td>Optional JSON-encoded storage_options (endpoint URL, custom certs, etc.).</td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_BLOB_S3_REGION</code>
+              <code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>
             </td>
-            <td>
-              <code>us-east-1</code>
-            </td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td>
-              <code>VELLARIS_BLOB_S3_ENDPOINT</code>
-            </td>
-            <td>(unset)</td>
-            <td>Override for MinIO / R2 / B2.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>VELLARIS_AUDIT_SIGNING_KEY</code>
-            </td>
-            <td>(generated on first start)</td>
-            <td>Ed25519 raw key, base64. Persist this.</td>
+            <td>(generated in memory)</td>
+            <td>Path to a 32-byte raw Ed25519 private key. Persist this in production.</td>
           </tr>
           <tr>
             <td>
               <code>VELLARIS_MAX_UPLOAD_BYTES</code>
             </td>
             <td>
-              <code>5_368_709_120</code> (5 GiB)
+              <code>104857600</code> (100 MiB)
             </td>
             <td>Per-file ceiling.</td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_RATE_LIMIT_PER_IP</code>
+              <code>VELLARIS_RATE_LIMIT_PER_MINUTE</code>
             </td>
             <td>
-              <code>120/min</code>
+              <code>120</code>
             </td>
-            <td>Soft limit.</td>
+            <td>Per-IP soft limit.</td>
           </tr>
           <tr>
             <td>
-              <code>VELLARIS_CORS_ORIGINS</code>
+              <code>VELLARIS_RATE_LIMIT_BURST</code>
             </td>
             <td>
-              <code>*</code> (dev), <code>[]</code> (prod)
+              <code>20</code>
             </td>
-            <td>Comma-separated for the SPA.</td>
+            <td>Per-IP burst budget.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>VELLARIS_CORS_ALLOW_ORIGINS</code>
+            </td>
+            <td>
+              <code>{`["*"]`}</code>
+            </td>
+            <td>Restrict in production.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>VELLARIS_SESSION_TTL_SECONDS</code>
+            </td>
+            <td>
+              <code>28800</code> (8 h)
+            </td>
+            <td>Session lifetime.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>VELLARIS_CHALLENGE_TTL_SECONDS</code>
+            </td>
+            <td>
+              <code>300</code> (5 m)
+            </td>
+            <td>Login-challenge lifetime.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Image variants</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>Size</th>
+            <th>Bundled drivers</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <code>ghcr.io/subhayu99/vellaris:0.5.0</code>
+            </td>
+            <td>~120 MB</td>
+            <td>SQLite + local FS only</td>
+          </tr>
+          <tr>
+            <td>
+              <code>ghcr.io/subhayu99/vellaris:0.5.0-full</code>
+            </td>
+            <td>~350 MB</td>
+            <td>All DBs (Postgres / MySQL / SQLite) + S3 / GCS / Azure</td>
           </tr>
         </tbody>
       </table>
@@ -194,9 +230,8 @@ export function DeploymentPage() {
   -p 8000:8000 \\
   -v vellaris-data:/data \\
   -e VELLARIS_DATABASE_URL='sqlite+aiosqlite:////data/vellaris.db' \\
-  -e VELLARIS_BLOB_LOCAL_DIR=/data/blobs \\
-  -e VELLARIS_AUDIT_SIGNING_KEY="$(openssl rand -base64 32)" \\
-  ghcr.io/subhayu99/vellaris:latest`}
+  -e VELLARIS_BLOB_URL='file:///data/blobs' \\
+  ghcr.io/subhayu99/vellaris:0.5.0`}
       </CodeBlock>
 
       <h2>Docker Compose — Postgres-backed</h2>
@@ -260,22 +295,23 @@ resources:
 
       <h2>Fly.io — one-click</h2>
       <CodeBlock lang="shell">
-        {`flyctl launch --image ghcr.io/subhayu99/vellaris:latest --no-deploy
+        {`flyctl launch --image ghcr.io/subhayu99/vellaris:0.5.0-full --no-deploy
 flyctl secrets set \\
   VELLARIS_DATABASE_URL="$(flyctl postgres attach … --format json | jq -r '.connection_string')" \\
-  VELLARIS_AUDIT_SIGNING_KEY="$(openssl rand -base64 32)"
+  VELLARIS_AUDIT_SIGNING_KEY_PATH=/secrets/audit.key
 flyctl deploy`}
       </CodeBlock>
       <p>
-        Add a Tigris S3 attachment for blob storage, point <code>VELLARIS_BLOB_S3_BUCKET</code> at
-        it, set <code>VELLARIS_BLOB_BACKEND=s3</code>.
+        Add a Tigris S3 attachment for blob storage, then set{' '}
+        <code>VELLARIS_BLOB_URL=s3://your-bucket</code> and the standard{' '}
+        <code>AWS_ACCESS_KEY_ID</code> / <code>AWS_SECRET_ACCESS_KEY</code> secrets.
       </p>
 
       <h2>Railway</h2>
       <CodeBlock lang="shell">
-        {`railway init --template ghcr.io/subhayu99/vellaris:latest
+        {`railway init --template ghcr.io/subhayu99/vellaris:0.5.0-full
 railway add --plugin postgresql
-railway variables set VELLARIS_AUDIT_SIGNING_KEY="$(openssl rand -base64 32)"
+railway variables set VELLARIS_AUDIT_SIGNING_KEY_PATH=/secrets/audit.key
 railway up`}
       </CodeBlock>
 
@@ -307,8 +343,9 @@ railway up`}
       <div className="docs-callout is-warn">
         <span className="label">Persist the audit signing key</span>
         <span>
-          The audit signing key (<code>VELLARIS_AUDIT_SIGNING_KEY</code>) must persist or existing
-          audit log entries become unverifiable. Stash it in your secret store before going live.
+          The audit signing key (<code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>) must persist or
+          existing audit log entries become unverifiable. Stash it in your secret store before going
+          live.
         </span>
       </div>
 

@@ -59,9 +59,8 @@ docker run -d --name vellaris \
   -p 8000:8000 \
   -v vellaris-data:/data \
   -e VELLARIS_DATABASE_URL='sqlite+aiosqlite:////data/vellaris.db' \
-  -e VELLARIS_BLOB_BACKEND=local \
-  -e VELLARIS_BLOB_LOCAL_DIR=/data/blobs \
-  ghcr.io/subhayu99/vellaris:latest
+  -e VELLARIS_BLOB_URL='file:///data/blobs' \
+  ghcr.io/subhayu99/vellaris:0.5.0
 ```
 
 Then:
