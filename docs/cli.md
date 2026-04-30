@@ -26,43 +26,49 @@ Commands:
 ## Auth
 
 ```bash
-# Configure the server URL once.
-vellaris config set server https://vault.example.com
+# Sign up. --server is required; the URL is saved to ~/.vellaris/config.toml.
+# Username, email, and passphrase are prompted unless passed as flags.
+vellaris signup --server https://vault.example.com
+# Signing up alice at https://vault.example.com...
+# ✓ signed up as alice (id 9a4b21f8-...)
 
-vellaris signup --username alice --email alice@example.com
-# > Generating RSA-4096 keypair…
-# > Passphrase: ********
-# > Confirm:    ********
-# > Wrapped private key written to ~/.vellaris/keys/<user-id>.key
-
+# Log in. Server + username come from the saved config; override with flags.
 vellaris login
-# > Username: alice
-# > Passphrase: ********
-# > Logged in as alice on https://vault.example.com
+vellaris login --server https://vault.example.com
+vellaris login --username alice
+# ✓ logged in as alice
 
 vellaris whoami
-# alice (alice@example.com) on https://vault.example.com
+# username: alice
+# email:    alice@example.com
+# id:       9a4b21f8-...
+# server:   https://vault.example.com
 
 vellaris logout
 ```
 
+There is no `vellaris config` command. The server URL is set the first
+time you run `vellaris signup --server <url>` and re-read on subsequent
+commands. To switch servers later, pass `--server` on `vellaris login`
+or edit `~/.vellaris/config.toml` directly.
+
 ## Files
 
 ```bash
-# Push a file. --share is repeatable; the owner is auto-included.
+# Push a file. --share / -s is repeatable; the owner is auto-included.
 vellaris push report.pdf
 vellaris push report.pdf --share bea --share cyrus
-vellaris push report.pdf --share bea -m "Q1 financials, NDA only"
+vellaris push report.pdf -s bea -s cyrus
 
-# List your view.
+# List your view (--scope: mine, shared, all — defaults to all).
 vellaris ls
 vellaris ls --scope mine
 vellaris ls --scope shared
-vellaris ls --json | jq '.[] | .id'
 
-# Pull. The CLI prints the original filename; -o sets the output path.
+# Pull. Default writes the original filename into CWD; --out / -o
+# overrides with a specific file path.
 vellaris pull <doc-id>
-vellaris pull <doc-id> -o ~/Downloads/
+vellaris pull <doc-id> -o ./report.pdf
 
 # Delete a document you own. Recipients lose access; what they already
 # downloaded is theirs forever (revoke is forward-only).
@@ -86,11 +92,11 @@ The wrapped private key lives at `~/.vellaris/keys/<user-id>.key`. It's
 useless without your passphrase. To move between machines:
 
 ```bash
-# Export to a file you can carry (still wrapped).
-vellaris key export -o alice.key
+# Export uses a positional path — no -o flag.
+vellaris key export ./alice.key
 
-# Import on the new machine.
-vellaris key import alice.key
+# Import requires --user since you may not be logged in yet.
+vellaris key import ./alice.key --user <user-uuid>
 ```
 
 Or sync via the server (opt-in — the server stores opaque ciphertext):
@@ -106,33 +112,21 @@ vellaris key sync pull
 vellaris key sync delete
 ```
 
-## Config
-
-```bash
-# Inspect / edit ~/.vellaris/config.toml.
-vellaris config get server
-vellaris config set server https://vault.example.com
-```
-
 ## Exit codes
 
-| Code | Meaning                                                            |
-| ---: | ------------------------------------------------------------------ |
-|    0 | Success                                                            |
-|    1 | Generic error (parsing, validation, unexpected)                    |
-|    2 | Network — couldn't reach the server                                |
-|    3 | Auth — token expired, signature rejected, no such user             |
-|    4 | Crypto — wrong passphrase, tampered blob, malformed key            |
-|    5 | Conflict — username/email taken, document missing                  |
+| Code | Meaning                                                                                  |
+| ---: | ---------------------------------------------------------------------------------------- |
+|    0 | Success                                                                                  |
+|    1 | Operation failed — server returned 4xx/5xx, decryption failed, document missing, etc.    |
+|    2 | Missing required input — e.g. `vellaris login` with no saved server URL                  |
 
 Use these in scripts:
 
 ```bash
 if ! vellaris pull "$id"; then
   case $? in
-    2) echo "server unreachable" ;;
-    3) echo "logged out — run vellaris login" ;;
-    *) echo "see vellaris error output" ;;
+    2) echo "missing server / user — run vellaris signup --server first" ;;
+    *) echo "pull failed — see vellaris error output above" ;;
   esac
 fi
 ```

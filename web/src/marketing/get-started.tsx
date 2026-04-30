@@ -31,7 +31,7 @@ export function GetStarted() {
               </div>
               <div className="repo-meta-row">
                 <span className="label">Latest release</span>
-                <span className="val">v0.4.0 · early</span>
+                <span className="val">v0.4.1 · early</span>
               </div>
               <div className="repo-meta-row">
                 <span className="label">Audited by</span>

@@ -23,81 +23,97 @@ Usage: vellaris [OPTIONS] COMMAND [ARGS]...
   Files only the people you choose can read.
 
 Commands:
-  version       Print the installed Vellaris version.
-  signup        Create a new account on the configured server.
-  login         Authenticate via challenge-response.
-  logout        Drop the bearer token on the server and locally.
-  whoami        Print the current logged-in user.
-  push          Encrypt a file and upload to the server.
-  pull          Download a file by document id and decrypt locally.
-  ls            List documents you can see on the configured server.
-  rm            Delete a document you own.
-  share         Grant an additional user access to a document you own.
-  revoke        Revoke a user's access to a document you own.
-  key           Manage local + remote-synced wrapped private keys.`}
+  version  Print the installed Vellaris version.
+  signup   Sign up a new user. Generates an RSA-4096 keypair on this machine.
+  login    Run the challenge-response flow and cache a session token.
+  logout   Revoke the cached session token.
+  whoami   Print the currently signed-in user.
+  push     Encrypt and upload a file.
+  pull     Download and decrypt a document.
+  ls       List documents available to the current user.
+  rm       Delete a document. Owner only.
+  share    Grant a user access to a document you own.
+  revoke   Remove a user's access to a document.
+  key      Manage your wrapped private key.`}
       </CodeBlock>
 
       <h2>Auth</h2>
       <CodeBlock lang="shell">
         <div>
-          <span className="tok-cmt"># Configure the server URL once.</span>
-        </div>
-        <Shell cmd="vellaris" args={['config', 'set', 'server', 'https://vault.example.com']} />
-        <div>&nbsp;</div>
-        <Shell
-          cmd="vellaris"
-          args={['signup', '--username', 'alice', '--email', 'alice@example.com']}
-        />
-        <div>
-          <span className="tok-cmt"># &gt; Generating RSA-4096 keypair…</span>
-        </div>
-        <div>
-          <span className="tok-cmt"># &gt; Passphrase: ********</span>
+          <span className="tok-cmt">
+            # Sign up. --server is required; the URL is saved to ~/.vellaris/config.toml.
+          </span>
         </div>
         <div>
           <span className="tok-cmt">
-            # &gt; Wrapped private key written to ~/.vellaris/keys/&lt;user-id&gt;.key
+            # Username, email, and passphrase are prompted unless passed as flags.
           </span>
         </div>
-        <div>&nbsp;</div>
-        <Shell cmd="vellaris" args={['login']} />
+        <Shell cmd="vellaris" args={['signup', '--server', 'https://vault.example.com']} />
         <div>
-          <span className="tok-cmt"># &gt; Logged in as alice on https://vault.example.com</span>
+          <span className="tok-cmt"># Signing up alice at https://vault.example.com...</span>
+        </div>
+        <div>
+          <span className="tok-cmt"># ✓ signed up as alice (id 9a4b21f8-...)</span>
+        </div>
+        <div>&nbsp;</div>
+        <div>
+          <span className="tok-cmt">
+            # Log in. Server + username come from the saved config; override with flags.
+          </span>
+        </div>
+        <Shell cmd="vellaris" args={['login']} />
+        <Shell cmd="vellaris" args={['login', '--server', 'https://vault.example.com']} />
+        <Shell cmd="vellaris" args={['login', '--username', 'alice']} />
+        <div>
+          <span className="tok-cmt"># ✓ logged in as alice</span>
         </div>
         <div>&nbsp;</div>
         <Shell cmd="vellaris" args={['whoami']} />
         <Shell cmd="vellaris" args={['logout']} />
       </CodeBlock>
+      <div className="docs-callout">
+        <span className="label">
+          No <code>vellaris config</code> command
+        </span>
+        <span>
+          The server URL is set the first time you run{' '}
+          <code>vellaris signup --server &lt;url&gt;</code> and re-read on subsequent commands. To
+          switch servers, pass <code>--server</code> on
+          <code>login</code>, or edit <code>~/.vellaris/config.toml</code> directly.
+        </span>
+      </div>
 
       <h2>Files</h2>
       <CodeBlock lang="shell">
         <div>
           <span className="tok-cmt">
-            # Push a file. --share is repeatable; the owner is auto-included.
+            # Push a file. --share / -s is repeatable; the owner is auto-included.
           </span>
         </div>
         <Shell cmd="vellaris" args={['push', 'report.pdf']} />
         <Shell cmd="vellaris" args={['push', 'report.pdf', '--share', 'bea', '--share', 'cyrus']} />
-        <Shell
-          cmd="vellaris"
-          args={['push', 'report.pdf', '--share', 'bea', '-m', '"Q1 financials, NDA only"']}
-        />
+        <Shell cmd="vellaris" args={['push', 'report.pdf', '-s', 'bea', '-s', 'cyrus']} />
         <div>&nbsp;</div>
         <div>
-          <span className="tok-cmt"># List your view.</span>
+          <span className="tok-cmt">
+            # List your view (--scope: mine, shared, all — defaults to all).
+          </span>
         </div>
         <Shell cmd="vellaris" args={['ls']} />
         <Shell cmd="vellaris" args={['ls', '--scope', 'mine']} />
         <Shell cmd="vellaris" args={['ls', '--scope', 'shared']} />
-        <Shell cmd="vellaris" args={['ls', '--json', '|', "jq '.[] | .id'"]} />
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt">
-            # Pull. The CLI prints the original filename; -o sets the output path.
+            # Pull. Default writes the original filename into CWD; --out / -o
           </span>
         </div>
+        <div>
+          <span className="tok-cmt"># overrides with a specific file path.</span>
+        </div>
         <Shell cmd="vellaris" args={['pull', '<doc-id>']} />
-        <Shell cmd="vellaris" args={['pull', '<doc-id>', '-o', '~/Downloads/']} />
+        <Shell cmd="vellaris" args={['pull', '<doc-id>', '-o', './report.pdf']} />
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt"># Delete a document you own (revoke is forward-only).</span>
@@ -129,20 +145,22 @@ Commands:
         It&rsquo;s useless without your passphrase. To move between machines:
       </p>
       <CodeBlock lang="shell">
-        <Shell cmd="vellaris" args={['key', 'export', '-o', 'alice.key']} />
-        <Shell cmd="vellaris" args={['key', 'import', 'alice.key']} />
+        <div>
+          <span className="tok-cmt"># Export uses a positional path — no -o flag.</span>
+        </div>
+        <Shell cmd="vellaris" args={['key', 'export', './alice.key']} />
+        <div>
+          <span className="tok-cmt">
+            # Import requires --user since you may not be logged in yet.
+          </span>
+        </div>
+        <Shell cmd="vellaris" args={['key', 'import', './alice.key', '--user', '<user-uuid>']} />
       </CodeBlock>
       <p>Or sync via the server (opt-in — the server stores opaque ciphertext):</p>
       <CodeBlock lang="shell">
         <Shell cmd="vellaris" args={['key', 'sync', 'push']} />
         <Shell cmd="vellaris" args={['key', 'sync', 'pull']} />
         <Shell cmd="vellaris" args={['key', 'sync', 'delete']} />
-      </CodeBlock>
-
-      <h2>Config</h2>
-      <CodeBlock lang="shell">
-        <Shell cmd="vellaris" args={['config', 'get', 'server']} />
-        <Shell cmd="vellaris" args={['config', 'set', 'server', 'https://vault.example.com']} />
       </CodeBlock>
 
       <h2>Exit codes</h2>
@@ -164,31 +182,19 @@ Commands:
             <td>
               <code>1</code>
             </td>
-            <td>Generic error (parsing, validation, unexpected).</td>
+            <td>
+              Operation failed — server returned 4xx/5xx, decryption failed, document missing, etc.{' '}
+              <code>stderr</code> carries the detail.
+            </td>
           </tr>
           <tr>
             <td>
               <code>2</code>
             </td>
-            <td>Network — couldn&rsquo;t reach the server.</td>
-          </tr>
-          <tr>
             <td>
-              <code>3</code>
+              Missing required input — e.g. <code>vellaris login</code> with no saved server URL, or{' '}
+              <code>vellaris key export</code> with no user on file.
             </td>
-            <td>Auth — token expired, signature rejected, no such user.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>4</code>
-            </td>
-            <td>Crypto — wrong passphrase, tampered blob, malformed key.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>5</code>
-            </td>
-            <td>Conflict — username/email taken, document missing.</td>
           </tr>
         </tbody>
       </table>
@@ -197,9 +203,8 @@ Commands:
       <CodeBlock lang="shell">
         {`if ! vellaris pull "$id"; then
   case $? in
-    2) echo "server unreachable" ;;
-    3) echo "logged out — run vellaris login" ;;
-    *) echo "see vellaris error output" ;;
+    2) echo "missing server / user — run vellaris signup --server first" ;;
+    *) echo "pull failed — see vellaris error output above" ;;
   esac
 fi`}
       </CodeBlock>

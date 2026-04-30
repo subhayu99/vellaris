@@ -30,7 +30,7 @@ export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
       </Link>
       <div className="nav-links">
         <span className="status-pill nav-hide-sm">
-          <span className="dot" /> docs · v0.4.0
+          <span className="dot" /> docs · v0.4.1
         </span>
         <NavLink
           end

@@ -20,22 +20,36 @@ export function QuickstartPage() {
       <h2>CLI in 60 seconds</h2>
       <CodeBlock lang="shell">
         <Shell cmd="pip" args={['install', 'vellaris']} />
-        <div>&nbsp;</div>
         <div>
-          <span className="tok-cmt"># Point the CLI at a Vellaris server you trust.</span>
+          <span className="tok-cmt"># or: uv tool install vellaris</span>
         </div>
-        <Shell cmd="vellaris" args={['config', 'set', 'server', 'https://vault.example.com']} />
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt">
-            # Sign up. Generates an RSA-4096 keypair locally and asks for a passphrase. The
-            passphrase never leaves your machine.
+            # Sign up. --server is required and gets saved for future commands.
           </span>
         </div>
-        <Shell
-          cmd="vellaris"
-          args={['signup', '--username', 'alice', '--email', 'alice@example.com']}
-        />
+        <div>
+          <span className="tok-cmt">
+            # The CLI prompts for username, email, and a passphrase; generates an
+          </span>
+        </div>
+        <div>
+          <span className="tok-cmt">
+            # RSA-4096 keypair locally; the passphrase never leaves your machine.
+          </span>
+        </div>
+        <Shell cmd="vellaris" args={['signup', '--server', 'https://vault.example.com']} />
+        <div>&nbsp;</div>
+        <div>
+          <span className="tok-cmt">
+            # Open a session. Server + username are remembered from signup; pass
+          </span>
+        </div>
+        <div>
+          <span className="tok-cmt"># --server / --username only to override.</span>
+        </div>
+        <Shell cmd="vellaris" args={['login']} />
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt"># Push a file, sharing it with bea and cyrus.</span>
@@ -50,7 +64,7 @@ export function QuickstartPage() {
         <div>
           <span className="tok-cmt"># Pull a file someone shared with you.</span>
         </div>
-        <Shell cmd="vellaris" args={['pull', '<doc-id>', '-o', '~/Downloads/']} />
+        <Shell cmd="vellaris" args={['pull', '<doc-id>']} />
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt"># Hand off access.</span>
@@ -66,8 +80,10 @@ export function QuickstartPage() {
         <Shell cmd="vellaris" args={['rm', '<doc-id>']} />
       </CodeBlock>
       <p>
-        The keystore lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The config lives at{' '}
-        <code>~/.vellaris/config.toml</code>.
+        The wrapped key blob lives at <code>~/.vellaris/keys/&lt;user-id&gt;.key</code>. The
+        configured server URL and the most-recent username are persisted to{' '}
+        <code>~/.vellaris/config.toml</code> on signup; <code>vellaris login</code> reads them back
+        automatically.
       </p>
 
       <h2>Server in 5 minutes</h2>

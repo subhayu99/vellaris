@@ -22,6 +22,12 @@ export function SDKPage() {
       <h2>Quick example</h2>
       <CodeBlock lang="python">
         <div>
+          <span className="tok-kw">from</span> pathlib <span className="tok-kw">import</span> Path
+        </div>
+        <div>
+          <span className="tok-kw">from</span> uuid <span className="tok-kw">import</span> UUID
+        </div>
+        <div>
           <span className="tok-kw">from</span> vellaris.client{' '}
           <span className="tok-kw">import</span> Client
         </div>
@@ -30,129 +36,123 @@ export function SDKPage() {
           c = Client(<span className="tok-str">"https://vault.example.com"</span>)
         </div>
         <div>
-          c.<span className="tok-fn">login</span>(username=
-          <span className="tok-str">"alice"</span>, passphrase=<span className="tok-str">"…"</span>)
+          c.<span className="tok-fn">login</span>(<span className="tok-str">"alice"</span>,{' '}
+          <span className="tok-str">"…"</span>)
+          <span className="tok-cmt">{'  '}# username, passphrase</span>
         </div>
         <div>&nbsp;</div>
         <div>
           <span className="tok-cmt"># Upload, share, list, download.</span>
         </div>
         <div>
-          doc = c.<span className="tok-fn">push</span>(path=
-          <span className="tok-str">"report.pdf"</span>, recipients=[
+          doc = c.<span className="tok-fn">push</span>(Path(
+          <span className="tok-str">"report.pdf"</span>), share_with=[
           <span className="tok-str">"bea"</span>, <span className="tok-str">"cyrus"</span>])
         </div>
         <div>
-          <span className="tok-fn">print</span>(doc.id)
+          <span className="tok-fn">print</span>(doc[<span className="tok-str">"id"</span>])
         </div>
         <div>&nbsp;</div>
         <div>
           <span className="tok-kw">for</span> d <span className="tok-kw">in</span> c.
-          <span className="tok-fn">ls</span>(scope=<span className="tok-str">"mine"</span>):
+          <span className="tok-fn">list_docs</span>(scope=
+          <span className="tok-str">"mine"</span>):
         </div>
         <div>
           {'    '}
-          <span className="tok-fn">print</span>(d.id, d.filename)
+          <span className="tok-fn">print</span>(d[<span className="tok-str">"id"</span>], d[
+          <span className="tok-str">"ciphertext_size"</span>])
         </div>
         <div>&nbsp;</div>
         <div>
-          c.<span className="tok-fn">pull</span>(doc_id=doc.id, out_dir=
-          <span className="tok-str">"~/Downloads/"</span>)
+          decrypted = c.<span className="tok-fn">pull</span>(UUID(doc[
+          <span className="tok-str">"id"</span>]))
         </div>
         <div>
-          c.<span className="tok-fn">share</span>(doc_id=doc.id, username=
-          <span className="tok-str">"dana"</span>)
-        </div>
-        <div>
-          c.<span className="tok-fn">revoke</span>(doc_id=doc.id, username=
-          <span className="tok-str">"bea"</span>)
-        </div>
-        <div>
-          c.<span className="tok-fn">rm</span>(doc_id=doc.id)
-        </div>
-      </CodeBlock>
-
-      <h2>Async flavor</h2>
-      <CodeBlock lang="python">
-        <div>
-          <span className="tok-kw">import</span> asyncio
-        </div>
-        <div>
-          <span className="tok-kw">from</span> vellaris.client{' '}
-          <span className="tok-kw">import</span> AsyncClient
+          Path(<span className="tok-str">"~/Downloads"</span>).
+          <span className="tok-fn">expanduser</span>().<span className="tok-fn">joinpath</span>(
+          decrypted.filename).<span className="tok-fn">write_bytes</span>(decrypted.plaintext)
         </div>
         <div>&nbsp;</div>
         <div>
-          <span className="tok-kw">async def</span> <span className="tok-fn">main</span>():
+          c.<span className="tok-fn">share_document</span>(UUID(doc[
+          <span className="tok-str">"id"</span>]), <span className="tok-str">"dana"</span>)
         </div>
         <div>
-          {'    '}
-          <span className="tok-kw">async with</span> AsyncClient(
-          <span className="tok-str">"https://vault.example.com"</span>){' '}
-          <span className="tok-kw">as</span> c:
+          c.<span className="tok-fn">revoke_document</span>(UUID(doc[
+          <span className="tok-str">"id"</span>]), <span className="tok-str">"bea"</span>)
         </div>
         <div>
-          {'        '}
-          <span className="tok-kw">await</span> c.<span className="tok-fn">login</span>(username=
-          <span className="tok-str">"alice"</span>, passphrase=
-          <span className="tok-str">"…"</span>)
-        </div>
-        <div>
-          {'        '}
-          <span className="tok-kw">async for</span> d <span className="tok-kw">in</span> c.
-          <span className="tok-fn">aiter_ls</span>(scope=
-          <span className="tok-str">"all"</span>):
-        </div>
-        <div>
-          {'            '}
-          <span className="tok-fn">print</span>(d.id, d.filename)
-        </div>
-        <div>&nbsp;</div>
-        <div>
-          asyncio.<span className="tok-fn">run</span>(<span className="tok-fn">main</span>())
+          c.<span className="tok-fn">delete_document</span>(UUID(doc[
+          <span className="tok-str">"id"</span>]))
         </div>
       </CodeBlock>
       <p>
+        Returns from <code>push</code> / <code>list_docs</code> are server response{' '}
+        <code>dict</code>s, not typed objects. <code>pull</code> returns a{' '}
+        <code>DecryptedDocument(filename, plaintext)</code> dataclass.
+      </p>
+
+      <h2>Async flavor</h2>
+      <CodeBlock lang="python">
+        {`import asyncio
+from vellaris.client import AsyncClient
+
+async def main():
+    async with AsyncClient("https://vault.example.com") as c:
+        await c.login("alice", "…")
+        for d in await c.list_docs(scope="all"):
+            print(d["id"], d["ciphertext_size"])
+
+asyncio.run(main())`}
+      </CodeBlock>
+      <p>
         <code>AsyncClient</code> is the source of truth — <code>Client</code> wraps it via{' '}
-        <code>asyncio.run</code>.
+        <code>asyncio.run</code>. <code>list_docs</code> returns a list (not an async iterator).
       </p>
 
       <h2>Auth lifecycle</h2>
       <CodeBlock lang="python">
-        {`# Signup runs the keygen + Argon2id wrap locally and POSTs the public key.
+        {`# signup() generates the keypair, Argon2id-wraps it locally, writes
+# the wrapped blob to ~/.vellaris/keys/<user-id>.key, and POSTs only
+# the public key.
 c.signup(username="alice", email="alice@example.com", passphrase="…")
 
-# Login runs challenge-response. The bearer token is cached on the
-# instance until logout / reconnect.
-c.login(username="alice", passphrase="…")
+# login() runs the challenge-response flow against the saved key and
+# caches a session token on the Client instance.
+c.login("alice", "…")
 
-me = c.whoami()
-print(me.id, me.username)
+print(c.whoami())   # {"id": "...", "username": "alice", "email": "..."}
 
 c.logout()`}
       </CodeBlock>
 
-      <h2>Working with bytes directly</h2>
-      <p>For automations that don&rsquo;t want to round-trip through a temp file:</p>
+      <h2>Lower-level building blocks</h2>
+      <p>
+        The high-level <code>Client</code> covers signup / login / push / pull / share / list /
+        revoke / delete. If you need bytes-in / bytes-out without touching the wrapped key store or
+        the network, drop down to <code>vellaris.client.crypto</code>:
+      </p>
       <CodeBlock lang="python">
-        {`ciphertext_bundle = c.encrypt(
+        {`from vellaris.client.crypto import (
+    encrypt_for_recipients, decrypt_bundle, Recipient,
+)
+from vellaris.core.asymmetric import deserialize_public_key
+
+bundle = encrypt_for_recipients(
     plaintext=b"...",
     filename="report.pdf",
-    recipients=["bea", "cyrus"],
+    recipients=[
+        Recipient(user_id=alice_id, public_key=deserialize_public_key(alice_pem)),
+        Recipient(user_id=bea_id,   public_key=deserialize_public_key(bea_pem)),
+    ],
 )
-# Send / store / inspect ciphertext_bundle yourself…
-
-# Or: upload it.
-doc = c.upload(ciphertext_bundle)`}
-      </CodeBlock>
-      <p>For decrypting a downloaded blob:</p>
-      <CodeBlock lang="python">
-        {`download = c.fetch(doc_id="…")     # returns DocumentDownload
-decrypted = c.decrypt(download)    # returns DecryptedDocument(filename, plaintext)`}
+# bundle.encrypted_filename / bundle.content_hash / bundle.ciphertext / bundle.access
+# are the four base64 fields POST /documents expects.`}
       </CodeBlock>
       <p>
-        These low-level helpers are the same primitives the CLI uses; see{' '}
-        <code>vellaris/client/crypto.py</code> for the source of truth.
+        For wrapping / unwrapping the private key with a passphrase, see{' '}
+        <code>vellaris.core.wrap.wrap_private_key</code> / <code>unwrap_private_key</code>.
       </p>
 
       <h2>Custom transports</h2>
@@ -186,54 +186,66 @@ async def test_round_trip():
               <code>VellarisAPIError</code>
             </td>
             <td>
-              Server returned 4xx / 5xx. <code>.status</code> and <code>.detail</code> set.
+              Server returned 4xx / 5xx. <code>.status_code</code> and <code>.detail</code> set.
             </td>
           </tr>
           <tr>
             <td>
-              <code>VellarisNetworkError</code>
+              <code>vellaris.core.errors.VellarisCryptoError</code>
             </td>
-            <td>DNS / TLS / CORS / connection refused.</td>
+            <td>Base class for the four crypto failures below.</td>
           </tr>
           <tr>
             <td>
-              <code>vellaris.core.DecryptError</code>
+              <code>vellaris.core.errors.DecryptError</code>
             </td>
             <td>Wrong passphrase, tampered blob, AEAD tag mismatch.</td>
           </tr>
           <tr>
             <td>
-              <code>vellaris.core.SignatureError</code>
+              <code>vellaris.core.errors.SignatureError</code>
             </td>
             <td>PSS / Ed25519 verification failed.</td>
           </tr>
           <tr>
             <td>
-              <code>vellaris.core.KdfError</code>
+              <code>vellaris.core.errors.KdfError</code>
             </td>
             <td>Argon2 params invalid (or below the safety floor).</td>
           </tr>
           <tr>
             <td>
-              <code>vellaris.core.WireFormatError</code>
+              <code>vellaris.core.errors.WireFormatError</code>
             </td>
             <td>Blob is malformed / truncated / unknown version.</td>
           </tr>
+          <tr>
+            <td>
+              <code>vellaris.core.errors.KeyFormatError</code>
+            </td>
+            <td>PEM / PKCS#8 deserialization failed.</td>
+          </tr>
         </tbody>
       </table>
+      <p>
+        Network failures (DNS, TLS, connection refused) propagate as <code>httpx</code> exceptions —
+        Vellaris doesn&rsquo;t wrap them. Catch <code>httpx.HTTPError</code> if you want to handle
+        them specifically.
+      </p>
       <p>Catch the broad ones in scripts:</p>
       <CodeBlock lang="python">
-        {`from vellaris.core import VellarisCryptoError
-from vellaris.client import VellarisAPIError, VellarisNetworkError
+        {`import httpx
+from vellaris.core.errors import VellarisCryptoError
+from vellaris.client import VellarisAPIError
 
 try:
-    c.pull(doc_id, out_dir=...)
+    decrypted = c.pull(doc_id)
 except VellarisAPIError as e:
-    print(f"server said {e.status}: {e.detail}")
+    print(f"server said {e.status_code}: {e.detail}")
 except VellarisCryptoError as e:
     print(f"crypto failed: {e}")
-except VellarisNetworkError:
-    print("server unreachable")`}
+except httpx.HTTPError as e:
+    print(f"network: {e}")`}
       </CodeBlock>
     </DocsPageShell>
   )
