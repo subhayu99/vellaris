@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { DocsRoute } from './docs/Docs.tsx'
 import Marketing from './marketing/Marketing.tsx'
 import { ConnectRoute } from './routes/connect.tsx'
 import { DashboardRoute } from './routes/dashboard.tsx'
@@ -18,6 +19,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Marketing />} />
+      <Route path="/docs" element={<DocsRoute />} />
+      <Route path="/docs/:slug" element={<DocsRoute />} />
       <Route path="/app" element={<Navigate to="/connect" replace />} />
       <Route path="/connect" element={<ConnectRoute />} />
       <Route path="/signup" element={<SignupRoute />} />

@@ -1,0 +1,1182 @@
+/*
+ * /docs styling — polish-prototype port.
+ *
+ * .docs-root layers on top of .marketing-root: it inherits the marketing
+ * token aliases (gold / bg / line / etc) and adds the long-form reading
+ * shell + per-component classes the prototype defined. Light-mode gold
+ * is darkened ONLY inside .docs-root because long-form prose against
+ * parchment needs more contrast than the marketing landing did.
+ */
+
+/* ---------- Light-mode contrast / token overrides scoped to docs ---------- */
+body[data-theme='light'] .docs-root {
+  --accent: #8d6f2c;
+  --gold: #8d6f2c;
+  --gold-soft: #a98a44;
+  --accent-soft: rgba(141, 111, 44, 0.1);
+  --accent-line: rgba(141, 111, 44, 0.3);
+}
+body[data-theme='light'] .docs-root .docs-side-link {
+  color: #3a3b58;
+}
+body[data-theme='light'] .docs-root .docs-side-link.is-active {
+  color: #1c1d3a;
+  background: rgba(28, 29, 58, 0.06);
+}
+body[data-theme='light'] .docs-root .docs-side-link .ico {
+  color: #5a5b78;
+}
+body[data-theme='light'] .docs-root .docs-side-label {
+  color: #6f6f86;
+}
+body[data-theme='light'] .docs-root .nav-link {
+  color: #3a3b58;
+}
+body[data-theme='light'] .docs-root .nav-link.is-active {
+  color: #1c1d3a;
+  background: rgba(28, 29, 58, 0.05);
+}
+body[data-theme='light'] .docs-root .docs-rail {
+  background: color-mix(in oklab, #fbf6ea 92%, transparent);
+  border-color: rgba(28, 29, 58, 0.1);
+}
+body[data-theme='light'] .docs-root .docs-rail-chip {
+  color: #3a3b58;
+  background: #ffffff;
+}
+body[data-theme='light'] .docs-root .docs-rail-chip.is-active {
+  color: #1c1d3a;
+  border-color: rgba(141, 111, 44, 0.4);
+}
+body[data-theme='light'] .docs-root .docs-glyph {
+  background: #fff8e3;
+  border-color: rgba(169, 138, 68, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- Shell ---------- */
+.docs-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.docs-shell {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+  width: 100%;
+}
+
+/* ---------- Sidebar ---------- */
+.docs-side {
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13.5px;
+}
+.docs-side-group {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.docs-side-group:first-child {
+  margin-top: 0;
+}
+.docs-side-label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 0 12px 8px;
+}
+.docs-side-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  color: var(--fg-2);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 150ms,
+    color 150ms;
+}
+.docs-side-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 150ms;
+}
+.docs-side-link:hover {
+  color: var(--fg);
+  background: var(--bg-hover);
+}
+.docs-side-link:hover::before {
+  background: var(--line-strong);
+}
+.docs-side-link.is-active {
+  color: var(--fg);
+  background: var(--bg-hover);
+}
+.docs-side-link.is-active::before {
+  background: var(--accent);
+}
+.docs-side-link .ico {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--fg-3);
+  flex: 0 0 auto;
+}
+.docs-side-link.is-active .ico {
+  color: var(--accent);
+}
+.docs-side-foot {
+  margin-top: 28px;
+  padding: 0 4px;
+}
+.docs-side-foot a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  text-decoration: none;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  transition:
+    border-color 150ms,
+    color 150ms;
+}
+.docs-side-foot a:hover {
+  color: var(--fg);
+  border-color: var(--line-2);
+}
+.docs-side-foot .v {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.docs-side-foot .v .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(127, 184, 138, 0.15);
+}
+.docs-side-foot .ext {
+  opacity: 0.6;
+}
+
+/* ---------- Article ---------- */
+.docs-article {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* page hero */
+.docs-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 8px;
+  position: relative;
+}
+.docs-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.docs-secnum {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold-soft);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.docs-secnum .num {
+  color: var(--gold);
+}
+.docs-secnum .sep {
+  color: var(--fg-4);
+}
+.docs-h1-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.docs-h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--fg);
+  margin: 0;
+  text-wrap: balance;
+  flex: 1;
+  min-width: 0;
+}
+.docs-glyph {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  box-shadow: inset 0 1px 0 rgba(247, 241, 227, 0.04);
+}
+.docs-rule {
+  position: relative;
+  height: 1px;
+  background: var(--line);
+  margin: 6px 0 2px;
+  max-width: 760px;
+}
+.docs-rule::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1px;
+  height: 3px;
+  width: 48px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 3px;
+}
+.docs-lead {
+  font-size: 17.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+  text-wrap: pretty;
+  margin: 0 0 12px;
+  max-width: 740px;
+}
+
+/* ---------- Article body ----------
+ *
+ * Spacing: base styles (h2 { margin: 0 }) MUST come BEFORE the sibling
+ * spacing rules — equal specificity, later-declared wins, so putting
+ * sibling rules last is what makes them stick. */
+.docs-content {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--fg-2);
+}
+.docs-content h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(24px, 2.6vw, 30px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--fg);
+  margin: 0;
+  scroll-margin-top: 80px;
+  text-wrap: balance;
+}
+.docs-content h3 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 16.5px;
+  color: var(--fg);
+  margin: 0;
+  scroll-margin-top: 80px;
+}
+.docs-content p {
+  margin: 0;
+  max-width: 760px;
+}
+
+/* Default sibling spacing. */
+.docs-content > * + * {
+  margin-top: 24px;
+}
+
+/* Dense surfaces need bigger gaps on either side than plain prose does. */
+.docs-content > * + .codeblock,
+.docs-content > .codeblock + *,
+.docs-content > * + table,
+.docs-content > table + *,
+.docs-content > * + .docs-callout,
+.docs-content > .docs-callout + *,
+.docs-content > * + .crypto-grid,
+.docs-content > .crypto-grid + *,
+.docs-content > * + .docs-plate,
+.docs-content > .docs-plate + *,
+.docs-content > * + .docs-tri,
+.docs-content > .docs-tri + *,
+.docs-content > * + .docs-hub,
+.docs-content > .docs-hub + *,
+.docs-content > * + .auth-stage,
+.docs-content > .auth-stage + *,
+.docs-content > * + .docs-fields,
+.docs-content > .docs-fields + * {
+  margin-top: 36px;
+}
+
+/* Headings get the most space above; the * + h2 rule comes LAST so it
+ * tips on equal specificity, and the dense-surface + h2 rules below
+ * out-specifify the plain dense-surface + * rules. */
+.docs-content > * + h2 {
+  margin-top: 80px;
+}
+.docs-content > * + h3 {
+  margin-top: 44px;
+}
+.docs-content > h2 + * {
+  margin-top: 28px;
+}
+.docs-content > h3 + * {
+  margin-top: 20px;
+}
+
+/* Dense surfaces immediately under a heading get the same gap as when
+ * they sit under prose — uniformity over close-coupling. Otherwise the
+ * same codeblock looks tighter when following an h2 than when following
+ * a paragraph, which reads as a visual bug. */
+.docs-content > h2 + .codeblock,
+.docs-content > h2 + table,
+.docs-content > h2 + .docs-callout,
+.docs-content > h2 + .crypto-grid,
+.docs-content > h2 + .docs-plate,
+.docs-content > h2 + .docs-tri,
+.docs-content > h2 + .docs-hub,
+.docs-content > h2 + .auth-stage,
+.docs-content > h2 + .docs-fields {
+  margin-top: 36px;
+}
+.docs-content > h3 + .codeblock,
+.docs-content > h3 + table,
+.docs-content > h3 + .docs-callout,
+.docs-content > h3 + .crypto-grid,
+.docs-content > h3 + .docs-plate,
+.docs-content > h3 + .docs-tri,
+.docs-content > h3 + .docs-hub,
+.docs-content > h3 + .auth-stage,
+.docs-content > h3 + .docs-fields {
+  margin-top: 28px;
+}
+
+.docs-content > .codeblock + h2,
+.docs-content > table + h2,
+.docs-content > .docs-callout + h2,
+.docs-content > .crypto-grid + h2,
+.docs-content > .docs-plate + h2,
+.docs-content > .docs-tri + h2,
+.docs-content > .docs-hub + h2,
+.docs-content > .auth-stage + h2,
+.docs-content > .docs-fields + h2 {
+  margin-top: 80px;
+}
+.docs-content > .codeblock + h3,
+.docs-content > table + h3,
+.docs-content > .docs-callout + h3,
+.docs-content > .crypto-grid + h3,
+.docs-content > .docs-plate + h3,
+.docs-content > .docs-tri + h3,
+.docs-content > .docs-hub + h3,
+.docs-content > .auth-stage + h3,
+.docs-content > .docs-fields + h3 {
+  margin-top: 44px;
+}
+.docs-content code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  color: var(--gold);
+}
+body[data-theme='light'] .docs-root .docs-content code {
+  color: #876521;
+  background: var(--bg-elev);
+}
+/* Lists. Plain block layout (NOT flex) so list-style markers render. */
+.docs-content ul,
+.docs-content ol {
+  margin: 0;
+  padding-left: 22px;
+  list-style: disc outside;
+}
+.docs-content ol {
+  list-style: decimal outside;
+}
+.docs-content li {
+  max-width: 720px;
+  margin: 0;
+}
+.docs-content li::marker {
+  color: var(--gold-soft);
+}
+.docs-content li + li {
+  margin-top: 10px;
+}
+.docs-content li > p {
+  margin: 0;
+}
+.docs-content li > p + p {
+  margin-top: 8px;
+}
+.docs-content a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent-line);
+  transition:
+    color 150ms,
+    border-color 150ms;
+  cursor: pointer;
+}
+.docs-content a:hover {
+  color: var(--gold);
+  border-bottom-color: var(--accent);
+}
+.docs-content strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+.docs-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+.docs-content th,
+.docs-content td {
+  text-align: left;
+  padding: 11px 14px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.docs-content th {
+  background: var(--bg-elev);
+  color: var(--fg);
+  font-weight: 600;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.docs-content tr:last-child td {
+  border-bottom: 0;
+}
+.docs-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  border-left: 2px solid var(--accent);
+  font-size: 14px;
+}
+.docs-callout .label {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+.docs-callout.is-warn {
+  border-left-color: var(--warn);
+}
+.docs-callout.is-warn .label {
+  color: var(--warn);
+}
+.docs-callout.is-danger {
+  border-left-color: var(--danger);
+}
+.docs-callout.is-danger .label {
+  color: var(--danger);
+}
+
+/* ---------- Hub (index) ---------- */
+.docs-hub {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-top: 6px;
+}
+.docs-hub-card {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: var(--r-lg);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color 150ms,
+    transform 150ms,
+    background 150ms;
+}
+.docs-hub-card:hover {
+  border-color: var(--line-2);
+  transform: translateY(-1px);
+  background: var(--bg-elev);
+}
+.docs-hub-card.featured {
+  grid-column: span 6;
+  flex-direction: row;
+  align-items: stretch;
+}
+.docs-hub-card .illus {
+  position: relative;
+  height: 120px;
+  background: linear-gradient(180deg, var(--bg-elev), var(--bg-elev-2));
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.docs-hub-card.featured .illus {
+  height: auto;
+  width: 240px;
+  border-bottom: 0;
+  border-right: 1px solid var(--line);
+  flex: 0 0 240px;
+}
+.docs-hub-card.featured .body {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+.docs-hub-card .body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.45;
+}
+.docs-hub-card .num {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--gold-soft);
+  line-height: 1;
+}
+.docs-hub-card h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 21px;
+  margin: 0;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.docs-hub-card.featured h3 {
+  font-size: 28px;
+  line-height: 1.1;
+}
+.docs-hub-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--fg-2);
+  line-height: 1.55;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.docs-hub-card p code {
+  font-size: 11.5px;
+  padding: 1px 5px;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+.docs-hub-card .arrow {
+  margin-top: auto;
+  padding-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+/* ---------- At-a-glance plate ---------- */
+.docs-plate {
+  margin-top: 28px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg-card);
+}
+.docs-plate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-elev);
+}
+.docs-plate-head .label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  font-weight: 500;
+}
+.docs-plate-head .meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold-soft);
+}
+.docs-plate-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin: 0;
+}
+.docs-plate-cell {
+  padding: 18px 20px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.docs-plate-cell:nth-child(4n) {
+  border-right: 0;
+}
+.docs-plate-cell:nth-last-child(-n + 4) {
+  border-bottom: 0;
+}
+.docs-plate-cell dt {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 0;
+}
+.docs-plate-cell dd {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--gold-soft);
+  margin: 0;
+  line-height: 1.4;
+}
+.docs-plate-fp {
+  height: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg);
+  opacity: 0.07;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--line);
+}
+.docs-plate-fp span {
+  display: inline-block;
+  animation: docs-fp-scroll 80s linear infinite;
+  padding-left: 100%;
+}
+
+/* ---------- Three condensed clients ---------- */
+.docs-tri {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 28px;
+}
+.docs-tri-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+.docs-tri-card:hover {
+  border-color: var(--line-2);
+  background: var(--bg-elev);
+}
+.docs-tri-card .ic {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.docs-tri-card h4 {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg);
+  margin: 0;
+}
+.docs-tri-card .lead-s {
+  font-size: 13px;
+  color: var(--fg-2);
+  margin: 0;
+  line-height: 1.5;
+}
+.docs-tri-card code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--gold);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+/* ---------- Defense badge ---------- */
+.def-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.def-badge.ok {
+  border-color: rgba(127, 184, 138, 0.32);
+  background: rgba(127, 184, 138, 0.1);
+  color: var(--ok);
+}
+.def-badge.no {
+  border-color: rgba(215, 122, 106, 0.32);
+  background: rgba(215, 122, 106, 0.1);
+  color: var(--danger);
+}
+.def-badge.partial {
+  border-color: rgba(232, 183, 90, 0.32);
+  background: rgba(232, 183, 90, 0.1);
+  color: var(--warn);
+}
+.def-badge .glyph {
+  width: 10px;
+  height: 10px;
+  display: inline-grid;
+  place-items: center;
+}
+
+/* ---------- Crypto primitive grid ---------- */
+.crypto-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.crypto-cell {
+  background: var(--bg-card);
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crypto-cell .eyebrow {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  font-weight: 500;
+}
+.crypto-cell .choice {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: -0.01em;
+}
+.crypto-cell .why {
+  font-size: 13.5px;
+  color: var(--fg-2);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ---------- Code block ----------
+ * Head bar (lang chip + copy button) lives ABOVE the pre with a soft
+ * border separator. The pre keeps a normal 18px top padding regardless
+ * of content length, so single-line snippets don't get a cavernous
+ * empty top to clear floating pills. */
+.codeblock {
+  background: #08071a;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(247, 241, 227, 0.92);
+}
+body[data-theme='light'] .docs-root .codeblock {
+  background: #11102a;
+  color: rgba(247, 241, 227, 0.95);
+}
+.codeblock-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(247, 241, 227, 0.06);
+  background: rgba(247, 241, 227, 0.025);
+}
+.codeblock pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+.codeblock pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.codeblock-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(247, 241, 227, 0.55);
+  background: rgba(247, 241, 227, 0.04);
+  border: 1px solid rgba(247, 241, 227, 0.1);
+  pointer-events: none;
+}
+.codeblock-copy {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(247, 241, 227, 0.55);
+  background: rgba(247, 241, 227, 0.04);
+  border: 1px solid rgba(247, 241, 227, 0.1);
+  cursor: pointer;
+  transition:
+    color 150ms,
+    border-color 150ms;
+}
+.codeblock-copy:hover {
+  color: rgba(247, 241, 227, 0.85);
+  border-color: rgba(247, 241, 227, 0.22);
+}
+.codeblock-copy.copied {
+  color: var(--ok);
+  border-color: rgba(127, 184, 138, 0.45);
+}
+.tok-prompt {
+  color: rgba(247, 241, 227, 0.3);
+}
+
+/* ---------- Field list (param explanations) ----------
+ * Mono key + prose body grid; visually pairs with a codeblock above. */
+.docs-fields {
+  margin: 0;
+  padding: 18px 22px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 22px;
+  row-gap: 14px;
+}
+.docs-fields dt {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--gold);
+  margin: 0;
+  white-space: nowrap;
+  padding-top: 2px;
+  letter-spacing: -0.005em;
+}
+.docs-fields dd {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--fg-2);
+  line-height: 1.55;
+}
+.docs-fields dd code {
+  font-size: 12.5px;
+}
+@media (max-width: 600px) {
+  .docs-fields {
+    grid-template-columns: 1fr;
+    row-gap: 4px;
+  }
+  .docs-fields dt {
+    padding-top: 14px;
+  }
+  .docs-fields dt:first-of-type {
+    padding-top: 0;
+  }
+}
+
+/* ---------- Auth flow ---------- */
+.auth-stage {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px 28px 24px;
+  overflow: hidden;
+}
+.auth-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- Prev/next ---------- */
+.docs-pn {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.docs-pn a {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+.docs-pn a:hover {
+  border-color: var(--line-2);
+  background: var(--bg-elev);
+}
+.docs-pn .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.docs-pn .title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.docs-pn .next {
+  text-align: right;
+  align-items: flex-end;
+}
+.docs-pn .ch {
+  color: var(--gold);
+}
+
+/* ---------- Mobile rail ---------- */
+.docs-rail {
+  display: none;
+  position: sticky;
+  top: 64px;
+  z-index: 20;
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.docs-rail-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.docs-rail-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  color: var(--fg-2);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.docs-rail-chip.is-active {
+  border-color: var(--accent-line);
+  color: var(--gold);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 900px) {
+  .docs-side {
+    display: none;
+  }
+  .docs-rail {
+    display: block;
+  }
+  .docs-shell {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 20px 64px;
+  }
+  .docs-h1-row {
+    gap: 12px;
+  }
+  .docs-glyph {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+  }
+  .docs-hub {
+    grid-template-columns: 1fr;
+  }
+  .docs-hub-card,
+  .docs-hub-card.featured {
+    grid-column: auto;
+    flex-direction: column;
+  }
+  .docs-hub-card.featured .illus {
+    width: 100%;
+    height: 120px;
+    flex: 0 0 120px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .docs-tri {
+    grid-template-columns: 1fr;
+  }
+  .docs-plate-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .docs-plate-cell:nth-child(4n) {
+    border-right: 1px solid var(--line);
+  }
+  .docs-plate-cell:nth-child(2n) {
+    border-right: 0;
+  }
+  .docs-plate-cell:nth-last-child(-n + 4) {
+    border-bottom: 1px solid var(--line);
+  }
+  .docs-plate-cell:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+  .crypto-grid {
+    grid-template-columns: 1fr;
+  }
+  .docs-pn {
+    grid-template-columns: 1fr;
+  }
+  .docs-pn .next {
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
+@keyframes docs-fp-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .docs-plate-fp span {
+    animation: none;
+  }
+  .auth-anim * {
+    animation: none !important;
+  }
+}

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { VSigil } from '../components/v-sigil.tsx'
 import { IGitHub, IMoon, ISun } from './icons.tsx'
 import type { ThemeName } from './hooks.ts'
-import { APP_ROUTE, REPO_URL } from './links.ts'
+import { APP_ROUTE, DOCS_TRUST, DOCS_URL, REPO_URL } from './links.ts'
 
 interface NavBarProps {
   theme: ThemeName
@@ -34,9 +34,12 @@ export function NavBar({ theme, onToggleTheme }: NavBarProps) {
         <a className="nav-link nav-hide-sm" href="#architecture">
           Architecture
         </a>
-        <a className="nav-link nav-hide-sm" href="#trust">
+        <Link className="nav-link nav-hide-sm" to={DOCS_TRUST}>
           Trust
-        </a>
+        </Link>
+        <Link className="nav-link nav-hide-sm" to={DOCS_URL}>
+          Docs
+        </Link>
         <a className="nav-link" href={REPO_URL} aria-label="GitHub" target="_blank" rel="noreferrer">
           <IGitHub size={16} />
           <span className="nav-hide-sm">GitHub</span>
