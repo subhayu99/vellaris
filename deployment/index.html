@@ -457,6 +457,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-fast-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The fast path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sizing" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -479,10 +490,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-single-container-sqlite" class="md-nav__link">
+  <a href="#image-variants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker — single container (SQLite)
+        Image variants
       
     </span>
   </a>
@@ -490,43 +501,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-compose-postgres-backed" class="md-nav__link">
+  <a href="#cloud-credentials" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker Compose — Postgres-backed
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kubernetes-helm-chart-sketch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kubernetes — Helm chart sketch
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#flyio-one-click" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fly.io — one-click
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#railway" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Railway
+        Cloud credentials
       
     </span>
   </a>
@@ -628,6 +606,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#the-fast-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The fast path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sizing" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -650,10 +639,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-single-container-sqlite" class="md-nav__link">
+  <a href="#image-variants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker — single container (SQLite)
+        Image variants
       
     </span>
   </a>
@@ -661,43 +650,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker-compose-postgres-backed" class="md-nav__link">
+  <a href="#cloud-credentials" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker Compose — Postgres-backed
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kubernetes-helm-chart-sketch" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kubernetes — Helm chart sketch
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#flyio-one-click" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fly.io — one-click
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#railway" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Railway
+        Cloud credentials
       
     </span>
   </a>
@@ -758,9 +714,15 @@
 
 
 <h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
-<p>The Vellaris server is a single FastAPI process plus a database (Postgres
-in production, SQLite for dev / single-user). Blobs go to local disk by
-default; flip a flag to push to S3-compatible storage.</p>
+<p>Vellaris is a single FastAPI process plus a database (Postgres / MySQL /
+SQLite) and a blob store (any fsspec backend — local FS, S3-compatible,
+GCS, Azure). Every operator-facing knob is a <code>VELLARIS_*</code> env var.</p>
+<h2 id="the-fast-path">The fast path<a class="headerlink" href="#the-fast-path" title="Permanent link">&para;</a></h2>
+<p>For most users, the <a href="/docs/deployment"><code>/docs/deployment</code> configurator</a>
+generates a tailored <code>docker run</code> / <code>docker-compose</code> / <code>pip install</code>
+snippet for your DB + storage combination.</p>
+<p>This page is the source-of-truth reference for every env var and image
+the configurator emits.</p>
 <h2 id="sizing">Sizing<a class="headerlink" href="#sizing" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -774,11 +736,11 @@ default; flip a flag to push to S3-compatible storage.</p>
 </thead>
 <tbody>
 <tr>
-<td>Single user, dev</td>
+<td>Single user</td>
 <td>256 MB</td>
 <td>1 vCPU</td>
 <td>1 GB</td>
-<td>SQLite + local disk</td>
+<td>SQLite + local FS, slim image</td>
 </tr>
 <tr>
 <td>10 users</td>
@@ -792,7 +754,7 @@ default; flip a flag to push to S3-compatible storage.</p>
 <td>1 GB</td>
 <td>2 vCPU</td>
 <td>matches data</td>
-<td>S3 backend recommended</td>
+<td>S3-compatible storage recommended</td>
 </tr>
 <tr>
 <td>1000+ users</td>
@@ -803,11 +765,7 @@ default; flip a flag to push to S3-compatible storage.</p>
 </tr>
 </tbody>
 </table>
-<p>The server is stateless apart from the DB + blob store, so horizontal
-scaling is "add replicas behind a load balancer".</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<p>All config flows through environment variables. The full list is in
-<code>src/vellaris/server/config.py</code>; the most important ones:</p>
 <table>
 <thead>
 <tr>
@@ -820,152 +778,133 @@ scaling is "add replicas behind a load balancer".</p>
 <tr>
 <td><code>VELLARIS_HOST</code></td>
 <td><code>0.0.0.0</code></td>
-<td>Bind address.</td>
+<td>Bind address</td>
 </tr>
 <tr>
 <td><code>VELLARIS_PORT</code></td>
 <td><code>8000</code></td>
-<td>Bind port.</td>
+<td>Bind port</td>
 </tr>
 <tr>
 <td><code>VELLARIS_DATABASE_URL</code></td>
 <td><code>sqlite+aiosqlite:///./vellaris.db</code></td>
-<td>Use <code>postgresql+psycopg://…</code> in prod.</td>
+<td>SQLAlchemy URL — pick <code>postgresql+asyncpg://...</code>, <code>mysql+asyncmy://...</code>, or <code>sqlite+aiosqlite://...</code></td>
 </tr>
 <tr>
-<td><code>VELLARIS_BLOB_BACKEND</code></td>
-<td><code>local</code></td>
-<td><code>local</code> or <code>s3</code>.</td>
+<td><code>VELLARIS_AUTO_MIGRATE</code></td>
+<td><code>1</code></td>
+<td>Run <code>alembic upgrade head</code> on startup. Set <code>0</code> for blue/green pipelines</td>
 </tr>
 <tr>
-<td><code>VELLARIS_BLOB_LOCAL_DIR</code></td>
-<td><code>./blobs</code></td>
-<td>Local backend storage path.</td>
+<td><code>VELLARIS_BLOB_URL</code></td>
+<td><code>file://./var/blobs</code></td>
+<td>fsspec URL — <code>file://</code>, <code>s3://</code>, <code>gs://</code>, <code>az://</code>, <code>memory://</code></td>
 </tr>
 <tr>
-<td><code>VELLARIS_BLOB_S3_BUCKET</code></td>
+<td><code>VELLARIS_BLOB_OPTIONS_JSON</code></td>
 <td><em>(unset)</em></td>
-<td>S3 bucket for ciphertext blobs.</td>
+<td>Optional JSON-encoded <code>storage_options</code> (endpoint URL, custom certs, etc.)</td>
 </tr>
 <tr>
-<td><code>VELLARIS_BLOB_S3_REGION</code></td>
-<td><code>us-east-1</code></td>
-<td></td>
-</tr>
-<tr>
-<td><code>VELLARIS_BLOB_S3_ENDPOINT</code></td>
-<td><em>(unset)</em></td>
-<td>Override for MinIO / R2 / B2.</td>
-</tr>
-<tr>
-<td><code>VELLARIS_AUDIT_SIGNING_KEY</code></td>
-<td><em>(generated on first start)</em></td>
-<td>Ed25519 raw key, base64. Persist this.</td>
+<td><code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code></td>
+<td><em>(generated in memory)</em></td>
+<td>Path to a 32-byte raw Ed25519 private key. Persist this in production</td>
 </tr>
 <tr>
 <td><code>VELLARIS_MAX_UPLOAD_BYTES</code></td>
-<td><code>5_368_709_120</code> (5 GiB)</td>
-<td>Per-file ceiling.</td>
+<td><code>104857600</code> (100 MiB)</td>
+<td>Per-file ceiling</td>
 </tr>
 <tr>
-<td><code>VELLARIS_RATE_LIMIT_PER_IP</code></td>
-<td><code>120/min</code></td>
-<td>Soft limit.</td>
+<td><code>VELLARIS_RATE_LIMIT_PER_MINUTE</code></td>
+<td><code>120</code></td>
+<td>Per-IP soft limit</td>
 </tr>
 <tr>
-<td><code>VELLARIS_CORS_ORIGINS</code></td>
-<td><code>*</code> (dev), <code>[]</code> (prod)</td>
-<td>Comma-separated for the SPA.</td>
+<td><code>VELLARIS_RATE_LIMIT_BURST</code></td>
+<td><code>20</code></td>
+<td>Per-IP burst budget</td>
+</tr>
+<tr>
+<td><code>VELLARIS_CORS_ALLOW_ORIGINS</code></td>
+<td><code>["*"]</code></td>
+<td>Restrict in production</td>
+</tr>
+<tr>
+<td><code>VELLARIS_SESSION_TTL_SECONDS</code></td>
+<td><code>28800</code> (8 h)</td>
+<td>Session lifetime</td>
+</tr>
+<tr>
+<td><code>VELLARIS_CHALLENGE_TTL_SECONDS</code></td>
+<td><code>300</code> (5 m)</td>
+<td>Login-challenge lifetime</td>
 </tr>
 </tbody>
 </table>
-<h2 id="docker-single-container-sqlite">Docker — single container (SQLite)<a class="headerlink" href="#docker-single-container-sqlite" title="Permanent link">&para;</a></h2>
-<p>Good for personal use:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>vellaris<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-v<span class="w"> </span>vellaris-data:/data<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_DATABASE_URL</span><span class="o">=</span><span class="s1">&#39;sqlite+aiosqlite:////data/vellaris.db&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_BLOB_LOCAL_DIR</span><span class="o">=</span>/data/blobs<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_AUDIT_SIGNING_KEY</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>ghcr.io/subhayu99/vellaris:latest
+<h2 id="image-variants">Image variants<a class="headerlink" href="#image-variants" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tag</th>
+<th>Size</th>
+<th>Bundled drivers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ghcr.io/subhayu99/vellaris:0.5.0</code></td>
+<td>~120 MB</td>
+<td>SQLite + local FS only</td>
+</tr>
+<tr>
+<td><code>ghcr.io/subhayu99/vellaris:0.5.0-full</code></td>
+<td>~350 MB</td>
+<td>All DBs (Postgres / MySQL / SQLite) + S3 / GCS / Azure</td>
+</tr>
+</tbody>
+</table>
+<p>For a tailored slim+exactly-what-I-need image, use the composable
+Dockerfile pattern emitted by the configurator:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">ghcr.io/subhayu99/vellaris:0.5.0</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span><span class="s1">&#39;vellaris[postgres,s3]==0.5.0&#39;</span>
 </code></pre></div>
-<h2 id="docker-compose-postgres-backed">Docker Compose — Postgres-backed<a class="headerlink" href="#docker-compose-postgres-backed" title="Permanent link">&para;</a></h2>
-<p>The repo ships <a href="https://github.com/subhayu99/vellaris/blob/main/docker/compose.yaml"><code>docker/compose.yaml</code></a>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/subhayu99/vellaris<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>vellaris
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker/compose.yaml<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div>
-<p>Postgres data lives in a named volume; ciphertext blobs land on a host
-mount you can back up. Customize via <code>.env</code> next to the compose file.</p>
-<h2 id="kubernetes-helm-chart-sketch">Kubernetes — Helm chart sketch<a class="headerlink" href="#kubernetes-helm-chart-sketch" title="Permanent link">&para;</a></h2>
-<p>A minimal <code>values.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">image</span><span class="p">:</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/subhayu99/vellaris</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v0.1.0</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">pullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">IfNotPresent</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nt">replicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nt">config</span><span class="p">:</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">databaseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql+psycopg://vellaris:…@vellaris-postgres:5432/vellaris</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">blobBackend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">s3</span><span class="p">:</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="nt">bucket</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vellaris-blobs</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="nt">ingress</span><span class="p">:</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">  </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">  </span><span class="nt">hosts</span><span class="p">:</span>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vault.example.com</span>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">      </span><span class="nt">paths</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">/</span><span class="p p-Indicator">]</span>
-<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">  </span><span class="nt">tls</span><span class="p">:</span>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">vault.example.com</span><span class="p p-Indicator">]</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vault-example-com-tls</span>
-<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
-<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="nt">resources</span><span class="p">:</span>
-<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">  </span><span class="nt">requests</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> cpu</span><span class="p">:</span><span class="w"> </span><span class="nv">250m</span><span class="p p-Indicator">,</span><span class="nt"> memory</span><span class="p">:</span><span class="w"> </span><span class="nv">512Mi</span><span class="w"> </span><span class="p p-Indicator">}</span>
-<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">  </span><span class="nt">limits</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">{</span><span class="nt"> cpu</span><span class="p">:</span><span class="w"> </span><span class="nv">1000m</span><span class="p p-Indicator">,</span><span class="nt"> memory</span><span class="p">:</span><span class="w"> </span><span class="nv">1Gi</span><span class="w"> </span><span class="p p-Indicator">}</span>
-</code></pre></div>
-<p>A real chart isn't published yet — drop the manifests at <code>deploy/k8s/</code>
-when you do this.</p>
-<h2 id="flyio-one-click">Fly.io — one-click<a class="headerlink" href="#flyio-one-click" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>flyctl<span class="w"> </span>launch<span class="w"> </span>--image<span class="w"> </span>ghcr.io/subhayu99/vellaris:latest<span class="w"> </span>--no-deploy
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>flyctl<span class="w"> </span>secrets<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nv">VELLARIS_DATABASE_URL</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>flyctl<span class="w"> </span>postgres<span class="w"> </span>attach<span class="w"> </span>…<span class="w"> </span>--format<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.connection_string&#39;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nv">VELLARIS_AUDIT_SIGNING_KEY</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">&quot;</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>flyctl<span class="w"> </span>deploy
-</code></pre></div>
-<p>Add a Tigris S3 attachment for blob storage, point <code>VELLARIS_BLOB_S3_BUCKET</code>
-at it, set <code>VELLARIS_BLOB_BACKEND=s3</code>.</p>
-<h2 id="railway">Railway<a class="headerlink" href="#railway" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>railway<span class="w"> </span>init<span class="w"> </span>--template<span class="w"> </span>ghcr.io/subhayu99/vellaris:latest
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>railway<span class="w"> </span>add<span class="w"> </span>--plugin<span class="w"> </span>postgresql
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>railway<span class="w"> </span>variables<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">VELLARIS_AUDIT_SIGNING_KEY</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">&quot;</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>railway<span class="w"> </span>up
+<h2 id="cloud-credentials">Cloud credentials<a class="headerlink" href="#cloud-credentials" title="Permanent link">&para;</a></h2>
+<p>Vellaris reads cloud credentials from the standard environment variables
+that fsspec already understands:</p>
+<ul>
+<li><strong>AWS / S3-compatible:</strong> <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_REGION</code></li>
+<li><strong>GCS:</strong> <code>GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json</code></li>
+<li><strong>Azure:</strong> <code>AZURE_STORAGE_ACCOUNT_NAME</code>, <code>AZURE_STORAGE_ACCOUNT_KEY</code>, or <code>AZURE_STORAGE_CONNECTION_STRING</code></li>
+</ul>
+<p>For non-AWS S3 endpoints (MinIO, Cloudflare R2, Backblaze B2, Wasabi),
+pass the endpoint via <code>VELLARIS_BLOB_OPTIONS_JSON</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">VELLARIS_BLOB_URL</span><span class="o">=</span><span class="s1">&#39;s3://my-bucket&#39;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">VELLARIS_BLOB_OPTIONS_JSON</span><span class="o">=</span><span class="s1">&#39;{&quot;endpoint_url&quot;:&quot;https://s3.example.com&quot;,&quot;key&quot;:&quot;AKIA...&quot;,&quot;secret&quot;:&quot;...&quot;}&#39;</span>
 </code></pre></div>
 <h2 id="behind-a-reverse-proxy">Behind a reverse proxy<a class="headerlink" href="#behind-a-reverse-proxy" title="Permanent link">&para;</a></h2>
-<p>Vellaris doesn't terminate TLS — run it behind nginx / Caddy / Traefik /
-the load balancer of your cloud. The server reads <code>X-Forwarded-For</code> for
-rate-limiting; trust it only when you're behind a proxy you control.</p>
+<p>Vellaris doesn't terminate TLS — run it behind nginx / Caddy / Traefik.
+The server reads <code>X-Forwarded-For</code> for rate-limiting; trust it only when
+you're behind a proxy you control.</p>
 <p>A minimal Caddyfile:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>vault.example.com {
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  reverse_proxy 127.0.0.1:8000
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>vault.example.com {
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  reverse_proxy 127.0.0.1:8000
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>}
 </code></pre></div>
 <h2 id="backup">Backup<a class="headerlink" href="#backup" title="Permanent link">&para;</a></h2>
 <p>Two pieces:</p>
 <ul>
-<li><strong>Database</strong>: <code>pg_dump</code> (or <code>sqlite3 .dump</code>) on a schedule. Restore
-  with <code>psql &lt; dump.sql</code>. Migrations are idempotent.</li>
-<li><strong>Blobs</strong>: <code>rclone sync /var/lib/vellaris/blobs s3:backup</code> — or just
-  use S3 backend with cross-region replication.</li>
+<li><strong>Database:</strong> <code>pg_dump</code> / <code>mysqldump</code> / <code>sqlite3 .dump</code> on a schedule. Restore with the matching tool. Migrations are idempotent.</li>
+<li><strong>Blobs:</strong> if you use a cloud bucket, enable cross-region replication or scheduled snapshots. For local FS, <code>rclone sync /var/lib/vellaris/blobs s3:backup</code> works well.</li>
 </ul>
-<p>The audit signing key (<code>VELLARIS_AUDIT_SIGNING_KEY</code>) must persist or
-existing audit log entries become unverifiable. Stash it in your secret
-store.</p>
+<p>The audit signing key (<code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>) must persist
+or existing audit log entries become unverifiable. Stash it in your
+secret store.</p>
 <h2 id="health-check">Health check<a class="headerlink" href="#health-check" title="Permanent link">&para;</a></h2>
-<p><code>GET /healthz</code> returns <code>{"status":"ok"}</code> when the DB is reachable. Use it
-as your liveness + readiness probe.</p>
+<p><code>GET /healthz</code> returns <code>{"status":"ok"}</code>. Use it as your liveness +
+readiness probe. The Docker image has a built-in HEALTHCHECK with a 30s
+start period — auto-migrate runs before uvicorn binds, so the probe
+allows for first-boot Alembic to finish on a cold DB.</p>
 
 
 

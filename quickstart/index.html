@@ -709,9 +709,8 @@ gives no durability guarantees.</p>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-v<span class="w"> </span>vellaris-data:/data<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_DATABASE_URL</span><span class="o">=</span><span class="s1">&#39;sqlite+aiosqlite:////data/vellaris.db&#39;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_BLOB_BACKEND</span><span class="o">=</span><span class="nb">local</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_BLOB_LOCAL_DIR</span><span class="o">=</span>/data/blobs<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>ghcr.io/subhayu99/vellaris:latest
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">VELLARIS_BLOB_URL</span><span class="o">=</span><span class="s1">&#39;file:///data/blobs&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>ghcr.io/subhayu99/vellaris:0.5.0
 </code></pre></div>
 <p>Then:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>curl<span class="w"> </span>http://localhost:8000/healthz
