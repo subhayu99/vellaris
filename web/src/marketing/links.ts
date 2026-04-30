@@ -10,7 +10,6 @@ export const REPO_URL = 'https://github.com/subhayu99/vellaris'
 export const APP_ROUTE = '/app'
 
 export const DOCS_URL = '/docs'
-export const DOCS_INSTALL = '/docs/install'
 export const DOCS_QUICKSTART = '/docs/quickstart'
 export const DOCS_TRUST = '/docs/trust-model'
 export const DOCS_CLI = '/docs/cli'
