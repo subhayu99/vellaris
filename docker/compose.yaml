@@ -23,16 +23,22 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.server
-    image: ghcr.io/subhayu99/vellaris:dev
+      target: runtime-full
+    image: ghcr.io/subhayu99/vellaris:dev-full
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       VELLARIS_HOST: 0.0.0.0
       VELLARIS_PORT: "8000"
-      VELLARIS_DATABASE_URL: postgresql+psycopg://vellaris:vellaris@postgres:5432/vellaris
+      VELLARIS_DATABASE_URL: postgresql+asyncpg://vellaris:vellaris@postgres:5432/vellaris
+      VELLARIS_BLOB_URL: file:///data/blobs
+      VELLARIS_AUTO_MIGRATE: "1"
     ports:
       - "8000:8000"
+    volumes:
+      - vellaris_blobs:/data/blobs
 
 volumes:
   postgres_data:
+  vellaris_blobs:

@@ -51,7 +51,7 @@ def _sync_url() -> str:
     settings = VellarisSettings()
     url = settings.database_url
     # Strip async driver suffixes; Alembic uses sync drivers.
-    return url.replace("+aiosqlite", "").replace("+asyncpg", "+psycopg")
+    return url.replace("+aiosqlite", "").replace("+asyncpg", "+psycopg2")
 
 
 def run_migrations_offline() -> None:
