@@ -57,6 +57,32 @@ function imageTag(s: InstallState, version: string): string {
   return s.image === 'full' ? FULL_BASE_TAG(version) : SLIM_BASE_TAG(version)
 }
 
+function advancedEnvVars(s: InstallState): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (s.maxUploadMb !== 100)
+    out.VELLARIS_MAX_UPLOAD_BYTES = String(s.maxUploadMb * 1024 * 1024)
+  if (s.rateLimitPerMin !== 120)
+    out.VELLARIS_RATE_LIMIT_PER_MINUTE = String(s.rateLimitPerMin)
+  if (s.rateLimitBurst !== 20)
+    out.VELLARIS_RATE_LIMIT_BURST = String(s.rateLimitBurst)
+  if (s.sessionTtlHours !== 8)
+    out.VELLARIS_SESSION_TTL_SECONDS = String(s.sessionTtlHours * 3600)
+  if (s.challengeTtlMin !== 5)
+    out.VELLARIS_CHALLENGE_TTL_SECONDS = String(s.challengeTtlMin * 60)
+  if (s.corsOrigins !== '*')
+    out.VELLARIS_CORS_ALLOW_ORIGINS = JSON.stringify(
+      s.corsOrigins
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean),
+    )
+  if (s.auditKeyMode === 'path')
+    out.VELLARIS_AUDIT_SIGNING_KEY_PATH = s.auditKeyPath
+  if (!s.autoMigrate)
+    out.VELLARIS_AUTO_MIGRATE = '0'
+  return out
+}
+
 export function generateExportBlock(s: InstallState, _version: string): string {
   if (s.credsMode === 'inline') return '' // inline creds handled in run snippet directly
   const lines: string[] = []
@@ -105,6 +131,9 @@ function dockerEnvFlags(s: InstallState): string[] {
       )
     }
   }
+  for (const [k, v] of Object.entries(advancedEnvVars(s))) {
+    flags.push(`-e ${k}='${v}'`)
+  }
   if (s.storage === 'local') flags.push('-v vellaris-blobs:/data/blobs')
   if (s.db === 'sqlite') flags.push('-v vellaris-db:/data')
   return flags
@@ -146,6 +175,20 @@ function generateCompose(s: InstallState, version: string): string {
   const awsSecret = inline ? (s.credAwsSecretAccessKey || '...') : '${AWS_SECRET_ACCESS_KEY}'
   const awsRegion = inline ? (s.credAwsRegion || 'us-east-1') : '${AWS_REGION:-us-east-1}'
 
+  const advYaml = Object.entries(advancedEnvVars(s)).map(
+    ([k, v]) => `      ${k}: '${v.replace(/'/g, "''")}'`,
+  )
+
+  const deployBlock =
+    s.replicas > 1
+      ? [
+          `    deploy:`,
+          `      replicas: ${s.replicas}`,
+          `      restart_policy:`,
+          `        condition: on-failure`,
+        ]
+      : []
+
   const services: string[] = []
   services.push(
     [
@@ -164,6 +207,8 @@ function generateCompose(s: InstallState, version: string): string {
             `      AWS_REGION: ${awsRegion}`,
           ]
         : []),
+      ...advYaml,
+      ...deployBlock,
       ...(s.storage === 'local' ? [`    volumes:`, `      - vellaris-blobs:/data/blobs`] : []),
     ].join('\n'),
   )
@@ -225,15 +270,170 @@ function generatePip(s: InstallState, version: string): string {
     `VELLARIS_DATABASE_URL=${url}`,
     `VELLARIS_BLOB_URL=${blob}`,
     ...(s.db !== 'sqlite' ? [`DB_PASSWORD=${dbPwValue}`] : []),
+    ...Object.entries(advancedEnvVars(s)).map(([k, v]) => `${k}=${v}`),
     ``,
     `# Run:`,
     `vellaris-server`,
   ].join('\n')
 }
 
+function generateHelm(s: InstallState, version: string): string {
+  const dbUrl = generateDatabaseUrl(s)
+  const blobUrl = generateBlobUrl(s)
+  const variant = s.image === 'full' ? 'full' : 'slim'
+  const env: Record<string, string> = {
+    VELLARIS_DATABASE_URL: dbUrl,
+    VELLARIS_BLOB_URL: blobUrl,
+    ...advancedEnvVars(s),
+  }
+  const envBlock = Object.entries(env)
+    .map(([k, v]) => `  ${k}: '${v.replace(/'/g, "''")}'`)
+    .join('\n')
+  return [
+    `# vellaris values.yaml — pair with: helm install vellaris vellaris/vellaris -f values.yaml`,
+    `# (Vellaris Helm chart is shipped at github.com/subhayu99/vellaris/tree/main/deploy/helm)`,
+    ``,
+    `image:`,
+    `  repository: ghcr.io/subhayu99/vellaris`,
+    `  tag: '${version}${variant === 'full' ? '-full' : ''}'`,
+    `  pullPolicy: IfNotPresent`,
+    ``,
+    `replicaCount: ${s.replicas}`,
+    ``,
+    `env:`,
+    envBlock,
+    ``,
+    ...(s.db === 'postgres'
+      ? [
+          `postgres:`,
+          `  enabled: true`,
+          `  auth:`,
+          `    username: ${s.dbUser}`,
+          `    database: ${s.dbName}`,
+          ``,
+        ]
+      : []),
+    ...(s.db === 'mysql'
+      ? [
+          `mysql:`,
+          `  enabled: true`,
+          `  auth:`,
+          `    username: ${s.dbUser}`,
+          `    database: ${s.dbName}`,
+          ``,
+        ]
+      : []),
+    `ingress:`,
+    `  enabled: ${s.proxyMode !== 'none' ? 'true' : 'false'}`,
+    ...(s.proxyMode !== 'none'
+      ? [`  hosts:`, `    - host: ${s.proxyHostname}`, `      paths: [/]`]
+      : []),
+    ``,
+    `resources:`,
+    `  requests:`,
+    `    cpu: 250m`,
+    `    memory: 512Mi`,
+    `  limits:`,
+    `    cpu: 1000m`,
+    `    memory: 1Gi`,
+  ].join('\n')
+}
+
+function generateSystemd(s: InstallState, version: string): string {
+  const env: Record<string, string> = {
+    VELLARIS_DATABASE_URL: generateDatabaseUrl(s),
+    VELLARIS_BLOB_URL: generateBlobUrl(s),
+    ...advancedEnvVars(s),
+  }
+  const envLines = Object.entries(env).map(([k, v]) => `Environment="${k}=${v}"`)
+  const extras = pipExtras(s).filter((e) => e !== 'server').join(',')
+  const pipExtraSpec = extras ? `[server,${extras}]` : '[server]'
+  return [
+    `# 1. Install vellaris from PyPI:`,
+    `#   pip install 'vellaris${pipExtraSpec}==${version}'`,
+    `#`,
+    `# 2. Save this file to /etc/systemd/system/vellaris.service`,
+    `#`,
+    `# 3. Reload + start:`,
+    `#   sudo systemctl daemon-reload`,
+    `#   sudo systemctl enable --now vellaris`,
+    ``,
+    `[Unit]`,
+    `Description=Vellaris (E2E encrypted document sharing)`,
+    `After=network.target`,
+    ``,
+    `[Service]`,
+    `Type=exec`,
+    `User=vellaris`,
+    `Group=vellaris`,
+    `WorkingDirectory=/var/lib/vellaris`,
+    ...envLines,
+    `ExecStart=/usr/local/bin/vellaris-server`,
+    `Restart=on-failure`,
+    `RestartSec=5`,
+    ``,
+    `[Install]`,
+    `WantedBy=multi-user.target`,
+  ].join('\n')
+}
+
+export interface ProxySnippet {
+  title: string
+  contents: string
+}
+
+export function generateProxySnippet(s: InstallState): ProxySnippet | null {
+  if (s.proxyMode === 'none') return null
+  if (s.proxyMode === 'caddy') {
+    return {
+      title: 'Reverse proxy (Caddyfile)',
+      contents: [
+        `# Save as /etc/caddy/Caddyfile`,
+        `${s.proxyHostname} {`,
+        `  reverse_proxy 127.0.0.1:8000`,
+        `}`,
+      ].join('\n'),
+    }
+  }
+  if (s.proxyMode === 'nginx') {
+    const isManual = s.tlsMode === 'manual'
+    return {
+      title: 'Reverse proxy (nginx)',
+      contents: [
+        `# Save as /etc/nginx/sites-available/vellaris`,
+        `server {`,
+        `  listen 443 ssl http2;`,
+        `  server_name ${s.proxyHostname};`,
+        ...(isManual
+          ? [`  ssl_certificate ${s.tlsCertPath};`, `  ssl_certificate_key ${s.tlsKeyPath};`]
+          : [`  # ssl_certificate /path/to/cert.pem;`, `  # ssl_certificate_key /path/to/key.pem;`]),
+        `  location / {`,
+        `    proxy_pass http://127.0.0.1:8000;`,
+        `    proxy_set_header Host $host;`,
+        `    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`,
+        `  }`,
+        `}`,
+      ].join('\n'),
+    }
+  }
+  // traefik
+  return {
+    title: 'Reverse proxy (Traefik labels — add to your service in compose)',
+    contents: [
+      `labels:`,
+      `  - "traefik.enable=true"`,
+      `  - "traefik.http.routers.vellaris.rule=Host(\`${s.proxyHostname}\`)"`,
+      `  - "traefik.http.routers.vellaris.tls.certresolver=letsencrypt"`,
+      `  - "traefik.http.services.vellaris.loadbalancer.server.port=8000"`,
+    ].join('\n'),
+  }
+}
+
 export function generateRunSnippet(s: InstallState, version: string): string {
   if (s.image === 'custom') return generateCustomDockerfile(s, version)
   if (s.runMode === 'docker') return generateDockerRun(s, version)
   if (s.runMode === 'compose') return generateCompose(s, version)
+  if (s.runMode === 'helm') return generateHelm(s, version)
+  if (s.runMode === 'systemd') return generateSystemd(s, version)
   return generatePip(s, version)
 }

@@ -3,6 +3,7 @@ import { defaultInstallState, type InstallState } from '../state'
 import {
   generateDatabaseUrl,
   generateExportBlock,
+  generateProxySnippet,
   generateRunSnippet,
 } from '../templates'
 
@@ -153,5 +154,163 @@ describe('inline creds flow', () => {
     const out = generateRunSnippet(state, VERSION)
     expect(out).toContain('DB_PASSWORD=pippass')
     expect(out).not.toContain('DB_PASSWORD=...')
+  })
+})
+
+describe('advanced env vars', () => {
+  it('omits all advanced env vars when state is default', () => {
+    const out = generateRunSnippet(defaultInstallState, VERSION)
+    expect(out).not.toContain('VELLARIS_MAX_UPLOAD_BYTES')
+    expect(out).not.toContain('VELLARIS_RATE_LIMIT_PER_MINUTE')
+    expect(out).not.toContain('VELLARIS_AUTO_MIGRATE')
+  })
+
+  it('emits non-default rate limits in docker run', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'docker',
+      db: 'sqlite',
+      storage: 'local',
+      rateLimitPerMin: 60,
+      rateLimitBurst: 10,
+      maxUploadMb: 500,
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_RATE_LIMIT_PER_MINUTE')
+    expect(out).toContain("'60'")
+    expect(out).toContain('VELLARIS_MAX_UPLOAD_BYTES')
+    expect(out).toContain(String(500 * 1024 * 1024))
+  })
+
+  it('disables auto-migrate via env when state.autoMigrate=false', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'compose',
+      db: 'postgres',
+      autoMigrate: false,
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_AUTO_MIGRATE')
+    expect(out).toContain("'0'")
+  })
+
+  it('emits CORS allow-list when origins differ from "*"', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'pip',
+      corsOrigins: 'https://app.example.com,https://admin.example.com',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_CORS_ALLOW_ORIGINS')
+    expect(out).toContain('app.example.com')
+  })
+})
+
+describe('replicas in compose', () => {
+  it('adds deploy.replicas block when replicas > 1', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'compose',
+      db: 'postgres',
+      replicas: 3,
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('deploy:')
+    expect(out).toContain('replicas: 3')
+  })
+
+  it('omits deploy block when replicas === 1', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'compose',
+      db: 'postgres',
+      replicas: 1,
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).not.toContain('deploy:')
+  })
+})
+
+describe('Helm output', () => {
+  it('emits values.yaml with image repo + tag + replica count', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'helm',
+      db: 'postgres',
+      storage: 's3',
+      image: 'full',
+      replicas: 2,
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('image:')
+    expect(out).toContain('repository: ghcr.io/subhayu99/vellaris')
+    expect(out).toContain(`tag: '${VERSION}-full'`)
+    expect(out).toContain('replicaCount: 2')
+  })
+})
+
+describe('systemd output', () => {
+  it('emits a unit file with [Service] + Environment + ExecStart', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'systemd',
+      db: 'postgres',
+      storage: 'local',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('[Service]')
+    expect(out).toContain('ExecStart=/usr/local/bin/vellaris-server')
+    expect(out).toContain('Environment=')
+    expect(out).toContain('[Install]')
+  })
+
+  it('includes a pip install hint at the top', () => {
+    const s: InstallState = { ...defaultInstallState, runMode: 'systemd', db: 'postgres', storage: 's3' }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain("pip install 'vellaris[server,postgres,s3]")
+  })
+})
+
+describe('proxy snippet', () => {
+  it('returns null when proxyMode is none', () => {
+    expect(generateProxySnippet(defaultInstallState)).toBeNull()
+  })
+
+  it('emits a Caddyfile for caddy mode', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      proxyMode: 'caddy',
+      proxyHostname: 'vault.example.com',
+    }
+    const snippet = generateProxySnippet(s)
+    expect(snippet).not.toBeNull()
+    expect(snippet?.contents).toContain('vault.example.com')
+    expect(snippet?.contents).toContain('reverse_proxy 127.0.0.1:8000')
+  })
+
+  it('emits an nginx server block for nginx mode', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      proxyMode: 'nginx',
+      proxyHostname: 'vault.example.com',
+      tlsMode: 'manual',
+      tlsCertPath: '/certs/cert.pem',
+      tlsKeyPath: '/certs/key.pem',
+    }
+    const snippet = generateProxySnippet(s)
+    expect(snippet?.contents).toContain('server {')
+    expect(snippet?.contents).toContain('proxy_pass http://127.0.0.1:8000')
+    expect(snippet?.contents).toContain('ssl_certificate /certs/cert.pem')
+  })
+
+  it('emits Traefik labels for traefik mode', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      proxyMode: 'traefik',
+      proxyHostname: 'vault.example.com',
+    }
+    const snippet = generateProxySnippet(s)
+    expect(snippet?.contents).toContain('traefik.enable=true')
+    expect(snippet?.contents).toContain('Host(`vault.example.com`)')
   })
 })

@@ -1,4 +1,4 @@
-import type { DbBackend, ImageVariant, StorageBackend } from '../state'
+import type { DbBackend, ImageVariant, RunMode, StorageBackend } from '../state'
 
 export function BackendPickers({
   db,
@@ -12,7 +12,7 @@ export function BackendPickers({
   db: DbBackend
   storage: StorageBackend
   image: ImageVariant
-  runMode: 'docker' | 'compose' | 'pip'
+  runMode: RunMode
   onDb: (v: DbBackend) => void
   onStorage: (v: StorageBackend) => void
   onImage: (v: ImageVariant) => void

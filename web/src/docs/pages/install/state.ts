@@ -3,7 +3,7 @@
  * user opts into 'inline' mode, live in localStorage under a separate key
  * and NEVER touch the URL. */
 
-export type RunMode = 'docker' | 'compose' | 'pip'
+export type RunMode = 'docker' | 'compose' | 'pip' | 'helm' | 'systemd'
 export type DbBackend = 'sqlite' | 'postgres' | 'mysql'
 export type StorageBackend = 'local' | 's3' | 'gcs' | 'azure'
 export type ImageVariant = 'slim' | 'full' | 'custom'
@@ -86,7 +86,7 @@ export const defaultInstallState: InstallState = {
   tlsKeyPath: '/certs/key.pem',
 }
 
-const RUN_MODES: ReadonlySet<RunMode> = new Set(['docker', 'compose', 'pip'])
+const RUN_MODES: ReadonlySet<RunMode> = new Set(['docker', 'compose', 'pip', 'helm', 'systemd'])
 const DBS: ReadonlySet<DbBackend> = new Set(['sqlite', 'postgres', 'mysql'])
 const STORES: ReadonlySet<StorageBackend> = new Set(['local', 's3', 'gcs', 'azure'])
 const IMAGES: ReadonlySet<ImageVariant> = new Set(['slim', 'full', 'custom'])
