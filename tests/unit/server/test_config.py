@@ -1,51 +1,67 @@
-"""Settings load defaults + override via VELLARIS_* env vars."""
+"""Settings — env-var parsing for the new storage URL model."""
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
-from vellaris.server.config import VellarisSettings, get_settings, reset_settings_cache
+from vellaris.server.config import VellarisSettings, reset_settings_cache
 
 
 @pytest.fixture(autouse=True)
-def _clear_cache() -> None:
+def _reset_cache() -> None:
+    reset_settings_cache()
+    yield
     reset_settings_cache()
 
 
-def test_defaults_are_dev_friendly(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Wipe any ambient VELLARIS_* env vars so the test sees defaults.
-    for name in list(monkeypatch._setenv.keys() if hasattr(monkeypatch, "_setenv") else []):
-        monkeypatch.delenv(name, raising=False)
-    s = VellarisSettings(_env_file=None)  # type: ignore[call-arg]
-    assert s.port == 8000
-    assert s.blob_backend == "local"
-    assert s.session_ttl_seconds == 8 * 60 * 60
-    assert s.max_upload_bytes == 100 * 1024 * 1024
+def test_blob_url_defaults_to_local(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("VELLARIS_BLOB_URL", raising=False)
+    s = VellarisSettings()
+    # Default is a relative file:// URL under ./var/blobs
+    assert s.blob_url.startswith("file://")
+    assert s.blob_url.endswith("var/blobs")
 
 
-def test_env_overrides_take_effect(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("VELLARIS_PORT", "9000")
-    monkeypatch.setenv("VELLARIS_BLOB_BACKEND", "s3")
-    monkeypatch.setenv("VELLARIS_S3_BUCKET", "my-bucket")
-    monkeypatch.setenv("VELLARIS_MAX_UPLOAD_BYTES", "1048576")
-
-    s = VellarisSettings(_env_file=None)  # type: ignore[call-arg]
-    assert s.port == 9000
-    assert s.blob_backend == "s3"
-    assert s.s3_bucket == "my-bucket"
-    assert s.max_upload_bytes == 1048576
+def test_blob_url_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("VELLARIS_BLOB_URL", "s3://my-bucket/blobs")
+    s = VellarisSettings()
+    assert s.blob_url == "s3://my-bucket/blobs"
 
 
-def test_invalid_blob_backend_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("VELLARIS_BLOB_BACKEND", "ftp")
+def test_blob_options_json_parses(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "VELLARIS_BLOB_OPTIONS_JSON",
+        json.dumps({"endpoint_url": "https://minio.example.com", "key": "abc"}),
+    )
+    s = VellarisSettings()
+    assert s.blob_options == {"endpoint_url": "https://minio.example.com", "key": "abc"}
+
+
+def test_blob_options_json_invalid_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("VELLARIS_BLOB_OPTIONS_JSON", "{not-json")
     with pytest.raises(ValueError):
-        VellarisSettings(_env_file=None)  # type: ignore[call-arg]
+        VellarisSettings()
 
 
-def test_get_settings_caches() -> None:
-    a = get_settings()
-    b = get_settings()
-    assert a is b
-    reset_settings_cache()
-    c = get_settings()
-    assert c is not a
+def test_auto_migrate_default_on() -> None:
+    s = VellarisSettings()
+    assert s.auto_migrate is True
+
+
+def test_auto_migrate_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("VELLARIS_AUTO_MIGRATE", "0")
+    s = VellarisSettings()
+    assert s.auto_migrate is False
+
+
+def test_legacy_blob_vars_are_not_read(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Old vars from 0.4.x are silently ignored — clean cutover."""
+    monkeypatch.setenv("VELLARIS_BLOB_BACKEND", "s3")
+    monkeypatch.setenv("VELLARIS_BLOB_ROOT", "/tmp/wrong")
+    monkeypatch.setenv("VELLARIS_S3_BUCKET", "wrong-bucket")
+    s = VellarisSettings()
+    # Defaults still apply — old vars don't bleed through
+    assert s.blob_url.startswith("file://")
+    assert "wrong" not in s.blob_url

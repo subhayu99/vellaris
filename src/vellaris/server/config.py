@@ -7,14 +7,12 @@ them at deploy time.
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-BlobBackend = Literal["local", "s3"]
 
 
 class VellarisSettings(BaseSettings):
@@ -29,46 +27,60 @@ class VellarisSettings(BaseSettings):
     )
 
     # --- network ---
-    host: str = Field(default="0.0.0.0", description="Uvicorn bind address.")
+    host: str = Field(default="0.0.0.0")
     port: int = Field(default=8000, ge=1, le=65535)
-    cors_allow_origins: list[str] = Field(
-        default_factory=lambda: ["*"],
-        description="CORS allow-list. Tighten in production.",
-    )
+    cors_allow_origins: list[str] = Field(default_factory=lambda: ["*"])
 
     # --- database ---
-    database_url: str = Field(
-        default="sqlite+aiosqlite:///./vellaris.db",
-        description="SQLAlchemy URL. Use postgresql+psycopg://... in prod.",
+    database_url: str = Field(default="sqlite+aiosqlite:///./vellaris.db")
+    database_echo: bool = Field(default=False)
+    auto_migrate: bool = Field(
+        default=True,
+        description="Run `alembic upgrade head` on startup. Disable in blue/green pipelines.",
     )
-    database_echo: bool = Field(default=False, description="Log SQL statements (dev only).")
 
     # --- auth / sessions ---
     session_ttl_seconds: int = Field(default=8 * 60 * 60, ge=60)
     challenge_ttl_seconds: int = Field(default=5 * 60, ge=10)
 
     # --- blob storage ---
-    blob_backend: BlobBackend = Field(default="local")
-    blob_root: Path = Field(default=Path("./var/blobs"))
-    s3_bucket: str | None = None
-    s3_region: str | None = None
-    s3_endpoint_url: str | None = None  # for MinIO / localstack
-    s3_access_key_id: str | None = None
-    s3_secret_access_key: str | None = None
+    blob_url: str = Field(
+        default_factory=lambda: f"file://{(Path.cwd() / 'var' / 'blobs').as_posix()}",
+        description="fsspec URL — e.g. file:///var/blobs, s3://bucket/prefix, gs://bucket, az://container",
+    )
+    blob_options_json: str | None = Field(
+        default=None,
+        description="JSON-encoded fsspec storage_options (endpoint_url, keys, etc.).",
+    )
 
     # --- limits ---
-    max_upload_bytes: int = Field(default=100 * 1024 * 1024, ge=1)  # 100 MiB
+    max_upload_bytes: int = Field(default=100 * 1024 * 1024, ge=1)
     rate_limit_per_minute: int = Field(default=120, ge=1)
     rate_limit_burst: int = Field(default=20, ge=1)
 
     # --- audit log ---
-    audit_signing_key_path: Path | None = Field(
-        default=None,
-        description=(
-            "Path to a 32-byte raw Ed25519 private-key file. If unset, "
-            "a fresh key is generated in memory at startup (dev only)."
-        ),
-    )
+    audit_signing_key_path: Path | None = Field(default=None)
+
+    @field_validator("blob_options_json")
+    @classmethod
+    def _validate_blob_options_json(cls, v: str | None) -> str | None:
+        if v is None or v == "":
+            return None
+        try:
+            parsed = json.loads(v)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"VELLARIS_BLOB_OPTIONS_JSON is not valid JSON: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise ValueError("VELLARIS_BLOB_OPTIONS_JSON must decode to a JSON object")
+        return v
+
+    @property
+    def blob_options(self) -> dict[str, object]:
+        """Parsed storage_options dict, or empty if unset."""
+        if not self.blob_options_json:
+            return {}
+        result: dict[str, object] = json.loads(self.blob_options_json)
+        return result
 
 
 @lru_cache(maxsize=1)
