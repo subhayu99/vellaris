@@ -16,6 +16,7 @@ import { DocsNavBar } from './docs-nav-bar.tsx'
 import { DocsSidebar } from './sidebar.tsx'
 import { MobileRail } from './mobile-rail.tsx'
 import { DocsIndexPage } from './pages/index-page.tsx'
+import { InstallPage } from './pages/install.tsx'
 import { QuickstartPage } from './pages/quickstart.tsx'
 import { TrustModelPage } from './pages/trust-model.tsx'
 import { CLIReferencePage } from './pages/cli.tsx'
@@ -27,6 +28,7 @@ import './docs.css'
 
 const PAGES: Record<string, ComponentType> = {
   quickstart: QuickstartPage,
+  install: InstallPage,
   'trust-model': TrustModelPage,
   cli: CLIReferencePage,
   sdk: SDKPage,

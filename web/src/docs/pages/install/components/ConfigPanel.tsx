@@ -1,4 +1,4 @@
-import type { DbBackend, InstallState, StorageBackend } from '../state'
+import type { DbBackend, InstallState } from '../state'
 
 interface Props {
   state: InstallState
