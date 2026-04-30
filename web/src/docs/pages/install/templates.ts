@@ -34,7 +34,10 @@ function pipExtras(s: InstallState): string[] {
 export function generateDatabaseUrl(s: InstallState): string {
   const driver = DB_DRIVER[s.db]
   if (s.db === 'sqlite') return `${driver}:////data/vellaris.db`
-  return `${driver}://${s.dbUser}:\${DB_PASSWORD}@${s.dbHost}:${s.dbPort}/${s.dbName}`
+  const password = s.credsMode === 'inline'
+    ? (s.credDbPassword || '...')
+    : '${DB_PASSWORD}'
+  return `${driver}://${s.dbUser}:${password}@${s.dbHost}:${s.dbPort}/${s.dbName}`
 }
 
 function generateBlobUrl(s: InstallState): string {
@@ -119,23 +122,30 @@ function generateDockerRun(s: InstallState, version: string): string {
 
 function generateCustomDockerfile(s: InstallState, version: string): string {
   const extras = pipExtras(s).filter((e) => e !== 'server').join(',')
+  const runBlock = generateDockerRun({ ...s, image: 'slim' }, version).replace(
+    imageTag({ ...s, image: 'slim' }, version),
+    'my-vellaris',
+  )
+  // Indent the docker run continuation lines under the && so it reads as one chain
+  const chainedRun = runBlock.replace(/^docker run/, '  && docker run')
   return [
-    `# Save as Dockerfile`,
+    `# Copy-paste this whole block.`,
+    `cat > Dockerfile <<'EOF'`,
     `FROM ${SLIM_BASE_TAG(version)}`,
     `RUN pip install --no-cache-dir 'vellaris[${extras}]==${version}'`,
-    ``,
-    `# Build:`,
-    `#   docker build -t my-vellaris .`,
-    ``,
-    `# Then run:`,
-    generateDockerRun({ ...s, image: 'slim' }, version).replace(
-      imageTag({ ...s, image: 'slim' }, version),
-      'my-vellaris',
-    ),
+    `EOF`,
+    `docker build -t my-vellaris . \\`,
+    chainedRun,
   ].join('\n')
 }
 
 function generateCompose(s: InstallState, version: string): string {
+  const inline = s.credsMode === 'inline'
+  const dbPwValue = inline ? (s.credDbPassword || '...') : '${DB_PASSWORD}'
+  const awsKeyId = inline ? (s.credAwsAccessKeyId || '...') : '${AWS_ACCESS_KEY_ID}'
+  const awsSecret = inline ? (s.credAwsSecretAccessKey || '...') : '${AWS_SECRET_ACCESS_KEY}'
+  const awsRegion = inline ? (s.credAwsRegion || 'us-east-1') : '${AWS_REGION:-us-east-1}'
+
   const services: string[] = []
   services.push(
     [
@@ -144,14 +154,14 @@ function generateCompose(s: InstallState, version: string): string {
       `    ports:`,
       `      - "8000:8000"`,
       `    environment:`,
-      `      VELLARIS_DATABASE_URL: ${generateDatabaseUrl(s).replace('\${DB_PASSWORD}', '\${DB_PASSWORD}')}`,
+      `      VELLARIS_DATABASE_URL: ${generateDatabaseUrl(s)}`,
       `      VELLARIS_BLOB_URL: ${generateBlobUrl(s)}`,
-      ...(s.db !== 'sqlite' ? [`      DB_PASSWORD: \${DB_PASSWORD}`] : []),
+      ...(s.db !== 'sqlite' ? [`      DB_PASSWORD: ${dbPwValue}`] : []),
       ...(s.storage === 's3'
         ? [
-            `      AWS_ACCESS_KEY_ID: \${AWS_ACCESS_KEY_ID}`,
-            `      AWS_SECRET_ACCESS_KEY: \${AWS_SECRET_ACCESS_KEY}`,
-            `      AWS_REGION: \${AWS_REGION:-us-east-1}`,
+            `      AWS_ACCESS_KEY_ID: ${awsKeyId}`,
+            `      AWS_SECRET_ACCESS_KEY: ${awsSecret}`,
+            `      AWS_REGION: ${awsRegion}`,
           ]
         : []),
       ...(s.storage === 'local' ? [`    volumes:`, `      - vellaris-blobs:/data/blobs`] : []),
@@ -165,7 +175,7 @@ function generateCompose(s: InstallState, version: string): string {
         '    environment:',
         `      POSTGRES_USER: ${s.dbUser}`,
         `      POSTGRES_DB: ${s.dbName}`,
-        `      POSTGRES_PASSWORD: \${DB_PASSWORD}`,
+        `      POSTGRES_PASSWORD: ${dbPwValue}`,
         '    volumes:',
         '      - postgres-data:/var/lib/postgresql/data',
         '    healthcheck:',
@@ -181,8 +191,8 @@ function generateCompose(s: InstallState, version: string): string {
         '    environment:',
         `      MARIADB_USER: ${s.dbUser}`,
         `      MARIADB_DATABASE: ${s.dbName}`,
-        `      MARIADB_PASSWORD: \${DB_PASSWORD}`,
-        `      MARIADB_ROOT_PASSWORD: \${DB_PASSWORD}`,
+        `      MARIADB_PASSWORD: ${dbPwValue}`,
+        `      MARIADB_ROOT_PASSWORD: ${dbPwValue}`,
         '    volumes:',
         '      - mysql-data:/var/lib/mysql',
       ].join('\n'),
@@ -205,13 +215,16 @@ function generatePip(s: InstallState, version: string): string {
   const extras = pipExtras(s).join(',')
   const url = generateDatabaseUrl(s)
   const blob = generateBlobUrl(s)
+  const dbPwValue = s.credsMode === 'inline'
+    ? (s.credDbPassword || '...')
+    : '...'
   return [
     `pip install 'vellaris[${extras}]==${version}'`,
     ``,
     `# Save as .env (alongside your run dir):`,
     `VELLARIS_DATABASE_URL=${url}`,
     `VELLARIS_BLOB_URL=${blob}`,
-    ...(s.db !== 'sqlite' ? [`DB_PASSWORD=...`] : []),
+    ...(s.db !== 'sqlite' ? [`DB_PASSWORD=${dbPwValue}`] : []),
     ``,
     `# Run:`,
     `vellaris-server`,

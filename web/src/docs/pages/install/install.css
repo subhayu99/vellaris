@@ -16,3 +16,44 @@
 .install-snippet pre { margin: 0; max-height: 480px; overflow: auto; font-size: 0.85rem; }
 .install-snippet-warn { border-color: #cba65a; }
 .install-link-button { background: none; border: none; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; }
+
+/* ---------- Form controls inside install panels ---------- */
+
+/* Panel-grid label: label text above the input with breathing room */
+.install-panel-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--fg-3, rgba(255, 255, 255, 0.5));
+}
+
+/* Text + password inputs: full width, bordered, monospace values */
+.install-panel input[type='text'],
+.install-panel input[type='password'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
+  border-radius: 5px;
+  background: var(--bg-elev, rgba(255, 255, 255, 0.05));
+  color: var(--fg, inherit);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 150ms;
+}
+.install-panel input[type='text']:focus,
+.install-panel input[type='password']:focus {
+  border-color: var(--line-2, rgba(255, 255, 255, 0.3));
+}
+
+/* Radio buttons: visible size, breathing room before label text */
+.install-panel input[type='radio'] {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin-right: 0.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--accent, #c4943a);
+  cursor: pointer;
+}

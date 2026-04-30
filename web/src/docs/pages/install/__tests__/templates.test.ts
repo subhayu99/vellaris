@@ -94,11 +94,64 @@ describe('generateRunSnippet — pip', () => {
 })
 
 describe('generateRunSnippet — custom image', () => {
-  it('emits a Dockerfile + build + run', () => {
+  it('emits a heredoc Dockerfile + build + run as a single shell block', () => {
     const custom: InstallState = { ...postgresS3Full, image: 'custom', runMode: 'docker' }
     const out = generateRunSnippet(custom, VERSION)
     expect(out).toContain('FROM ghcr.io/subhayu99/vellaris:0.5.0')
     expect(out).toContain("pip install --no-cache-dir 'vellaris[postgres,s3]==0.5.0'")
     expect(out).toContain('docker build')
+    expect(out).toMatch(/^cat > Dockerfile <</m)
+  })
+})
+
+describe('inline creds flow', () => {
+  it('interpolates inline DB password into docker snippet', () => {
+    const state: InstallState = {
+      ...postgresS3Full,
+      runMode: 'docker',
+      credsMode: 'inline',
+      credDbPassword: 's3cr3t',
+    }
+    const out = generateRunSnippet(state, VERSION)
+    expect(out).toContain('s3cr3t')
+    expect(out).not.toContain('${DB_PASSWORD}')
+  })
+
+  it('interpolates inline AWS creds into docker snippet', () => {
+    const state: InstallState = {
+      ...postgresS3Full,
+      runMode: 'docker',
+      credsMode: 'inline',
+      credAwsAccessKeyId: 'AKIAIOSFODNN7EXAMPLE',
+      credAwsSecretAccessKey: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      credAwsRegion: 'us-west-2',
+    }
+    const out = generateRunSnippet(state, VERSION)
+    expect(out).toContain('AKIAIOSFODNN7EXAMPLE')
+    expect(out).not.toContain('${AWS_ACCESS_KEY_ID}')
+  })
+
+  it('interpolates inline DB password into compose snippet', () => {
+    const state: InstallState = {
+      ...postgresS3Full,
+      runMode: 'compose',
+      credsMode: 'inline',
+      credDbPassword: 'mypassword',
+    }
+    const out = generateRunSnippet(state, VERSION)
+    expect(out).toContain('mypassword')
+    expect(out).not.toContain('${DB_PASSWORD}')
+  })
+
+  it('interpolates inline DB password into pip .env snippet', () => {
+    const state: InstallState = {
+      ...postgresS3Full,
+      runMode: 'pip',
+      credsMode: 'inline',
+      credDbPassword: 'pippass',
+    }
+    const out = generateRunSnippet(state, VERSION)
+    expect(out).toContain('DB_PASSWORD=pippass')
+    expect(out).not.toContain('DB_PASSWORD=...')
   })
 })
