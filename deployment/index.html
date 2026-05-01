@@ -901,7 +901,7 @@ you're behind a proxy you control.</p>
 or existing audit log entries become unverifiable. Stash it in your
 secret store.</p>
 <h2 id="health-check">Health check<a class="headerlink" href="#health-check" title="Permanent link">&para;</a></h2>
-<p><code>GET /healthz</code> returns <code>{"status":"ok"}</code>. Use it as your liveness +
+<p><code>GET /health</code> returns <code>{"status":"ok"}</code>. Use it as your liveness +
 readiness probe. The Docker image has a built-in HEALTHCHECK with a 30s
 start period — auto-migrate runs before uvicorn binds, so the probe
 allows for first-boot Alembic to finish on a cold DB.</p>
