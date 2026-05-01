@@ -448,7 +448,7 @@ railway up`}
 
         <h3>Health check</h3>
         <p>
-          <code>GET /healthz</code> returns <code>{'{"status":"ok"}'}</code> when the DB is reachable.
+          <code>GET /health</code> returns <code>{'{"status":"ok"}'}</code> when the DB is reachable.
           Use it as your liveness + readiness probe.
         </p>
       </section>

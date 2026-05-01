@@ -924,10 +924,10 @@
         ]
       }
     },
-    "/healthz": {
+    "/health": {
       "get": {
         "description": "Liveness probe. Returns 200 with a fixed payload.",
-        "operationId": "healthz_healthz_get",
+        "operationId": "health_health_get",
         "responses": {
           "200": {
             "content": {
@@ -936,7 +936,7 @@
                   "additionalProperties": {
                     "type": "string"
                   },
-                  "title": "Response Healthz Healthz Get",
+                  "title": "Response Health Health Get",
                   "type": "object"
                 }
               }
@@ -944,7 +944,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Healthz",
+        "summary": "Health",
         "tags": [
           "meta"
         ]

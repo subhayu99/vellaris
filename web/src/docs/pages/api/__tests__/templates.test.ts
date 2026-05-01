@@ -14,9 +14,9 @@ import {
 // Synthetic fixtures — no dependency on the real OpenAPI schema.
 // ---------------------------------------------------------------------------
 
-const healthzEndpoint: EndpointSummary = {
+const healthEndpoint: EndpointSummary = {
   method: 'GET',
-  path: '/healthz',
+  path: '/health',
   operationId: 'healthCheck',
   summary: 'Health check',
   description: '',
@@ -94,8 +94,8 @@ function makeState(overrides: Partial<ApiBuilderState> = {}): ApiBuilderState {
 
 describe('generateCurlSnippet', () => {
   it('basic GET produces correct curl command', () => {
-    const snippet = generateCurlSnippet(healthzEndpoint, makeState())
-    expect(snippet).toContain("curl -X GET 'https://server.example.com/healthz'")
+    const snippet = generateCurlSnippet(healthEndpoint, makeState())
+    expect(snippet).toContain("curl -X GET 'https://server.example.com/health'")
   })
 
   it('POST with body includes Content-Type header and -d flag', () => {
@@ -122,7 +122,7 @@ describe('generateCurlSnippet', () => {
   })
 
   it('non-auth endpoint without authToken omits Authorization header', () => {
-    const snippet = generateCurlSnippet(healthzEndpoint, makeState())
+    const snippet = generateCurlSnippet(healthEndpoint, makeState())
     expect(snippet).not.toContain('Authorization')
   })
 
@@ -183,7 +183,7 @@ describe('generatePythonSnippet', () => {
   })
 
   it('GET uses httpx.get', () => {
-    const snippet = generatePythonSnippet(healthzEndpoint, makeState())
+    const snippet = generatePythonSnippet(healthEndpoint, makeState())
     expect(snippet).toContain('httpx.get(')
   })
 
@@ -201,18 +201,18 @@ describe('generatePythonSnippet', () => {
 
 describe('generateJsSnippet', () => {
   it('uses fetch with correct method', () => {
-    const snippet = generateJsSnippet(healthzEndpoint, makeState())
+    const snippet = generateJsSnippet(healthEndpoint, makeState())
     expect(snippet).toContain('await fetch(')
     expect(snippet).toContain('method: "GET"')
   })
 
   it('includes await response.json()', () => {
-    const snippet = generateJsSnippet(healthzEndpoint, makeState())
+    const snippet = generateJsSnippet(healthEndpoint, makeState())
     expect(snippet).toContain('await response.json()')
   })
 
   it('throws on non-OK responses', () => {
-    const snippet = generateJsSnippet(healthzEndpoint, makeState())
+    const snippet = generateJsSnippet(healthEndpoint, makeState())
     expect(snippet).toContain('throw new Error')
     expect(snippet).toContain('response.ok')
   })
@@ -336,17 +336,17 @@ describe('bodyTemplateFor', () => {
 
 describe('generateApiSnippet dispatch', () => {
   it('routes curl language', () => {
-    const snippet = generateApiSnippet(healthzEndpoint, makeState(), 'curl')
+    const snippet = generateApiSnippet(healthEndpoint, makeState(), 'curl')
     expect(snippet).toContain('curl -X GET')
   })
 
   it('routes python language', () => {
-    const snippet = generateApiSnippet(healthzEndpoint, makeState(), 'python')
+    const snippet = generateApiSnippet(healthEndpoint, makeState(), 'python')
     expect(snippet).toContain('import httpx')
   })
 
   it('routes js language', () => {
-    const snippet = generateApiSnippet(healthzEndpoint, makeState(), 'js')
+    const snippet = generateApiSnippet(healthEndpoint, makeState(), 'js')
     expect(snippet).toContain('await fetch(')
   })
 })

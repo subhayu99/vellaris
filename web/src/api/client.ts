@@ -106,9 +106,9 @@ export class VellarisClient {
 
   // ---------- meta ----------
 
-  /** GET /healthz — connectivity probe used by the server-connect screen. */
-  async healthz(): Promise<{ status: string }> {
-    const r = await this._request('/healthz', { method: 'GET' })
+  /** GET /health — connectivity probe used by the server-connect screen. */
+  async health(): Promise<{ status: string }> {
+    const r = await this._request('/health', { method: 'GET' })
     return r.json() as Promise<{ status: string }>
   }
 

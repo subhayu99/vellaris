@@ -24,7 +24,7 @@ afterEach(() => {
 })
 
 describe('<ConnectRoute />', () => {
-  it('redirects to /signup after a successful healthz', async () => {
+  it('redirects to /signup after a successful health probe', async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
       void _input
       void _init
@@ -42,7 +42,7 @@ describe('<ConnectRoute />', () => {
 
     await waitFor(() => expect(screen.getByTestId('signup-route')).toBeInTheDocument())
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(fetchMock.mock.calls[0][0]).toBe('https://localhost:8000/healthz')
+    expect(fetchMock.mock.calls[0][0]).toBe('https://localhost:8000/health')
     expect(getServerUrl()).toBe('https://localhost:8000')
   })
 

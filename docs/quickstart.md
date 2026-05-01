@@ -66,7 +66,7 @@ docker run -d --name vellaris \
 Then:
 
 ```bash
-curl http://localhost:8000/healthz
+curl http://localhost:8000/health
 # {"status":"ok"}
 ```
 
@@ -94,7 +94,7 @@ The official build is hosted at
 `vellaris-web-vX.Y.Z.tar.gz` under
 [GitHub Releases](https://github.com/subhayu99/vellaris/releases).
 
-First load asks for your server's URL, runs `GET /healthz`, and caches the
+First load asks for your server's URL, runs `GET /health`, and caches the
 URL in `localStorage`. After signup the wrapped private key is stored
 locally too. **localStorage is per-origin** — two SPA deployments are
 independent.

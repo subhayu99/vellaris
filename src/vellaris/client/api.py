@@ -111,8 +111,8 @@ class VellarisAsyncClient:
 
     # ---------- meta ----------
 
-    async def healthz(self) -> dict[str, str]:
-        resp = await self._request("GET", "/healthz")
+    async def health(self) -> dict[str, str]:
+        resp = await self._request("GET", "/health")
         result: dict[str, str] = resp.json()
         return result
 

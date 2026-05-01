@@ -157,9 +157,9 @@ def test_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch, tmp_path) -> No
 
     client = TestClient(create_app())
 
-    # /healthz is exempt — it shouldn't count.
+    # /health is exempt — it shouldn't count.
     for _ in range(20):
-        client.get("/healthz")
+        client.get("/health")
 
     # Two challenge requests (within burst) succeed → 404 (user not found).
     a = client.post("/auth/challenge", json={"username": "x"})

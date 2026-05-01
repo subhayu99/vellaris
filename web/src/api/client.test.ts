@@ -49,11 +49,11 @@ describe('VellarisClient', () => {
     expect(client.serverUrl).toBe('http://localhost:8000')
   })
 
-  it('GET /healthz returns the parsed body', async () => {
+  it('GET /health returns the parsed body', async () => {
     const { fetchFn, calls } = makeFetch(() => jsonResponse(200, { status: 'ok' }))
     const client = new VellarisClient('http://x', { fetch: fetchFn })
-    expect(await client.healthz()).toEqual({ status: 'ok' })
-    expect(calls[0].url).toBe('http://x/healthz')
+    expect(await client.health()).toEqual({ status: 'ok' })
+    expect(calls[0].url).toBe('http://x/health')
     expect(calls[0].method).toBe('GET')
   })
 
@@ -251,7 +251,7 @@ describe('VellarisClient', () => {
       throw new TypeError('Failed to fetch')
     })
     const client = new VellarisClient('http://x', { fetch: fetchFn as unknown as typeof fetch })
-    await expect(client.healthz()).rejects.toBeInstanceOf(VellarisNetworkError)
+    await expect(client.health()).rejects.toBeInstanceOf(VellarisNetworkError)
   })
 
   it('share posts a base64-encoded grant', async () => {

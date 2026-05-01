@@ -104,7 +104,7 @@ export function QuickstartPage() {
       </CodeBlock>
       <p>Then:</p>
       <CodeBlock lang="shell">
-        {`curl http://localhost:8000/healthz
+        {`curl http://localhost:8000/health
 # {"status":"ok"}`}
       </CodeBlock>
 
@@ -136,7 +136,7 @@ docker compose -f docker/compose.yaml up -d`}
         .
       </p>
       <p>
-        First load asks for your server&rsquo;s URL, runs <code>GET /healthz</code>, and caches the
+        First load asks for your server&rsquo;s URL, runs <code>GET /health</code>, and caches the
         URL in <code>localStorage</code>. After signup the wrapped private key is stored locally
         too. <strong>localStorage is per-origin</strong> — two SPA deployments are independent.
       </p>

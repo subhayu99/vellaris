@@ -23,8 +23,8 @@ def create_app() -> FastAPI:
         version=__version__,
     )
 
-    @application.get("/healthz", tags=["meta"])
-    def healthz() -> dict[str, str]:
+    @application.get("/health", tags=["meta"])
+    def health() -> dict[str, str]:
         """Liveness probe. Returns 200 with a fixed payload."""
         return {"status": "ok"}
 

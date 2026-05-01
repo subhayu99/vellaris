@@ -72,7 +72,7 @@ async def _enforce_impl(
     settings: VellarisSettings,
 ) -> Response:
     # Health checks bypass everything so probes don't get throttled.
-    if request.url.path in {"/healthz", "/openapi.json", "/docs", "/redoc"}:
+    if request.url.path in {"/health", "/openapi.json", "/docs", "/redoc"}:
         return await call_next(request)
 
     # Upload-size cap based on the declared Content-Length. Streaming uploads

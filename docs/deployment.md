@@ -99,7 +99,7 @@ secret store.
 
 ## Health check
 
-`GET /healthz` returns `{"status":"ok"}`. Use it as your liveness +
+`GET /health` returns `{"status":"ok"}`. Use it as your liveness +
 readiness probe. The Docker image has a built-in HEALTHCHECK with a 30s
 start period — auto-migrate runs before uvicorn binds, so the probe
 allows for first-boot Alembic to finish on a cold DB.

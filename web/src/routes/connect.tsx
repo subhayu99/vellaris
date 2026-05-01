@@ -2,7 +2,7 @@
  * Server-connect screen — first-load entry point.
  *
  * The SPA isn't pinned to any single backend; the user types in their
- * Vellaris server URL, we probe `GET /healthz`, and on success cache the
+ * Vellaris server URL, we probe `GET /health`, and on success cache the
  * URL in localStorage. Subsequent visits skip this screen unless they
  * Disconnect or clear storage. The cert-fingerprint UI from the JSX
  * prototype is deferred to a follow-up phase — for now we trust HTTPS.
@@ -48,7 +48,7 @@ export function ConnectRoute() {
     setError(null)
     try {
       const client = new VellarisClient(target)
-      await client.healthz()
+      await client.health()
       setServerUrl(target)
       navigate(hasWrappedKey() ? '/login' : '/signup')
     } catch (err) {

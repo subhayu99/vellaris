@@ -3,7 +3,7 @@
  * which Vellaris server the user pointed it at last.
  *
  * The first-load server-connect screen calls {@link setServerUrl} after
- * a successful `/healthz` probe. Subsequent visits skip straight to
+ * a successful `/health` probe. Subsequent visits skip straight to
  * login if a URL is already cached. {@link clearServerUrl} unsets it
  * (the "Disconnect" affordance in the nav).
  *

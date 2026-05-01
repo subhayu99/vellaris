@@ -12,7 +12,7 @@ pnpm dev          # http://localhost:5173
 ```
 
 The first-load screen asks for the URL of your Vellaris server (e.g.
-`http://localhost:8000`). After a successful `GET /healthz` probe the
+`http://localhost:8000`). After a successful `GET /health` probe the
 URL is cached in `localStorage` and you skip straight to login on
 subsequent visits.
 

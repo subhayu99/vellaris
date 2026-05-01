@@ -20,10 +20,10 @@ describe('parseOpenApi against the real Vellaris OpenAPI', () => {
     }
   })
 
-  it('has a /healthz endpoint with method GET', () => {
-    const healthz = endpoints.find((e) => e.path === '/healthz')
-    expect(healthz).toBeDefined()
-    expect(healthz?.method).toBe('GET')
+  it('has a /health endpoint with method GET', () => {
+    const health = endpoints.find((e) => e.path === '/health')
+    expect(health).toBeDefined()
+    expect(health?.method).toBe('GET')
   })
 
   it('groups endpoints by tag', () => {
