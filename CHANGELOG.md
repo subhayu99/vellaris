@@ -1,3 +1,9 @@
+## 0.5.2 — 2026-05-01
+
+### Changed
+
+- **Liveness route renamed `/healthz` → `/health`.** Cloud Run / Knative reserves paths under `/healthz` for platform probes, which prevented the app from serving its own liveness route there. The Python and TS clients' `healthz()` methods are renamed to `health()` and the Docker `HEALTHCHECK` now hits `/health`. If you have external monitors or proxies pointed at `/healthz`, repoint them.
+
 ## 0.5.1 — 2026-04-30
 
 ### Fixed
