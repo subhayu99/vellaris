@@ -19,7 +19,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { Button, ConfirmDialog, Field, Icons, Input } from '../components/index.ts'
+import { Button, ConfirmDialog, Field, Icons, Input, Notice, Spinner } from '../components/index.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -264,11 +264,7 @@ export function DocDetailRoute() {
           </div>
         )}
 
-        {error && (
-          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
-            {error}
-          </div>
-        )}
+        {error && <Notice variant="error">{error}</Notice>}
 
         {!loading && download && (
           <>
@@ -379,14 +375,14 @@ export function DocDetailRoute() {
                     })}
                   </ul>
                   {revokeError && (
-                    <div className="text-danger text-[12.5px]" data-testid="revoke-error">
+                    <Notice variant="error" data-testid="revoke-error">
                       {revokeError}
-                    </div>
+                    </Notice>
                   )}
                   {revokeNotice && (
-                    <div className="text-ok text-[12.5px]" data-testid="revoke-notice">
+                    <Notice variant="success" data-testid="revoke-notice">
                       {revokeNotice}
-                    </div>
+                    </Notice>
                   )}
                 </div>
 
@@ -416,7 +412,7 @@ export function DocDetailRoute() {
                       <Button
                         variant="secondary"
                         size="default"
-                        leading={<Icons.IShare size={14} />}
+                        leading={shareBusy ? <Spinner size={14} /> : <Icons.IShare size={14} />}
                         onClick={onShare}
                         disabled={shareBusy || shareInput.trim().length === 0}
                         fullWidth
@@ -428,9 +424,9 @@ export function DocDetailRoute() {
                     </div>
                   </Field>
                   {shareNotice && (
-                    <div className="text-ok text-[12.5px]" data-testid="share-notice">
+                    <Notice variant="success" data-testid="share-notice">
                       {shareNotice}
-                    </div>
+                    </Notice>
                   )}
                 </div>
 

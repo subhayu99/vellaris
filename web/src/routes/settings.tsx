@@ -19,7 +19,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, ConfirmDialog, Field, Icons } from '../components/index.ts'
+import { Button, ConfirmDialog, Field, Icons, Notice, Spinner } from '../components/index.ts'
+import { IMoon, ISun } from '../marketing/icons.tsx'
+import { useTheme } from '../marketing/hooks.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -83,6 +85,7 @@ export function SettingsRoute() {
 
   const [confirmDifferentServer, setConfirmDifferentServer] = useState(false)
   const [confirmingDeleteBlob, setConfirmingDeleteBlob] = useState(false)
+  const [theme, toggleTheme] = useTheme()
 
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
@@ -201,7 +204,7 @@ export function SettingsRoute() {
         {/* Account */}
         <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
           <h2 className="text-fg text-[15px] font-semibold">Account</h2>
-          {accountError && <div className="text-danger text-[12.5px]">{accountError}</div>}
+          {accountError && <Notice variant="error">{accountError}</Notice>}
           <dl className="grid grid-cols-1 gap-3 text-[13px] sm:grid-cols-2">
             <div>
               <dt className="text-fg-3 mb-0.5 text-[10.5px] tracking-wider uppercase">Username</dt>
@@ -224,6 +227,27 @@ export function SettingsRoute() {
               </dd>
             </div>
           </dl>
+        </section>
+
+        {/* Appearance */}
+        <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-fg text-[15px] font-semibold">Appearance</h2>
+              <p className="text-fg-3 mt-0.5 text-[12.5px]">
+                Theme is saved per-browser and applies across the app, marketing, and docs.
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              size="default"
+              leading={theme === 'dark' ? <ISun size={14} /> : <IMoon size={14} />}
+              onClick={toggleTheme}
+              data-testid="theme-toggle"
+            >
+              {theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            </Button>
+          </div>
         </section>
 
         {/* Server */}
@@ -300,7 +324,7 @@ export function SettingsRoute() {
             <Button
               variant="primary"
               size="default"
-              leading={<Icons.IKey size={14} />}
+              leading={keyBlobBusy ? <Spinner size={14} /> : <Icons.IKey size={14} />}
               onClick={pushBlob}
               disabled={keyBlobBusy}
               fullWidth
@@ -335,11 +359,11 @@ export function SettingsRoute() {
           </div>
 
           {keyBlobNotice && (
-            <div className="text-ok text-[12.5px]" data-testid="keyblob-notice">
+            <Notice variant="success" data-testid="keyblob-notice">
               {keyBlobNotice}
-            </div>
+            </Notice>
           )}
-          {keyBlobError && <div className="text-danger text-[12.5px]">{keyBlobError}</div>}
+          {keyBlobError && <Notice variant="error">{keyBlobError}</Notice>}
 
           <details className="text-fg-3 text-[11px]">
             <summary className="cursor-pointer">Wrapped blob (base64)</summary>

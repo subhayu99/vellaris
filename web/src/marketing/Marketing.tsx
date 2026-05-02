@@ -28,8 +28,11 @@ export default function Marketing() {
 
   return (
     <div className="marketing-root" ref={rootRef} id="top">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <NavBar theme={theme} onToggleTheme={toggleTheme} />
-      <main>
+      <main id="main-content">
         <Hero />
         <div className="reveal">
           <HowItWorks />

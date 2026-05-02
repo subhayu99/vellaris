@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Button, Icons } from '../components/index.ts'
+import { Button, Icons, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import type { DocumentScope, DocumentSummary } from '../api/index.ts'
 import { decryptBundle, deserializePrivateKeyForOaep } from '../crypto/index.ts'
@@ -200,11 +200,7 @@ export function DashboardRoute() {
           </div>
         </div>
 
-        {error && (
-          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
-            {error}
-          </div>
-        )}
+        {error && <Notice variant="error">{error}</Notice>}
 
         {loading && (
           <div className="border-line text-fg-3 flex items-center justify-center rounded-lg border py-16">

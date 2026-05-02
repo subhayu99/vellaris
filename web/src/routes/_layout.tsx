@@ -13,6 +13,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ConnectionPill, VSigil, Wordmark } from '../components/index.ts'
+import { useTheme } from '../marketing/hooks.ts'
 
 export interface AuthLayoutProps {
   children: ReactNode
@@ -22,8 +23,16 @@ export interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, serverUrl, user, onDisconnect }: AuthLayoutProps) {
+  // Apply the persisted theme (set in marketing/docs nav) when the user
+  // arrives directly at /connect, /signup, or /login. Otherwise the
+  // saved value sits in localStorage but body[data-theme] never gets
+  // updated and the SPA renders in the default dark scheme.
+  useTheme()
   return (
     <div className="relative flex min-h-screen flex-col">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <header className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
         <Link to="/" className="flex items-center gap-2.5">
           <VSigil size={26} />
@@ -33,7 +42,10 @@ export function AuthLayout({ children, serverUrl, user, onDisconnect }: AuthLayo
           <ConnectionPill serverUrl={serverUrl} user={user} onDisconnect={onDisconnect} />
         ) : null}
       </header>
-      <main className="flex flex-1 items-center justify-center px-4 pb-10 sm:px-6 sm:pb-16">
+      <main
+        id="main-content"
+        className="flex flex-1 items-center justify-center px-4 pb-10 sm:px-6 sm:pb-16"
+      >
         <div className="w-full max-w-md">{children}</div>
       </main>
     </div>

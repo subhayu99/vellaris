@@ -20,7 +20,7 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, EncryptAnim, Field, Icons, Input } from '../components/index.ts'
+import { Button, EncryptAnim, Field, Icons, Input, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import {
   deserializePublicKeyForOaep,
@@ -326,11 +326,7 @@ export function UploadRoute() {
           </div>
         )}
 
-        {error && (
-          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
-            {error}
-          </div>
-        )}
+        {error && <Notice variant="error">{error}</Notice>}
 
         <div className="border-line flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:justify-end">
           <Button

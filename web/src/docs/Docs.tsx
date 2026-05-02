@@ -56,9 +56,12 @@ export function DocsRoute() {
 
   return (
     <div className="marketing-root docs-root">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <DocsNavBar theme={theme} onToggleTheme={toggleTheme} />
       <MobileRail />
-      <main className="docs-shell">
+      <main id="main-content" className="docs-shell">
         <DocsSidebar />
         <Page />
       </main>

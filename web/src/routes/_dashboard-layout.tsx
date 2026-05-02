@@ -29,6 +29,7 @@ import {
   ISettings,
 } from '../components/icons.tsx'
 import { VellarisClient } from '../api/index.ts'
+import { useTheme } from '../marketing/hooks.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { clearSessionAndKey, getCachedUser, getToken } from '../state/session.ts'
 import { hasUnwrappedPem } from '../state/key-cache.ts'
@@ -57,6 +58,10 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const shortcut = useMemo(() => `${metaKeyLabel()}K`, [])
+  // Re-apply the persisted theme on mount so the authenticated app
+  // doesn't render in the default dark scheme when the user picked
+  // light mode in the marketing or docs nav.
+  useTheme()
 
   useEffect(() => {
     if (!serverUrl || !token || !user) {
@@ -174,6 +179,9 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
 
   return (
     <div className="relative flex min-h-screen">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       {/* Persistent sidebar on md+ */}
       <aside className="border-line bg-bg-card/40 hidden w-60 flex-col border-r md:flex">
         {sidebar}
@@ -237,7 +245,9 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
           </div>
           {topBarTrailing && <div className="shrink-0">{topBarTrailing}</div>}
         </header>
-        <div className="flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</div>
+        <div id="main-content" className="flex-1 px-4 py-5 sm:px-6 sm:py-6">
+          {children}
+        </div>
       </main>
     </div>
   )
