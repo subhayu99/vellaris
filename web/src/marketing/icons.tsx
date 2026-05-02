@@ -173,3 +173,19 @@ export function IMoon(p: IconProps) {
     </Ic>
   )
 }
+
+export function IMenu(p: IconProps) {
+  return (
+    <Ic {...p}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </Ic>
+  )
+}
+
+export function IClose(p: IconProps) {
+  return (
+    <Ic {...p}>
+      <path d="M6 6 18 18M18 6 6 18" />
+    </Ic>
+  )
+}

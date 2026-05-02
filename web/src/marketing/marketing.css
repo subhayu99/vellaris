@@ -1172,6 +1172,19 @@ body[data-theme='light'] .marketing-root .living {
   gap: 10px;
   cursor: copy;
   transition: border-color 150ms;
+  /* Long install commands (e.g. the docker run snippet) overflow narrow
+   * mobile viewports as one unbroken mono token. Allow horizontal scroll
+   * inside the box and prevent flex children from forcing the parent wider
+   * than its allotted column. */
+  overflow-x: auto;
+  min-width: 0;
+}
+.marketing-root .install-card .cmd > span:first-child {
+  white-space: nowrap;
+  min-width: 0;
+}
+.marketing-root .install-card .cmd > span:last-child {
+  flex: 0 0 auto;
 }
 body[data-theme='light'] .marketing-root .install-card .cmd {
   background: #11102a;
@@ -1200,6 +1213,7 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   gap: 12px;
   font-size: 13.5px;
   color: var(--fg-2);
+  min-width: 0;
 }
 .marketing-root .repo-meta-row .label {
   color: var(--fg-3);
@@ -1210,6 +1224,9 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
 .marketing-root .repo-meta-row .val {
   font-family: var(--font-mono);
   color: var(--fg);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .marketing-root .chip {
@@ -1402,6 +1419,78 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
     gap: 32px;
   }
 }
+/* The hamburger trigger is hidden by default on desktop; the inline
+ * desktop links carry the navigation. Below the breakpoint we flip:
+ * inline links hide, hamburger shows, drawer slides in. */
+.marketing-root .nav-show-sm {
+  display: none;
+}
+
+/* Mobile dropdown panel — anchored to the bottom of the nav, slides
+ * down on open. Lives inside <nav> as a sibling of .nav-links so it
+ * stays glued to the sticky nav and doesn't disturb hero layout. */
+.marketing-root .nav-mobile-panel {
+  display: none;
+}
+.marketing-root .nav-mobile-panel.is-open {
+  display: flex;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 16px 14px;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  animation: nav-mobile-slide 160ms ease-out;
+}
+@keyframes nav-mobile-slide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.marketing-root .nav-mobile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px;
+  border-radius: 8px;
+  color: var(--fg-2);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+}
+.marketing-root .nav-mobile-link:hover,
+.marketing-root .nav-mobile-link:focus-visible {
+  color: var(--fg);
+  background: var(--bg-hover);
+  outline: none;
+}
+.marketing-root .nav-mobile-link.is-active {
+  color: var(--gold);
+}
+.marketing-root .nav-mobile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.marketing-root .nav-mobile-row .nav-mobile-link {
+  width: auto;
+  flex: 1;
+}
+
 /* The status pill + secondary section links wrap awkwardly between
    720 and ~900px because their combined width exceeds the available
    nav space. Hide the .nav-hide-sm group earlier so the nav stays on
@@ -1409,6 +1498,9 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
 @media (max-width: 900px) {
   .marketing-root .nav-links .nav-hide-sm {
     display: none;
+  }
+  .marketing-root .nav-show-sm {
+    display: inline-flex;
   }
 }
 @media (max-width: 720px) {
@@ -1442,6 +1534,31 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   .marketing-root .arch-svg {
     display: none;
   }
+  /* The 1fr/auto grid squeezes the right-column "no decryption keys"
+   * chip + uptime onto a 90px sliver, where the chip wraps onto three
+   * lines and overlaps the uptime text. Stack vertically on phones so
+   * each block gets full row width. */
+  .marketing-root .arch-server {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px;
+  }
+  .marketing-root .arch-server > div:last-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px !important;
+  }
+  .marketing-root .arch-server .stack-title {
+    flex-wrap: wrap;
+  }
+  .marketing-root .arch-server .chip {
+    white-space: normal;
+    height: auto;
+    padding: 4px 10px;
+    line-height: 1.35;
+  }
   .marketing-root .arch-can-cant {
     grid-template-columns: 1fr;
   }
@@ -1457,6 +1574,18 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   }
   .marketing-root .feature-cell {
     padding: 24px;
+  }
+  /* Repo meta on the get-started section: long mono URL and prose
+   * "audited by" line don't fit beside a fixed-width 110px label.
+   * Stack to two lines so each value gets full row width and wraps
+   * cleanly. */
+  .marketing-root .repo-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .marketing-root .repo-meta-row .label {
+    width: auto;
   }
 }
 
