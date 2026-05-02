@@ -877,6 +877,30 @@ body[data-theme='light'] .docs-root .docs-content code {
   font-size: 13px;
   line-height: 1.7;
   color: rgba(247, 241, 227, 0.92);
+  position: relative;
+}
+/* Fade the right edge of the scrollable <pre> on mobile so the user
+ * sees there's more content to scroll to. The pseudo sits above the
+ * pre but is pointer-events:none so it doesn't catch taps. */
+.codeblock::after {
+  content: '';
+  position: absolute;
+  top: 41px; /* clear the head bar */
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, #08071a);
+  opacity: 0;
+  transition: opacity 200ms;
+}
+@media (max-width: 720px) {
+  .codeblock::after {
+    opacity: 1;
+  }
+}
+body[data-theme='light'] .docs-root .codeblock::after {
+  background: linear-gradient(to right, transparent, #11102a);
 }
 body[data-theme='light'] .docs-root .codeblock {
   background: #11102a;
@@ -990,7 +1014,10 @@ body[data-theme='light'] .docs-root .codeblock {
   }
 }
 
-/* ---------- Auth flow ---------- */
+/* ---------- Auth flow ----------
+ * Sequence diagram. The SVG viewBox is wide (880x360), so on phones the
+ * text inside scales down past readability. Below 720px we let the SVG
+ * keep a min-width and the container scrolls horizontally. */
 .auth-stage {
   position: relative;
   background: var(--bg-card);
@@ -1003,6 +1030,16 @@ body[data-theme='light'] .docs-root .codeblock {
   display: block;
   width: 100%;
   height: auto;
+}
+@media (max-width: 720px) {
+  .auth-stage {
+    padding: 16px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .auth-stage svg {
+    min-width: 640px;
+  }
 }
 
 /* ---------- Prev/next ---------- */
@@ -1068,6 +1105,14 @@ body[data-theme='light'] .docs-root .codeblock {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
+.docs-rail::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 32px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--bg));
+}
 .docs-rail-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -1076,8 +1121,12 @@ body[data-theme='light'] .docs-root .codeblock {
   align-items: center;
   gap: 6px;
   overflow-x: auto;
+  scrollbar-width: none;
   font-family: var(--font-mono);
   font-size: 12px;
+}
+.docs-rail-inner::-webkit-scrollbar {
+  display: none;
 }
 .docs-rail-chip {
   flex: 0 0 auto;
@@ -1097,6 +1146,24 @@ body[data-theme='light'] .docs-root .codeblock {
   border-color: var(--accent-line);
   color: var(--gold);
   background: var(--accent-soft);
+}
+
+/* Responsive tables — at narrow widths, let the table scroll horizontally
+ * inside its own container. We re-display the inner thead/tbody as tables
+ * so cells still align; this avoids needing a JSX wrapper everywhere. */
+@media (max-width: 720px) {
+  .docs-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .docs-content table thead,
+  .docs-content table tbody {
+    display: table;
+    width: max-content;
+    min-width: 100%;
+  }
 }
 
 @media (max-width: 900px) {

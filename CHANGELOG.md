@@ -1,3 +1,14 @@
+## 0.5.3 — 2026-05-02
+
+### Fixed
+
+- **Dashboard row hover broken.** The file rows in `/dashboard` referenced an undefined `hover:bg-bg-hover` Tailwind class, so the hover background never rendered. Replaced with `hover:bg-line` (the same token the sidebar nav links use) and added a focus-visible ring + screen-reader label.
+
+### Changed
+
+- **Mobile responsiveness pass on the SPA.** The authenticated app now usable on phones — sidebar collapses behind a hamburger drawer below `md`, form rows (share, recipient, key-blob actions, settings disconnect) stack vertically on narrow viewports, headings scale, tap targets bumped to ≥44px on the back link / sidebar logout / chip close affordances, document-detail metadata grid stacks single-column, and `AuthLayout` / `DashboardLayout` paddings shrink with breakpoint.
+- **Mobile responsiveness pass on the docs + marketing site.** Wide tables in `/docs/cli`, `/docs/sdk`, `/docs/protocol`, `/docs/trust-model`, `/docs/deployment` now scroll horizontally inside their own container instead of overflowing the page. The mobile rail and code blocks gained right-edge fade gradients so the user discovers horizontal scroll. The `/docs/protocol` auth-flow SVG is given a `min-width` and a horizontally-scrollable container below 720px so its labels stay legible. The marketing hero CTAs and install button stack full-width below 480px instead of wrapping unpredictably between 360–375px.
+
 ## 0.5.2 — 2026-05-01
 
 ### Changed

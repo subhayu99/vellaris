@@ -196,7 +196,7 @@ export function SettingsRoute() {
   return (
     <DashboardLayout>
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <h1 className="text-fg font-serif text-2xl tracking-tight">Settings</h1>
+        <h1 className="text-fg font-serif text-xl tracking-tight sm:text-2xl">Settings</h1>
 
         {/* Account */}
         <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
@@ -248,11 +248,13 @@ export function SettingsRoute() {
                 wrapped private key stays on this device — you can sign in again to the same server,
                 or point at a new one (signup will ask for a fresh keypair on a new server).
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
                   variant="secondary"
                   size="default"
                   onClick={() => setConfirmDifferentServer(false)}
+                  fullWidth
+                  className="sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -260,6 +262,8 @@ export function SettingsRoute() {
                   variant="danger"
                   size="default"
                   onClick={disconnectServer}
+                  fullWidth
+                  className="sm:w-auto"
                   data-testid="disconnect-confirm"
                 >
                   Disconnect
@@ -292,13 +296,15 @@ export function SettingsRoute() {
             </Field>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button
               variant="primary"
               size="default"
               leading={<Icons.IKey size={14} />}
               onClick={pushBlob}
               disabled={keyBlobBusy}
+              fullWidth
+              className="sm:w-auto"
               data-testid="keyblob-push"
             >
               {keyBlobBusy ? 'Working…' : 'Push to server'}
@@ -308,6 +314,8 @@ export function SettingsRoute() {
               size="default"
               onClick={pullBlob}
               disabled={keyBlobBusy || !hasRemoteBlob}
+              fullWidth
+              className="sm:w-auto"
               data-testid="keyblob-pull"
             >
               Pull from server
@@ -318,6 +326,8 @@ export function SettingsRoute() {
               leading={<Icons.ITrash size={14} />}
               onClick={deleteRemoteBlob}
               disabled={keyBlobBusy || !hasRemoteBlob}
+              fullWidth
+              className="sm:w-auto"
               data-testid="keyblob-delete"
             >
               Delete server copy

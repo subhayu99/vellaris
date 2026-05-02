@@ -70,7 +70,9 @@ export function ConnectRoute() {
       <form onSubmit={onSubmit} className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <VSigil size={56} glow />
-          <h1 className="text-fg font-serif text-3xl tracking-tight">Connect to your server</h1>
+          <h1 className="text-fg font-serif text-2xl tracking-tight sm:text-3xl">
+            Connect to your server
+          </h1>
           <p className="text-fg-2 max-w-sm">
             Vellaris runs on a server you control. Paste its URL and we'll check it's reachable
             before you sign in.

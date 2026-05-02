@@ -159,3 +159,11 @@ export const IServer = (p: IconProps) => (
     <path d="M7 16.5h.01" />
   </Icon>
 )
+
+export const IMenu = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16" />
+    <path d="M4 12h16" />
+    <path d="M4 18h16" />
+  </Icon>
+)

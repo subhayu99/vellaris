@@ -251,7 +251,7 @@ export function DocDetailRoute() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="text-fg-3 hover:text-fg text-[12.5px]"
+            className="text-fg-3 hover:bg-line hover:text-fg focus-visible:outline-gold/60 -ml-2 inline-flex min-h-11 items-center rounded-md px-2 text-[13px] transition-colors focus-visible:outline-2 sm:min-h-0 sm:py-1"
           >
             ← Back
           </button>
@@ -271,14 +271,14 @@ export function DocDetailRoute() {
 
         {!loading && download && (
           <>
-            <div className="border-line bg-bg-card/40 rounded-lg border p-5">
-              <div className="flex items-start justify-between gap-4">
+            <div className="border-line bg-bg-card/40 rounded-lg border p-4 sm:p-5">
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="text-fg-3 mb-1 text-[11px] tracking-[0.12em] uppercase">
                     {isOwner ? 'You uploaded this' : 'Shared with you'}
                   </div>
                   <h1
-                    className="text-fg font-serif text-2xl tracking-tight break-all"
+                    className="text-fg font-serif text-xl tracking-tight break-all sm:text-2xl"
                     data-testid="doc-filename"
                   >
                     {filename ?? <span className="text-fg-3">Decrypting…</span>}
@@ -290,13 +290,15 @@ export function DocDetailRoute() {
                   leading={<Icons.IDownload size={14} />}
                   onClick={onDownload}
                   disabled={!filename}
+                  fullWidth
+                  className="sm:w-auto"
                   data-testid="doc-download"
                 >
                   Download
                 </Button>
               </div>
 
-              <dl className="mt-5 grid grid-cols-2 gap-3 text-[12.5px]">
+              <dl className="mt-5 grid grid-cols-1 gap-3 text-[12.5px] sm:grid-cols-2">
                 <div>
                   <dt className="text-fg-3 mb-0.5 text-[10.5px] tracking-wider uppercase">
                     Size (ciphertext)
@@ -365,10 +367,10 @@ export function DocDetailRoute() {
                               onClick={() => onRevokeChip(grant.userId, grant.username)}
                               disabled={busy}
                               aria-label={`Revoke ${grant.username}`}
-                              className="text-fg-3 hover:text-danger disabled:text-fg-3/40 -mr-0.5 inline-flex items-center justify-center rounded-full p-0.5 transition-colors"
+                              className="text-fg-3 hover:text-danger disabled:text-fg-3/40 -mr-1 inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors"
                               data-testid={`access-chip-revoke-${grant.username}`}
                             >
-                              <Icons.IClose size={12} />
+                              <Icons.IClose size={14} />
                             </button>
                           )}
                         </li>
@@ -394,9 +396,10 @@ export function DocDetailRoute() {
                       Wrap the document key with their public key, in your browser.
                     </p>
                   </div>
-                  <Field error={shareError ?? undefined}>
-                    <div className="flex gap-2">
+                  <Field label="Recipient username" htmlFor="share-input" error={shareError ?? undefined}>
+                    <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
+                        id="share-input"
                         value={shareInput}
                         onChange={(e) => setShareInput(e.target.value)}
                         placeholder="username"
@@ -415,6 +418,8 @@ export function DocDetailRoute() {
                         leading={<Icons.IShare size={14} />}
                         onClick={onShare}
                         disabled={shareBusy || shareInput.trim().length === 0}
+                        fullWidth
+                        className="sm:w-auto"
                         data-testid="share-submit"
                       >
                         {shareBusy ? 'Sharing…' : 'Share'}
@@ -428,13 +433,15 @@ export function DocDetailRoute() {
                   )}
                 </div>
 
-                <div className="border-line flex justify-end border-t pt-4">
+                <div className="border-line flex justify-stretch border-t pt-4 sm:justify-end">
                   <Button
                     variant="danger"
                     size="default"
                     leading={<Icons.ITrash size={14} />}
                     onClick={onDelete}
                     disabled={deleting}
+                    fullWidth
+                    className="sm:w-auto"
                     data-testid="doc-delete"
                   >
                     {deleting ? 'Deleting…' : 'Delete document'}

@@ -176,8 +176,8 @@ export function DashboardRoute() {
       }
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <h1 className="text-fg font-serif text-2xl tracking-tight">Files</h1>
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-fg font-serif text-xl tracking-tight sm:text-2xl">Files</h1>
           <div className="border-line-2 bg-bg-elev inline-flex rounded-md border p-0.5">
             {SCOPES.map((s) => {
               const active = s.value === scope
@@ -240,8 +240,13 @@ export function DashboardRoute() {
                 <button
                   type="button"
                   onClick={() => navigate(`/doc/${row.summary.id}`)}
-                  className="hover:bg-bg-hover flex w-full items-center gap-4 px-4 py-3 text-left transition-colors"
+                  className="hover:bg-line focus-visible:outline-gold/60 flex w-full items-center gap-3 px-3 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 sm:gap-4 sm:px-4"
                   data-testid={`row-${row.summary.id}`}
+                  aria-label={
+                    row.filename
+                      ? `Open ${row.filename}`
+                      : 'Open document (filename still decrypting)'
+                  }
                 >
                   <Icons.IFile size={16} />
                   <div className="min-w-0 flex-1">

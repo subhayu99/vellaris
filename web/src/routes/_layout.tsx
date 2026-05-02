@@ -24,7 +24,7 @@ export interface AuthLayoutProps {
 export function AuthLayout({ children, serverUrl, user, onDisconnect }: AuthLayoutProps) {
   return (
     <div className="relative flex min-h-screen flex-col">
-      <header className="flex items-center justify-between px-6 py-5">
+      <header className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
         <Link to="/" className="flex items-center gap-2.5">
           <VSigil size={26} />
           <Wordmark size="md" />
@@ -33,7 +33,7 @@ export function AuthLayout({ children, serverUrl, user, onDisconnect }: AuthLayo
           <ConnectionPill serverUrl={serverUrl} user={user} onDisconnect={onDisconnect} />
         ) : null}
       </header>
-      <main className="flex flex-1 items-center justify-center px-6 pb-16">
+      <main className="flex flex-1 items-center justify-center px-4 pb-10 sm:px-6 sm:pb-16">
         <div className="w-full max-w-md">{children}</div>
       </main>
     </div>

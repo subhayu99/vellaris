@@ -183,15 +183,17 @@ export function UploadRoute() {
   return (
     <DashboardLayout>
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => navigate('/dashboard?scope=mine')}
-            className="text-fg-3 hover:text-fg text-[12.5px]"
+            className="text-fg-3 hover:bg-line hover:text-fg focus-visible:outline-gold/60 -ml-2 inline-flex min-h-11 items-center rounded-md px-2 text-[13px] transition-colors focus-visible:outline-2 sm:min-h-0 sm:py-1"
           >
             ← Back
           </button>
-          <h1 className="text-fg font-serif text-2xl tracking-tight">Encrypt &amp; share</h1>
+          <h1 className="text-fg font-serif text-xl tracking-tight sm:text-2xl">
+            Encrypt &amp; share
+          </h1>
         </div>
 
         <div
@@ -255,11 +257,13 @@ export function UploadRoute() {
         <div className="flex flex-col gap-3">
           <Field
             label="Share with"
+            htmlFor="recipient-input"
             hint="Add usernames who should be able to decrypt this file. You're always included."
             error={resolveError ?? undefined}
           >
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input
+                id="recipient-input"
                 value={recipientInput}
                 onChange={(e) => setRecipientInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -277,6 +281,8 @@ export function UploadRoute() {
                 size="default"
                 onClick={addRecipient}
                 disabled={busy || recipientInput.trim().length === 0}
+                fullWidth
+                className="sm:w-auto"
               >
                 Add
               </Button>
@@ -297,11 +303,11 @@ export function UploadRoute() {
                     <button
                       type="button"
                       onClick={() => removeRecipient(r.userId)}
-                      className="text-fg-3 hover:text-fg"
+                      className="text-fg-3 hover:text-fg -mr-1 inline-flex h-7 w-7 items-center justify-center rounded-full"
                       aria-label={`Remove ${r.username}`}
                       disabled={busy}
                     >
-                      <Icons.IClose size={12} />
+                      <Icons.IClose size={14} />
                     </button>
                   )}
                 </li>
@@ -326,12 +332,14 @@ export function UploadRoute() {
           </div>
         )}
 
-        <div className="border-line flex justify-end gap-3 border-t pt-4">
+        <div className="border-line flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:justify-end">
           <Button
             variant="ghost"
             size="default"
             onClick={() => navigate('/dashboard?scope=mine')}
             disabled={busy}
+            fullWidth
+            className="sm:w-auto"
           >
             Cancel
           </Button>
@@ -341,6 +349,8 @@ export function UploadRoute() {
             leading={<Icons.IUpload size={14} />}
             disabled={!canSubmit}
             onClick={onSubmit}
+            fullWidth
+            className="sm:w-auto"
             data-testid="upload-submit"
           >
             {busy ? 'Working…' : 'Encrypt & upload'}
