@@ -1,3 +1,22 @@
+## 0.5.6 — 2026-05-02
+
+### Added
+
+- **`<Notice>` primitive** with `error` / `success` / `warn` / `info` variants and `role="alert"` / `role="status"` for assistive tech. Replaces the duplicated four-token-deep error/success boxes across `/dashboard`, `/doc/:id`, `/upload`, `/settings`.
+- **`<Spinner>` primitive** for inline busy indicators. Wired into the share button and the keyblob "Push to server" button (which used to flip text-only `Share → Sharing…` with no visual cue). Respects `prefers-reduced-motion`.
+- **Appearance section in `/settings`** with a theme-toggle button using the same `useTheme` hook as the marketing/docs nav.
+- **Skip-to-main-content link** on all four layouts (auth, dashboard, marketing, docs). Visually hidden until focused via Tab, slides into view top-left, jumps focus past nav/sidebar straight into the page body.
+
+### Fixed
+
+- **Theme persistence** — the saved theme was only re-applied when the user passed through marketing or docs first. Direct landings on `/connect`, `/login`, or any authenticated route ignored the preference. `useTheme()` now also runs in `AuthLayout` and `DashboardLayout`.
+- **Phone-width grid stacking pass.** The auto-fit grids in the deployment configurator (`install-panel-grid`, `install-grid-3`, `install-advanced-grid`), the CLI / SDK builder args grids, and the docs page-shell `.docs-h1-row` / hub featured card / plate grid / prev-next all force single-column layouts below 480px. The `auto-fit minmax(220–260px, 1fr)` pattern was leaving ~155px per cell after parent padding on iPhone-SE-class viewports.
+- **Footer grid stacks single-column below 480px.** A 1100px rule was overriding the 720px rule for 481–720px viewports; an explicit `1fr` at 480px now wins.
+
+### Changed
+
+- **Touch targets** bumped to ≥44px on the API endpoint list, CLI command tiles, SDK recipe tiles, footer "build" version button, and marketing theme toggle.
+
 ## 0.5.5 — 2026-05-02
 
 ### Added

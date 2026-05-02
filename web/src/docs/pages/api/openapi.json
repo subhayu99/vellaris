@@ -479,7 +479,7 @@
   "info": {
     "description": "End-to-end encrypted document sharing \u2014 server.",
     "title": "Vellaris",
-    "version": "0.5.5"
+    "version": "0.5.6"
   },
   "openapi": "3.1.0",
   "paths": {
