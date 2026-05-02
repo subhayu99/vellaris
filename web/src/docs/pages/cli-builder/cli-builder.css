@@ -9,6 +9,8 @@
   flex-direction: column;
   gap: 0.25rem;
   align-items: flex-start;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
   border-radius: 6px;
@@ -68,4 +70,14 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
+}
+
+/* Stack the args grid + tighten spacing on phones — at 260px minmax the
+ * grid already drops to one column at 480px, but inputs cramped against
+ * the column edge. Forcing 1fr + zero column gap reads cleaner. */
+@media (max-width: 480px) {
+  .cli-args-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem 0;
+  }
 }

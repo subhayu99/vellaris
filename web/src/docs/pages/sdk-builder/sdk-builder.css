@@ -9,6 +9,8 @@
   flex-direction: column;
   gap: 0.3rem;
   align-items: flex-start;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--line, rgba(255, 255, 255, 0.15));
   border-radius: 6px;
@@ -62,4 +64,11 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .sdk-args-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem 0;
+  }
 }

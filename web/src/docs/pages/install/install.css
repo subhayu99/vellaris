@@ -175,3 +175,16 @@
     align-items: flex-start;
   }
 }
+
+/* Phone-width pass — the auto-fit grids still try to fit two columns
+ * at 220–260px minmax which on iPhone SE (375px) leaves ~155px per
+ * cell after parent padding. Force everything to one column below
+ * 480px so labels + inputs each get full row width. */
+@media (max-width: 480px) {
+  .install-panel-grid,
+  .install-grid-3,
+  .install-advanced-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}

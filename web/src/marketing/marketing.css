@@ -1338,12 +1338,13 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   border: 1px solid var(--line-2);
   color: var(--fg-2);
   cursor: pointer;
-  padding: 6px 10px;
+  padding: 8px 14px;
   border-radius: 6px;
   font-size: 12px;
   display: inline-flex;
   gap: 6px;
   align-items: center;
+  min-height: 36px;
   transition:
     color 150ms,
     border-color 150ms;
@@ -1621,5 +1622,21 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   }
   .marketing-root .hero-copy {
     gap: 18px;
+  }
+  /* Footer grid stacks single-column below 480px — at 720px it's already
+   * 1fr but the override comes after a 1100px rule that sets it to two
+   * columns, and that two-column rule wins for 481–720px. Below 480px
+   * we want true single-column stacking so the brand description, link
+   * groups, and copyright row each get the full viewport width. */
+  .marketing-root .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  /* Touch targets — the version "build" button and the theme toggle
+   * are both <44px tall on phones. Bump them so they're easy to tap. */
+  .marketing-root .footer-bottom .build {
+    min-height: 36px;
+    padding: 8px 12px;
+    margin: 0;
   }
 }
