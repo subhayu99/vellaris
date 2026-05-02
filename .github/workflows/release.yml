@@ -183,15 +183,19 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Compute the base path from $GITHUB_REPOSITORY so the same workflow
-      # works in any fork without hardcoding the project name. User-pages
-      # repos (<owner>.github.io) deploy at root; project-pages repos
-      # deploy at /<repo-name>/.
+      # works in any fork without hardcoding the project name. A custom
+      # domain (signalled by a CNAME file under web/public/) takes priority
+      # — Pages serves it at the apex, so the base path is /. Otherwise
+      # user-pages repos (<owner>.github.io) deploy at root; project-pages
+      # repos deploy at /<repo-name>/.
       - name: Compute base path
         id: base
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           REPO_OWNER="${GITHUB_REPOSITORY%/*}"
-          if [ "$REPO_NAME" = "${REPO_OWNER}.github.io" ]; then
+          if [ -f "web/public/CNAME" ]; then
+            echo "BASE_PATH=/" >> $GITHUB_OUTPUT
+          elif [ "$REPO_NAME" = "${REPO_OWNER}.github.io" ]; then
             echo "BASE_PATH=/" >> $GITHUB_OUTPUT
           else
             echo "BASE_PATH=/${REPO_NAME}/" >> $GITHUB_OUTPUT
