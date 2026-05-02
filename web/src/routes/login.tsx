@@ -19,13 +19,21 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, EncryptAnim, Field, Input, VSigil } from '../components/index.ts'
+import { Button, EncryptAnim, Field, Input, Notice, Spinner, VSigil } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
 import { trackPageview } from '../components/cloudflare-beacon.tsx'
+import { Icons } from '../components/index.ts'
 import { DecryptError, deserializePrivateKeyForPss, pssSign } from '../crypto/index.ts'
 import { unwrapPrivateKey } from '../crypto/worker-client.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { getWrappedKey, hasWrappedKey } from '../state/keystore.ts'
+import {
+  loginWithPasskey,
+  PasskeyCancelledError,
+  PasskeyUnsupportedError,
+  PrfUnsupportedError,
+} from '../state/passkey.ts'
 import { setCachedUser, setToken } from '../state/session.ts'
 import { setUnwrappedPem } from '../state/key-cache.ts'
 import { uuidToBytes } from '../util/uuid.ts'
@@ -48,6 +56,13 @@ export function LoginRoute() {
   const [stage, setStage] = useState<Stage>('idle')
   const [error, setError] = useState<string | null>(null)
 
+  // Passkey state — when the platform offers a built-in authenticator the
+  // login screen surfaces a "Use a passkey" button as the default. The
+  // passphrase form stays available as the recovery path.
+  const [passkeyAvailable, setPasskeyAvailable] = useState(false)
+  const [passkeyBusy, setPasskeyBusy] = useState(false)
+  const [passkeyError, setPasskeyError] = useState<string | null>(null)
+
   useEffect(() => {
     if (!serverUrl) {
       navigate('/connect', { replace: true })
@@ -58,11 +73,57 @@ export function LoginRoute() {
   useEffect(() => {
     trackPageview('/login')
   }, [])
+  useEffect(() => {
+    let cancelled = false
+    if (!isWebAuthnSupported()) return
+    void isPlatformAuthenticatorAvailable().then((avail) => {
+      if (!cancelled) setPasskeyAvailable(avail)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
   if (!serverUrl || !hasWrappedKey()) return null
 
   function disconnect() {
     clearServerUrl()
     navigate('/connect')
+  }
+
+  async function signInWithPasskey() {
+    if (!serverUrl) return
+    setPasskeyError(null)
+    setPasskeyBusy(true)
+    try {
+      const client = new VellarisClient(serverUrl)
+      const result = await loginWithPasskey(client, {
+        username: username.trim() || undefined,
+      })
+      setToken(result.auth.token)
+      setCachedUser({
+        id: result.auth.user.id,
+        username: result.auth.user.username,
+        email: result.auth.user.email,
+      })
+      setUnwrappedPem(result.privatePem)
+      navigate('/dashboard?scope=shared')
+    } catch (err) {
+      if (err instanceof PasskeyCancelledError) {
+        setPasskeyError('Passkey prompt was cancelled.')
+      } else if (err instanceof PrfUnsupportedError) {
+        setPasskeyError(err.message)
+      } else if (err instanceof PasskeyUnsupportedError) {
+        setPasskeyError(err.message)
+      } else if (err instanceof VellarisAPIError && err.status === 401) {
+        setPasskeyError('That passkey isn’t registered on this server.')
+      } else if (err instanceof VellarisNetworkError) {
+        setPasskeyError(`Couldn’t reach ${serverUrl}.`)
+      } else {
+        setPasskeyError((err as Error).message)
+      }
+    } finally {
+      setPasskeyBusy(false)
+    }
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -153,11 +214,36 @@ export function LoginRoute() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="alice"
-            autoComplete="username"
-            disabled={busy}
+            autoComplete="username webauthn"
+            disabled={busy || passkeyBusy}
             data-testid="login-username"
           />
         </Field>
+
+        {passkeyAvailable && (
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              fullWidth
+              leading={passkeyBusy ? <Spinner size={14} /> : <Icons.IKey size={14} />}
+              onClick={signInWithPasskey}
+              disabled={busy || passkeyBusy}
+              data-testid="login-passkey"
+            >
+              {passkeyBusy ? 'Waiting for passkey…' : 'Sign in with a passkey'}
+            </Button>
+            {passkeyError && (
+              <Notice variant="error" data-testid="login-passkey-error">
+                {passkeyError}
+              </Notice>
+            )}
+            <div className="border-line text-fg-3 relative my-1 flex items-center text-[11px] tracking-[0.16em] uppercase before:mr-3 before:h-px before:flex-1 before:bg-current before:opacity-30 after:ml-3 after:h-px after:flex-1 after:bg-current after:opacity-30">
+              or use your passphrase
+            </div>
+          </>
+        )}
 
         <Field
           label="Passphrase"
@@ -170,7 +256,7 @@ export function LoginRoute() {
             value={passphrase}
             onChange={(e) => setPassphrase(e.target.value)}
             autoComplete="current-password"
-            disabled={busy}
+            disabled={busy || passkeyBusy}
             data-testid="login-passphrase"
           />
         </Field>

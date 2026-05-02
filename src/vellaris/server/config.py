@@ -48,6 +48,28 @@ class VellarisSettings(BaseSettings):
     session_ttl_seconds: int = Field(default=8 * 60 * 60, ge=60)
     challenge_ttl_seconds: int = Field(default=5 * 60, ge=10)
 
+    # --- WebAuthn / passkeys ---
+    # The Relying Party (RP) ID is the registrable domain WebAuthn binds
+    # credentials to. Browsers refuse to use a passkey on a different RP
+    # ID than the one it was registered under. For local dev keep it as
+    # "localhost"; production should be "vellaris.example.com" (or the
+    # apex if you want subdomains to share the same passkey).
+    webauthn_rp_id: str = Field(
+        default="localhost",
+        description="WebAuthn Relying Party ID (registrable domain).",
+    )
+    webauthn_rp_name: str = Field(
+        default="Vellaris",
+        description="Human-readable name shown in the platform passkey prompt.",
+    )
+    # Allowed origins for both register and authenticate ceremonies. The
+    # browser sends the page origin in clientDataJSON; verification fails
+    # if it isn't in this list. Include https variants and the dev port.
+    webauthn_rp_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:5173", "http://localhost:8000"],
+        description="Allowed origins for WebAuthn ceremonies (CORS-style allow-list).",
+    )
+
     # --- blob storage ---
     blob_url: str = Field(
         default_factory=lambda: f"file://{(Path.cwd() / 'var' / 'blobs').as_posix()}",

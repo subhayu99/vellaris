@@ -77,3 +77,30 @@ export interface KeyBlobResponse {
 
 /** Scope filter for `GET /documents`. */
 export type DocumentScope = 'mine' | 'shared' | 'all'
+
+/* ---------- WebAuthn / passkeys ---------- */
+
+/** Pair returned by either ceremony's "begin" endpoint.
+ *
+ * `optionsJson` is the server's serialized PublicKeyCredentialCreation /
+ * RequestOptions ready to be parsed and fed to navigator.credentials.
+ * The challenge_id is server-side state we hand back to "finish".
+ */
+export interface PasskeyBeginResponse {
+  challengeId: string
+  optionsJson: string
+}
+
+/** A registered passkey as listed in /webauthn/credentials. */
+export interface PasskeySummary {
+  id: string
+  name: string
+  transports: string[]
+  createdAt: Date
+  lastUsedAt: Date | null
+}
+
+/** /webauthn/auth/finish response — same as login + a wrapped-key blob. */
+export interface PasskeyAuthFinishResponse extends TokenResponse {
+  wrappedKey: Uint8Array
+}

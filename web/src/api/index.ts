@@ -9,6 +9,15 @@
 export { VellarisClient } from './client.ts'
 export { VellarisAPIError, VellarisNetworkError } from './errors.ts'
 export { base64ToBytes, bytesToBase64 } from './_b64.ts'
+export {
+  decodeCreationOptionsJson,
+  decodeRequestOptionsJson,
+  encodeAuthenticationResponse,
+  encodeRegistrationResponse,
+  extractPrfFirst,
+  isPlatformAuthenticatorAvailable,
+  isWebAuthnSupported,
+} from './webauthn.ts'
 export type {
   AccessGrant,
   ChallengeResponse,
@@ -16,6 +25,9 @@ export type {
   DocumentScope,
   DocumentSummary,
   KeyBlobResponse,
+  PasskeyAuthFinishResponse,
+  PasskeyBeginResponse,
+  PasskeySummary,
   TokenResponse,
   UserPrivate,
   UserPublic,

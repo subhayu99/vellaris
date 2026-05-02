@@ -153,3 +153,99 @@ class KeyBlobResponse(BaseModel):
     user_id: UUID
     wrapped_key: B64Bytes
     updated_at: datetime
+
+
+# ---------- WebAuthn / passkeys ----------
+
+
+class PasskeyRegisterBeginResponse(BaseModel):
+    """Output of POST /webauthn/register/begin.
+
+    The fields mirror PublicKeyCredentialCreationOptions so the client
+    can pass them straight into navigator.credentials.create() after
+    base64url-decoding the byte fields. ``challenge_id`` is a server-
+    side handle the client echoes back at finish time so we know which
+    pending challenge to verify against.
+    """
+
+    challenge_id: UUID
+    options_json: str = Field(
+        description="JSON-encoded PublicKeyCredentialCreationOptions "
+        "(challenge / user.id / excludeCredentials are base64url-encoded).",
+    )
+
+
+class PasskeyRegisterFinishRequest(BaseModel):
+    """Input for POST /webauthn/register/finish."""
+
+    challenge_id: UUID
+    name: str = Field(min_length=1, max_length=64, description="Display name for the passkey.")
+    credential_json: str = Field(
+        description="JSON-stringified PublicKeyCredential as returned by "
+        "navigator.credentials.create() (with .response and .clientExtensionResults).",
+    )
+    transports: list[str] = Field(
+        default_factory=list,
+        description="Authenticator transports hint (`internal`, `hybrid`, `usb`, `nfc`, `ble`).",
+    )
+    wrapped_key: B64Bytes = Field(
+        description="The user's RSA-4096 private key, AES-GCM-wrapped under the credential's "
+        "PRF output. Server stores this opaquely.",
+    )
+
+
+class PasskeySummary(BaseModel):
+    """One row from GET /webauthn/credentials — what the user sees in Settings."""
+
+    id: UUID
+    name: str
+    transports: list[str] = Field(default_factory=list)
+    created_at: datetime
+    last_used_at: datetime | None = None
+
+
+class PasskeyAuthBeginRequest(BaseModel):
+    """Input for POST /webauthn/auth/begin.
+
+    Username is optional. If provided, the server returns the matching
+    user's credentials in ``allowCredentials`` so the browser can prompt
+    for the right authenticator. If omitted, the response uses an empty
+    allow-list — the browser will present any discoverable resident
+    credential the user has for this RP.
+    """
+
+    username: str | None = Field(default=None, min_length=1, max_length=64)
+
+
+class PasskeyAuthBeginResponse(BaseModel):
+    """Output of POST /webauthn/auth/begin."""
+
+    challenge_id: UUID
+    options_json: str = Field(
+        description="JSON-encoded PublicKeyCredentialRequestOptions.",
+    )
+
+
+class PasskeyAuthFinishRequest(BaseModel):
+    """Input for POST /webauthn/auth/finish."""
+
+    challenge_id: UUID
+    credential_json: str = Field(
+        description="JSON-stringified PublicKeyCredential as returned by "
+        "navigator.credentials.get() (with .response and .clientExtensionResults).",
+    )
+
+
+class PasskeyAuthFinishResponse(BaseModel):
+    """Output of POST /webauthn/auth/finish — session token + the credential's wrapped key.
+
+    The wrapped_key is the AES-GCM-wrapped RSA private key bound to the
+    credential the client just used. Client AES-GCM-decrypts it under
+    the PRF output that came back in the same navigator.credentials.get()
+    call — server never sees the unwrap key.
+    """
+
+    token: str
+    expires_at: datetime
+    user: UserPrivate
+    wrapped_key: B64Bytes
