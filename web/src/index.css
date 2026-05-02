@@ -105,20 +105,13 @@ button {
   font-family: inherit;
 }
 
-/* Safety net — if any descendant rule slips and a fixed-width or
- * min-content track pushes a section wider than the viewport, the
- * `<html>` clip prevents the whole page from becoming horizontally
- * scrollable. `overflow-x: clip` doesn't fight `position: sticky`
- * the way `overflow: hidden` does, but we keep the legacy fallback
- * for browsers that don't support clip yet. */
-html {
-  overflow-x: hidden;
-  overflow-x: clip;
-}
-body {
-  overflow-x: hidden;
-  overflow-x: clip;
-}
+/* No global overflow-x clip — even `overflow-x: clip` on <html>/<body>
+ * breaks `position: sticky` on the marketing/docs nav in some Chromium
+ * builds (the clip element gets treated as the sticky scroll container,
+ * but it doesn't actually scroll, so sticky devolves to static and the
+ * nav scrolls away with the page). The `minmax(0, 1fr)` grid track fix
+ * in marketing.css/docs.css/etc. handles the underlying overflow at
+ * the source. */
 
 /* Skip-to-main-content link — visually hidden until focused via Tab.
  * The first thing keyboard users hit on every layout, so they can

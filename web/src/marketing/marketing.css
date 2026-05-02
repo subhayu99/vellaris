@@ -56,7 +56,12 @@
   font-size: 15px;
   line-height: 1.55;
   color: var(--fg);
-  overflow-x: hidden;
+  /* No overflow-x set — `overflow-x: hidden` on the sticky nav's ancestor
+   * breaks `position: sticky; top: 0` in Chromium (the ancestor becomes
+   * the sticky scroll-port and never scrolls vertically, so the nav
+   * devolves to static and scrolls away with content). The `minmax(0, 1fr)`
+   * grid track fix across all responsive media queries handles horizontal
+   * overflow at the source. */
 }
 
 body[data-theme='light'] .marketing-root {

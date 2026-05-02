@@ -20,9 +20,17 @@ export function Clients() {
             sub="Built for engineers. Pipe-able, scriptable, comfortable."
             snippet={<CLISnippet />}
             text={`vellaris push contract.pdf --to alice
+# ↳ doc-9a4b21f8 · shared with alice
+
 vellaris ls --shared-with-me
+# ↳ doc-c1d37e90 audit-q1.zip from carol 2h
+# ↳ doc-42afee1c notes.md     from ops   3d
+
 vellaris share doc-9a4b21f8 --to carol
-vellaris revoke doc-9a4b21f8 --from bob`}
+# ↳ wrapped DEK for carol
+
+vellaris revoke doc-9a4b21f8 --from bob
+# ↳ access revoked`}
           />
           <ClientCard
             icon={<IWindow size={20} />}
@@ -106,19 +114,37 @@ function CLISnippet() {
         <span className="tok-flag">--to</span> alice
       </div>
       <div>
+        <span className="tok-cmt"># ↳ doc-9a4b21f8 · shared with alice</span>
+      </div>
+      <div>&nbsp;</div>
+      <div>
         <span style={{ color: 'var(--fg-4)' }}>$ </span>
         <span style={{ color: '#f3c777' }}>vellaris</span> ls{' '}
         <span className="tok-flag">--shared-with-me</span>
       </div>
+      <div>
+        <span className="tok-cmt"># ↳ doc-c1d37e90 audit-q1.zip from carol 2h</span>
+      </div>
+      <div>
+        <span className="tok-cmt"># ↳ doc-42afee1c notes.md     from ops   3d</span>
+      </div>
+      <div>&nbsp;</div>
       <div>
         <span style={{ color: 'var(--fg-4)' }}>$ </span>
         <span style={{ color: '#f3c777' }}>vellaris</span> share doc-9a4b21f8{' '}
         <span className="tok-flag">--to</span> carol
       </div>
       <div>
+        <span className="tok-cmt"># ↳ wrapped DEK for carol</span>
+      </div>
+      <div>&nbsp;</div>
+      <div>
         <span style={{ color: 'var(--fg-4)' }}>$ </span>
         <span style={{ color: '#f3c777' }}>vellaris</span> revoke doc-9a4b21f8{' '}
         <span className="tok-flag">--from</span> bob
+      </div>
+      <div>
+        <span className="tok-cmt"># ↳ access revoked</span>
       </div>
     </div>
   )
