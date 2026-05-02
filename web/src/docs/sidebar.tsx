@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { REPO_URL } from '../marketing/links.ts'
+import { APP_VERSION } from '../util/version.ts'
 import { DOCS_NAV } from './nav-entries.ts'
 
 export function DocsSidebar() {
@@ -26,7 +27,7 @@ export function DocsSidebar() {
       <div className="docs-side-foot">
         <a href={`${REPO_URL}/releases`} target="_blank" rel="noreferrer">
           <span className="v">
-            <span className="dot" /> v0.4.1 · alpha
+            <span className="dot" /> v{APP_VERSION} · alpha
           </span>
           <span className="ext" aria-hidden="true">
             ↗

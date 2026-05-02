@@ -21,6 +21,7 @@ import {
   IllusSDK,
   IllusTrust,
 } from '../hub-illus.tsx'
+import { APP_VERSION } from '../../util/version.ts'
 
 interface HubCardProps {
   num: string
@@ -139,7 +140,7 @@ export function DocsIndexPage() {
             <span className="meta">9a:4b:21:f8 · sha256 · locked v0.1</span>
           </div>
           <dl className="docs-plate-grid">
-            <PlateCell k="Latest release" v="v0.4.1 · alpha" />
+            <PlateCell k="Latest release" v={`v${APP_VERSION} · alpha`} />
             <PlateCell k="License" v="Apache-2.0" />
             <PlateCell k="Wire format" v="locked since v0.1" />
             <PlateCell k="Symmetric AEAD" v="AES-256-GCM" />

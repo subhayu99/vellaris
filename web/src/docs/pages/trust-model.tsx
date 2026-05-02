@@ -26,6 +26,7 @@ export function TrustModelPage() {
         own.
       </p>
 
+      <div className="docs-table-scroll">
       <table>
         <thead>
           <tr>
@@ -103,6 +104,7 @@ export function TrustModelPage() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <h2>What&rsquo;s NOT protected</h2>
       <ul>

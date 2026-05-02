@@ -117,11 +117,12 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 0.75rem;
 }
 .install-panel-advanced details summary::-webkit-details-marker {
   display: none;
 }
-.install-panel-advanced details summary h3 { margin: 0; font-size: 1rem; }
+.install-panel-advanced details summary h3 { margin: 0; font-size: 1rem; flex: 0 0 auto; }
 .install-panel-advanced details[open] summary h3::after { content: " ▾"; opacity: 0.5; }
 .install-panel-advanced details:not([open]) summary h3::after { content: " ▸"; opacity: 0.5; }
 .install-advanced-grid {
@@ -137,4 +138,40 @@
   accent-color: var(--accent, #cba65a);
   cursor: pointer;
   margin-right: 0.4rem;
+  flex: 0 0 auto;
+}
+
+/* ---------- Mobile-friendly fieldset labels ----------
+ * Two patterns to handle:
+ *   1. label-with-text-input ("Max upload (MB)" + <input>) — should be a
+ *      column (label above input) on phones; flex-row on desktop wastes
+ *      no vertical space when the label fits beside the input.
+ *   2. label-with-radio/checkbox ("(○) Generate ..." + mixed inline text)
+ *      — the label needs to be display:block so the inline text content
+ *      wraps as flowing prose instead of being broken into separate flex
+ *      items per element. The radio sits inline-block at the front.
+ */
+.install-fieldset label:has(input[type='radio']),
+.install-fieldset label:has(input[type='checkbox']) {
+  display: block;
+  line-height: 1.5;
+}
+.install-fieldset label:has(input[type='radio']) > input[type='radio'],
+.install-fieldset label:has(input[type='checkbox']) > input[type='checkbox'] {
+  vertical-align: -3px;
+  margin-right: 0.5rem;
+}
+@media (max-width: 720px) {
+  /* Number / text input labels in the advanced grid (and elsewhere)
+   * stack to label-above-input so wrapping label text doesn't push
+   * the input into a sliver. */
+  .install-advanced-grid .install-fieldset label:not(:has(input[type='radio'])):not(:has(input[type='checkbox'])),
+  .install-panel-grid label {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .install-panel-advanced details summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

@@ -203,6 +203,7 @@ Commands:
       </CodeBlock>
 
       <h2>Exit codes</h2>
+      <div className="docs-table-scroll">
       <table>
         <thead>
           <tr>
@@ -237,6 +238,7 @@ Commands:
           </tr>
         </tbody>
       </table>
+      </div>
 
       <p>Use these in scripts:</p>
       <CodeBlock lang="shell">

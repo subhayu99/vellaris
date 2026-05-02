@@ -18,7 +18,7 @@ export function CodeBlock({ lang = 'shell', children }: CodeBlockProps) {
     setTimeout(() => setCopied(false), 1300)
   }
   return (
-    <div className="codeblock">
+    <div className="codeblock" data-lang={lang}>
       <div className="codeblock-head">
         <span className="codeblock-tag" aria-hidden="true">
           {lang}

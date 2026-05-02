@@ -132,6 +132,7 @@ export function ProtocolPage() {
       </p>
 
       <h2>RSA usage</h2>
+      <div className="docs-table-scroll">
       <table>
         <thead>
           <tr>
@@ -161,6 +162,7 @@ export function ProtocolPage() {
           </tr>
         </tbody>
       </table>
+      </div>
       <div className="docs-callout is-danger">
         <span className="label">Distinct key handles</span>
         <span>

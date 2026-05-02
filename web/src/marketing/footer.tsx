@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { APP_VERSION } from '../util/version.ts'
 import { Link } from 'react-router-dom'
 import { VSigil } from '../components/v-sigil.tsx'
 import { IMoon, ISun } from './icons.tsx'
@@ -14,7 +15,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
   const [buildCopied, setBuildCopied] = useState(false)
   const onCopyBuild = async () => {
     try {
-      await navigator.clipboard.writeText('vellaris · v0.4.1')
+      await navigator.clipboard.writeText(`vellaris · v${APP_VERSION}`)
     } catch {
       /* clipboard unavailable */
     }
@@ -117,7 +118,7 @@ export function Footer({ theme, onToggleTheme }: FooterProps) {
             onClick={onCopyBuild}
             type="button"
           >
-            vellaris · v0.4.1
+            vellaris · v{APP_VERSION}
             {buildCopied && <span>✓</span>}
           </button>
         </div>

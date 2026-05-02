@@ -4,6 +4,7 @@ import { IArrowRight, IGitHub } from './icons.tsx'
 import { useTypewriter, type TermLine } from './hooks.ts'
 import { Terminal } from './terminal.tsx'
 import { APP_ROUTE, REPO_URL } from './links.ts'
+import { APP_VERSION } from '../util/version.ts'
 
 export function Hero() {
   const [installCopied, setInstallCopied] = useState(false)
@@ -63,7 +64,7 @@ export function Hero() {
 
 const HERO_SCRIPT: ReadonlyArray<TermLine> = [
   { kind: 'cmd', text: 'pip install vellaris' },
-  { kind: 'out', check: true, text: 'Installed vellaris 0.4.1', meta: '(client + cli)' },
+  { kind: 'out', check: true, text: `Installed vellaris ${APP_VERSION}`, meta: '(client + cli)' },
   { kind: 'blank' },
   { kind: 'cmd', text: 'vellaris signup alice@example.com' },
   { kind: 'out', check: true, text: 'Generated keypair', meta: 'fingerprint 9a:4b:21:f8:c0:e3' },

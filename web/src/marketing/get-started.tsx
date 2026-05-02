@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { IGitHub } from './icons.tsx'
 import { REPO_URL } from './links.ts'
+import { APP_VERSION } from '../util/version.ts'
 
 export function GetStarted() {
   return (
@@ -31,7 +32,7 @@ export function GetStarted() {
               </div>
               <div className="repo-meta-row">
                 <span className="label">Latest release</span>
-                <span className="val">v0.4.1 · early</span>
+                <span className="val">v{APP_VERSION} · early</span>
               </div>
               <div className="repo-meta-row">
                 <span className="label">Audited by</span>

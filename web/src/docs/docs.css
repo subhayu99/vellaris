@@ -919,6 +919,19 @@ body[data-theme='light'] .docs-root .codeblock {
   margin: 0;
   padding: 18px 20px;
   overflow-x: auto;
+  white-space: pre;
+}
+/* Binary box-drawing diagrams use Unicode line characters whose alignment
+ * relies on a fixed cell width. On phones they overflow; shrink the font
+ * so more of the diagram fits in the viewport before the user has to
+ * swipe. The columns stay aligned because every glyph still ships in
+ * the same monospace cell. */
+@media (max-width: 720px) {
+  .codeblock[data-lang='binary'] pre {
+    font-size: 10.5px;
+    line-height: 1.5;
+    padding: 14px 14px;
+  }
 }
 .codeblock pre code {
   background: transparent;
@@ -1148,21 +1161,25 @@ body[data-theme='light'] .docs-root .codeblock {
   background: var(--accent-soft);
 }
 
-/* Responsive tables — at narrow widths, let the table scroll horizontally
- * inside its own container. We re-display the inner thead/tbody as tables
- * so cells still align; this avoids needing a JSX wrapper everywhere. */
+/* Responsive tables — wrap each <table> in <div className="docs-table-scroll">.
+ * The earlier display:block trick gave thead and tbody independent table
+ * layouts, which broke column alignment between header and body. A real
+ * scroll wrapper preserves column widths and keeps the table semantic. */
+.docs-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-md);
+}
+.docs-table-scroll > table {
+  /* The wrapper handles the rounded border now; keep the table flush. */
+  border-radius: 0;
+}
 @media (max-width: 720px) {
-  .docs-content table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .docs-content table thead,
-  .docs-content table tbody {
-    display: table;
-    width: max-content;
-    min-width: 100%;
+  .docs-table-scroll > table {
+    /* Don't let cells collapse to ~zero width on narrow viewports — let
+     * the table grow to its natural width and the wrapper will scroll. */
+    min-width: max-content;
   }
 }
 

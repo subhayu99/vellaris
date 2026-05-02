@@ -8,6 +8,7 @@ import { VSigil } from '../components/v-sigil.tsx'
 import { IClose, IGitHub, IMenu, IMoon, ISun } from '../marketing/icons.tsx'
 import type { ThemeName } from '../marketing/hooks.ts'
 import { APP_ROUTE, DOCS_QUICKSTART, DOCS_TRUST, DOCS_URL, REPO_URL } from '../marketing/links.ts'
+import { APP_VERSION } from '../util/version.ts'
 
 interface DocsNavBarProps {
   theme: ThemeName
@@ -40,7 +41,7 @@ export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
       </Link>
       <div className="nav-links">
         <span className="status-pill nav-hide-sm">
-          <span className="dot" /> docs · v0.4.1
+          <span className="dot" /> docs · v{APP_VERSION}
         </span>
         <NavLink
           end

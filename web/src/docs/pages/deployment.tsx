@@ -23,8 +23,9 @@ import {
 } from './install/state'
 import { generateExportBlock, generateProxySnippet, generateRunSnippet } from './install/templates'
 import './install/install.css'
+import { APP_VERSION } from '../../util/version.ts'
 
-const VERSION = '0.5.0'
+const VERSION = APP_VERSION
 
 export function DeploymentPage() {
   const location = useLocation()
@@ -115,6 +116,7 @@ export function DeploymentPage() {
         <h2>Reference</h2>
 
         <h3>Sizing</h3>
+        <div className="docs-table-scroll">
         <table>
           <thead>
             <tr>
@@ -156,9 +158,11 @@ export function DeploymentPage() {
             </tr>
           </tbody>
         </table>
+        </div>
 
         <h3>Environment variables</h3>
         <p>All config flows through environment variables:</p>
+        <div className="docs-table-scroll">
         <table>
           <thead>
             <tr>
@@ -292,8 +296,10 @@ export function DeploymentPage() {
             </tr>
           </tbody>
         </table>
+        </div>
 
         <h3>Image variants</h3>
+        <div className="docs-table-scroll">
         <table>
           <thead>
             <tr>
@@ -319,6 +325,7 @@ export function DeploymentPage() {
             </tr>
           </tbody>
         </table>
+        </div>
 
         <h3>Docker — single container (SQLite)</h3>
         <p>Good for personal use:</p>
@@ -359,7 +366,7 @@ docker compose -f docker/compose.yaml up -d`}
         <CodeBlock lang="yaml">
           {`image:
   repository: ghcr.io/subhayu99/vellaris
-  tag: v0.4.1
+  tag: v${APP_VERSION}
   pullPolicy: IfNotPresent
 
 replicaCount: 2

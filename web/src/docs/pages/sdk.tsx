@@ -210,6 +210,7 @@ async def test_round_trip():
       </CodeBlock>
 
       <h2>Errors</h2>
+      <div className="docs-table-scroll">
       <table>
         <thead>
           <tr>
@@ -264,6 +265,7 @@ async def test_round_trip():
           </tr>
         </tbody>
       </table>
+      </div>
       <p>
         Network failures (DNS, TLS, connection refused) propagate as <code>httpx</code> exceptions —
         Vellaris doesn&rsquo;t wrap them. Catch <code>httpx.HTTPError</code> if you want to handle
