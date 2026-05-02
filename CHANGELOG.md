@@ -1,3 +1,12 @@
+## 0.5.7 — 2026-05-02
+
+### Fixed
+
+- **Whole landing page was horizontally scrollable on phones** — text under "Read every line." was wrapping at a width wider than the viewport, so each line bled off the right edge. Same symptom hit the install-card commands and the repo-meta values (`Pending external review · self-audit at /docs/secur…` got cropped). Root cause: every responsive media query stacked grids with bare `grid-template-columns: 1fr`, which CSS treats as `minmax(auto, 1fr)` — and `auto`'s min-content floor lets a single unbreakable mono token (e.g. `docker run -p 8000:8000 ghcr.io/subhayu99/vellaris:latest`) push the column wider than its parent. The single column then forced its sibling text-only column wider too, and the whole page gained a horizontal scroll.
+  - Replaced every bare `1fr` / `1fr 1fr` / `1fr auto` in mobile media queries with `minmax(0, 1fr)` across `marketing.css`, `docs.css`, `install.css`, `cli-builder.css`, `sdk-builder.css`. The grid track can now shrink below its content's intrinsic min-content, and the long mono content scrolls inside its own `overflow-x: auto` container as intended.
+  - Added `min-width: 0` to `.install-cards` and `.install-card` so flex children can't propagate their min-content up the tree.
+  - Added `overflow-x: clip` on `<html>` and `<body>` (with `overflow-x: hidden` fallback) as a safety net so any future stray fixed-width descendant can't make the whole page scrollable again.
+
 ## 0.5.6 — 2026-05-02
 
 ### Added

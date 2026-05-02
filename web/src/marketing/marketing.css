@@ -831,7 +831,7 @@ body[data-theme='light'] .marketing-root .client-snippet {
   border-radius: var(--r-md);
   padding: 22px 24px;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 20px;
   align-items: center;
 }
@@ -883,7 +883,7 @@ body[data-theme='light'] .marketing-root .client-snippet {
 .marketing-root .arch-can-cant {
   margin-top: 28px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -1140,6 +1140,7 @@ body[data-theme='light'] .marketing-root .living {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 .marketing-root .install-card {
   background: var(--bg-card);
@@ -1149,6 +1150,7 @@ body[data-theme='light'] .marketing-root .living {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
   transition: border-color 150ms;
 }
 .marketing-root .install-card:hover {
@@ -1403,7 +1405,7 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
 /* RESPONSIVE */
 @media (max-width: 1100px) {
   .marketing-root .hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 48px;
   }
   .marketing-root .how-grid,
@@ -1412,11 +1414,11 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
     grid-template-columns: repeat(2, 1fr);
   }
   .marketing-root .gs-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
   .marketing-root .footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 32px;
   }
 }
@@ -1522,10 +1524,10 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   .marketing-root .how-grid,
   .marketing-root .clients-grid,
   .marketing-root .feature-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .marketing-root .arch-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
   .marketing-root .arch-stage {
@@ -1540,7 +1542,7 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
    * lines and overlaps the uptime text. Stack vertically on phones so
    * each block gets full row width. */
   .marketing-root .arch-server {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
     padding: 18px;
   }
@@ -1561,14 +1563,14 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
     line-height: 1.35;
   }
   .marketing-root .arch-can-cant {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .marketing-root .arch-can-cant > div + div {
     border-left: 0;
     border-top: 1px solid var(--line);
   }
   .marketing-root .footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .marketing-root .arch {
     padding: 24px;
@@ -1629,7 +1631,7 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
    * we want true single-column stacking so the brand description, link
    * groups, and copyright row each get the full viewport width. */
   .marketing-root .footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
   /* Touch targets — the version "build" button and the theme toggle
