@@ -1,3 +1,25 @@
+## 0.5.5 — 2026-05-02
+
+### Added
+
+- **Mobile hamburger menu** on the marketing and `/docs` top nav. Below 900px the inline section links + GitHub + theme toggle + Sign in collapse into a dropdown drawer anchored under the sticky nav. Escape and item-tap both close it.
+- **`<ConfirmDialog>` component** replaces `window.confirm()` for destructive actions ("Delete document" in `/doc/:id`, "Delete server copy" in `/settings`). Mobile bottom-sheet, Escape-to-cancel, body-scroll lock.
+- **Build-time version injection.** `vite.config.ts` now reads `pyproject.toml`'s `[project].version` at build time and exposes it as `APP_VERSION`. The footer / docs nav / docs sidebar / docs index plate / get-started / hero terminal / Helm chart sketch / deployment exporter all read from it instead of hardcoding `v0.4.1`.
+
+### Fixed
+
+- **Docs tables had misaligned headers when scrolling on mobile.** The 0.5.4 CSS-only fix put `<thead>` and `<tbody>` into independent `display: table` layouts, which let column widths drift apart. Replaced with a JSX wrapper (`<div className="docs-table-scroll">`) so the table stays one layout and only the wrapper scrolls. Applies to trust-model, cli, sdk, protocol, and the three deployment-page tables.
+- **Deployment configurator unusable on mobile.** Number-input labels stack label-above-input below 720px instead of cramming text beside the input. Radio/checkbox labels with mixed inline content (text + `<code>` + `<em>`) switch to `display: block` so the prose reflows naturally instead of breaking into one flex item per element. Advanced-config summary header stacks vertically on phones.
+- **API playground overflowed the right edge on phones.** Server URL / Authorization token inputs and the snippet code block were clipped because grid `1fr` defaulted to a min-content floor and long mono tokens (curl one-liners) pushed the column past the viewport. Tracks now use `minmax(0, 1fr)` and children explicitly set `min-width: 0`. Endpoint-list buttons wrap and the path word-breaks so `/users/by-username/{username}` stays inside its column.
+- **Protocol page binary diagrams** shrink to `font-size: 10.5px` below 720px so noticeably more of the box-drawing fits before the user has to swipe; columns stay aligned because every glyph still ships at the same monospace cell.
+- **Marketing landing overflow on phones.** The "Read every line." section and the architecture diagram's "no decryption keys here" chip both broke layout below 480px because long mono tokens forced their flex containers wider than the viewport. The install-card command box now scrolls horizontally inside its own border, repo-meta rows stack label-above-value below 720px, and the architecture server card stacks its right-column chip + uptime side-by-side rather than over-vertically.
+
+### Changed
+
+- **Color-token drift cleanup.** `--color-gold-2` (#d4b066) now lives in the design-system `@theme` block. Every `bg-[rgba(...)]` arbitrary value across routes was replaced with token opacity modifiers (`bg-danger/10`, `bg-warn/8`, `bg-gold/8`). The `signup.tsx` "replacing existing key" warning loses its inline `style={{...}}` block in favor of token classes.
+- **Platform-aware keyboard shortcut hint.** The disabled command-palette trigger now renders `⌘K` on macOS/iOS and `Ctrl+K` everywhere else, instead of always showing `⌘K`.
+- **API playground stacks at 900px** (was 800px) so the endpoint-list + form/snippet pane stops being cramped between 800–900px viewports.
+
 ## 0.5.4 — 2026-05-02
 
 ### Fixed
