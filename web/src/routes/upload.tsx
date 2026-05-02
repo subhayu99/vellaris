@@ -205,7 +205,7 @@ export function UploadRoute() {
           onDrop={onDrop}
           className={[
             'flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors',
-            over ? 'border-gold bg-[rgba(203,166,90,0.06)]' : 'border-line-2 bg-bg-elev',
+            over ? 'border-gold bg-gold/8' : 'border-line-2 bg-bg-elev',
           ].join(' ')}
           data-testid="dropzone"
         >
@@ -327,7 +327,7 @@ export function UploadRoute() {
         )}
 
         {error && (
-          <div className="border-danger/40 text-danger rounded-lg border bg-[rgba(215,122,106,0.08)] px-4 py-3 text-[13px]">
+          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
             {error}
           </div>
         )}

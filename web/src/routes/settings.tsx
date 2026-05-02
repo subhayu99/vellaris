@@ -19,7 +19,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, Field, Icons } from '../components/index.ts'
+import { Button, ConfirmDialog, Field, Icons } from '../components/index.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -82,6 +82,7 @@ export function SettingsRoute() {
   const [hasRemoteBlob, setHasRemoteBlob] = useState<boolean | null>(null)
 
   const [confirmDifferentServer, setConfirmDifferentServer] = useState(false)
+  const [confirmingDeleteBlob, setConfirmingDeleteBlob] = useState(false)
 
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
@@ -171,8 +172,7 @@ export function SettingsRoute() {
 
   async function deleteRemoteBlob() {
     if (!client) return
-    if (!confirm('Delete the wrapped key on the server? You can re-push from this device anytime.'))
-      return
+    setConfirmingDeleteBlob(false)
     setKeyBlobBusy(true)
     setKeyBlobError(null)
     setKeyBlobNotice(null)
@@ -242,7 +242,7 @@ export function SettingsRoute() {
               </Button>
             </div>
           ) : (
-            <div className="border-warn/40 flex flex-col gap-3 rounded-md border bg-[rgba(232,183,90,0.07)] p-4 text-[12.5px]">
+            <div className="border-warn/40 bg-warn/8 flex flex-col gap-3 rounded-md border p-4 text-[12.5px]">
               <div className="text-fg-2">
                 Disconnecting clears your bearer token and the in-memory unwrapped key. Your local
                 wrapped private key stays on this device — you can sign in again to the same server,
@@ -324,7 +324,7 @@ export function SettingsRoute() {
               variant="danger"
               size="default"
               leading={<Icons.ITrash size={14} />}
-              onClick={deleteRemoteBlob}
+              onClick={() => setConfirmingDeleteBlob(true)}
               disabled={keyBlobBusy || !hasRemoteBlob}
               fullWidth
               className="sm:w-auto"
@@ -351,6 +351,17 @@ export function SettingsRoute() {
             </div>
           </details>
         </section>
+
+        <ConfirmDialog
+          open={confirmingDeleteBlob}
+          title="Delete the wrapped key on this server?"
+          body="You can re-push from this device anytime. The local wrapped key on this browser is not affected."
+          confirmLabel={keyBlobBusy ? 'Working…' : 'Delete server copy'}
+          busy={keyBlobBusy}
+          onConfirm={deleteRemoteBlob}
+          onCancel={() => setConfirmingDeleteBlob(false)}
+          testIdPrefix="confirm-delete-blob"
+        />
       </div>
     </DashboardLayout>
   )

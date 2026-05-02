@@ -142,18 +142,13 @@ export function SignupRoute() {
 
         {replacingExistingKey && (
           <div
-            className="rounded-lg border px-4 py-3 text-[13px] leading-relaxed"
-            style={{
-              borderColor: 'rgba(232, 183, 90, 0.32)',
-              background: 'rgba(232, 183, 90, 0.08)',
-              color: 'var(--color-fg)',
-            }}
+            className="border-warn/32 bg-warn/8 text-fg rounded-lg border px-4 py-3 text-[13px] leading-relaxed"
             role="status"
             data-testid="signup-replacing-key-warning"
           >
-            <strong style={{ color: 'var(--color-warn)' }}>Heads up:</strong> this device already
-            has an encrypted key on it. Creating a new account will replace it, and the previous
-            account&rsquo;s files will be unreadable from this browser.{' '}
+            <strong className="text-warn">Heads up:</strong> this device already has an encrypted
+            key on it. Creating a new account will replace it, and the previous account&rsquo;s
+            files will be unreadable from this browser.{' '}
             <button
               type="button"
               onClick={() => navigate('/login')}

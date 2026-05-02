@@ -4,6 +4,7 @@
  */
 
 export { Button, type ButtonProps } from './button.tsx'
+export { ConfirmDialog, type ConfirmDialogProps } from './confirm-dialog.tsx'
 export { Field, Input, type FieldProps } from './field.tsx'
 export { VSigil, type VSigilProps } from './v-sigil.tsx'
 export { Wordmark, type WordmarkProps } from './wordmark.tsx'

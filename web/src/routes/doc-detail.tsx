@@ -19,7 +19,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { Button, Field, Icons, Input } from '../components/index.ts'
+import { Button, ConfirmDialog, Field, Icons, Input } from '../components/index.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -84,6 +84,7 @@ export function DocDetailRoute() {
   const [revokeError, setRevokeError] = useState<string | null>(null)
 
   const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
@@ -233,7 +234,7 @@ export function DocDetailRoute() {
 
   async function onDelete() {
     if (!client || !download) return
-    if (!confirm('Delete this document? Recipients lose access immediately.')) return
+    setConfirmingDelete(false)
     setDeleting(true)
     try {
       await client.deleteDocument(download.id)
@@ -264,7 +265,7 @@ export function DocDetailRoute() {
         )}
 
         {error && (
-          <div className="border-danger/40 text-danger rounded-lg border bg-[rgba(215,122,106,0.08)] px-4 py-3 text-[13px]">
+          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
             {error}
           </div>
         )}
@@ -438,7 +439,7 @@ export function DocDetailRoute() {
                     variant="danger"
                     size="default"
                     leading={<Icons.ITrash size={14} />}
-                    onClick={onDelete}
+                    onClick={() => setConfirmingDelete(true)}
                     disabled={deleting}
                     fullWidth
                     className="sm:w-auto"
@@ -447,6 +448,22 @@ export function DocDetailRoute() {
                     {deleting ? 'Deleting…' : 'Delete document'}
                   </Button>
                 </div>
+
+                <ConfirmDialog
+                  open={confirmingDelete}
+                  title="Delete this document?"
+                  body={
+                    <>
+                      Recipients lose access immediately. Anyone who already downloaded the file
+                      keeps their copy — delete is forward-only.
+                    </>
+                  }
+                  confirmLabel={deleting ? 'Deleting…' : 'Delete document'}
+                  busy={deleting}
+                  onConfirm={onDelete}
+                  onCancel={() => setConfirmingDelete(false)}
+                  testIdPrefix="confirm-delete-doc"
+                />
               </>
             )}
           </>

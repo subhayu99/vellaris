@@ -201,7 +201,7 @@ export function DashboardRoute() {
         </div>
 
         {error && (
-          <div className="border-danger/40 text-danger rounded-lg border bg-[rgba(215,122,106,0.08)] px-4 py-3 text-[13px]">
+          <div className="border-danger/40 bg-danger/10 text-danger rounded-lg border px-4 py-3 text-[13px]">
             {error}
           </div>
         )}

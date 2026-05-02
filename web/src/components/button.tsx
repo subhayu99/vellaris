@@ -26,11 +26,10 @@ const BASE =
   'disabled:cursor-not-allowed disabled:opacity-60'
 
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-gold border-gold text-[#1a1408] hover:bg-[#d4b066]',
+  primary: 'bg-gold border-gold text-[#1a1408] hover:bg-gold-2 hover:border-gold-2',
   secondary: 'bg-transparent border-line-2 text-fg hover:bg-line hover:border-line-strong',
   ghost: 'bg-transparent border-transparent text-fg-2 hover:text-fg hover:bg-line',
-  danger:
-    'bg-transparent border-line-2 text-danger hover:border-danger hover:bg-[rgba(215,122,106,0.08)]',
+  danger: 'bg-transparent border-line-2 text-danger hover:border-danger hover:bg-danger/10',
 }
 
 const SIZE: Record<Size, string> = {

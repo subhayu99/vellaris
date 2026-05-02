@@ -32,6 +32,7 @@ import { VellarisClient } from '../api/index.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { clearSessionAndKey, getCachedUser, getToken } from '../state/session.ts'
 import { hasUnwrappedPem } from '../state/key-cache.ts'
+import { metaKeyLabel } from '../util/platform.ts'
 
 export interface DashboardLayoutProps {
   children: ReactNode
@@ -55,6 +56,7 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
   const token = useMemo(() => getToken(), [])
 
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const shortcut = useMemo(() => `${metaKeyLabel()}K`, [])
 
   useEffect(() => {
     if (!serverUrl || !token || !user) {
@@ -218,7 +220,7 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
               <ISearch size={14} />
               <span className="truncate">Search files, people, commands…</span>
               <span className="border-line-2 bg-bg-card text-fg-3 ml-auto rounded border px-1.5 py-px font-mono text-[10.5px]">
-                ⌘K
+                {shortcut}
               </span>
             </button>
             {/* Compact mobile-only search trigger */}

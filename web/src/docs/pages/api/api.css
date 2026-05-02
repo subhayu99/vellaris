@@ -6,7 +6,10 @@
   gap: 1.5rem;
   align-items: start;
 }
-@media (max-width: 800px) {
+/* Stack at 900px (the same breakpoint where docs sidebar hides) — between
+ * 800–900px the two-column layout was cramped: 220–280px of endpoint list
+ * left only ~580px for the form/snippet pane. */
+@media (max-width: 900px) {
   .api-playground {
     grid-template-columns: 1fr;
   }
