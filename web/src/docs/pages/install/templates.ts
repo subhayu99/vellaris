@@ -57,6 +57,30 @@ function imageTag(s: InstallState, version: string): string {
   return s.image === 'full' ? FULL_BASE_TAG(version) : SLIM_BASE_TAG(version)
 }
 
+/**
+ * Pick the WebAuthn Relying Party ID for this deployment.
+ *
+ * Preference order:
+ *   1. Explicit ``webauthnSpaHost`` — used when the SPA lives on a
+ *      different domain than the API (e.g. SPA at vellaris.example.com,
+ *      API at api.vellaris.example.com).
+ *   2. ``proxyHostname`` when a reverse proxy is configured — the common
+ *      case where SPA + API share a single hostname behind one proxy.
+ *
+ * Returns null when neither is set: in that case we don't emit
+ * VELLARIS_WEBAUTHN_RP_* env vars and the server falls back to its
+ * localhost defaults (correct for local dev, broken for any real
+ * deployment — operators get a startup warning to nudge them).
+ */
+function resolveWebAuthnHost(s: InstallState): string | null {
+  const explicit = s.webauthnSpaHost.trim()
+  if (explicit) return explicit
+  if (s.proxyMode !== 'none' && s.proxyHostname && s.proxyHostname !== 'vault.example.com') {
+    return s.proxyHostname
+  }
+  return null
+}
+
 function advancedEnvVars(s: InstallState): Record<string, string> {
   const out: Record<string, string> = {}
   if (s.maxUploadMb !== 100)
@@ -70,16 +94,21 @@ function advancedEnvVars(s: InstallState): Record<string, string> {
   if (s.challengeTtlMin !== 5)
     out.VELLARIS_CHALLENGE_TTL_SECONDS = String(s.challengeTtlMin * 60)
   if (s.corsOrigins !== '*')
-    out.VELLARIS_CORS_ALLOW_ORIGINS = JSON.stringify(
-      s.corsOrigins
-        .split(',')
-        .map((x) => x.trim())
-        .filter(Boolean),
-    )
+    out.VELLARIS_CORS_ALLOW_ORIGINS = s.corsOrigins
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .join(',')
   if (s.auditKeyMode === 'path')
     out.VELLARIS_AUDIT_SIGNING_KEY_PATH = s.auditKeyPath
   if (!s.autoMigrate)
     out.VELLARIS_AUTO_MIGRATE = '0'
+
+  const rpHost = resolveWebAuthnHost(s)
+  if (rpHost) {
+    out.VELLARIS_WEBAUTHN_RP_ID = rpHost
+    out.VELLARIS_WEBAUTHN_RP_ORIGINS = `https://${rpHost}`
+  }
   return out
 }
 

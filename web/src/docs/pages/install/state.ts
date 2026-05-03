@@ -54,6 +54,13 @@ export interface InstallState {
   tlsMode: TlsMode
   tlsCertPath: string
   tlsKeyPath: string
+  // The hostname the SPA loads from. WebAuthn binds passkeys to the
+  // Relying Party ID (a registrable suffix of the SPA's origin), so if
+  // the SPA is on a different host than the API (e.g. SPA at
+  // app.example.com, API at api.example.com), this overrides what would
+  // otherwise be derived from proxyHostname. Leave empty to fall back to
+  // proxyHostname when proxy is configured, or to localhost defaults.
+  webauthnSpaHost: string
 }
 
 export const defaultInstallState: InstallState = {
@@ -84,6 +91,7 @@ export const defaultInstallState: InstallState = {
   tlsMode: 'off',
   tlsCertPath: '/certs/cert.pem',
   tlsKeyPath: '/certs/key.pem',
+  webauthnSpaHost: '',
 }
 
 const RUN_MODES: ReadonlySet<RunMode> = new Set(['docker', 'compose', 'pip', 'helm', 'systemd'])
@@ -131,6 +139,7 @@ const URL_FIELDS: Record<string, keyof InstallState> = {
   tmode: 'tlsMode',
   tcert: 'tlsCertPath',
   tkey: 'tlsKeyPath',
+  waspa: 'webauthnSpaHost',
 }
 
 function isDefault(key: keyof InstallState, value: unknown): boolean {
@@ -236,6 +245,7 @@ export function decodeStateFromUrl(search: string): InstallState {
     else if (key === 'proxyHostname') out.proxyHostname = raw
     else if (key === 'tlsCertPath') out.tlsCertPath = raw
     else if (key === 'tlsKeyPath') out.tlsKeyPath = raw
+    else if (key === 'webauthnSpaHost') out.webauthnSpaHost = raw
   }
   return out
 }

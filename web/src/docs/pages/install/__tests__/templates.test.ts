@@ -204,6 +204,64 @@ describe('advanced env vars', () => {
     expect(out).toContain('VELLARIS_CORS_ALLOW_ORIGINS')
     expect(out).toContain('app.example.com')
   })
+
+  it('emits VELLARIS_WEBAUTHN_RP_* when SPA hostname is set explicitly', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'pip',
+      webauthnSpaHost: 'vellaris.subhayu.in',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_WEBAUTHN_RP_ID=vellaris.subhayu.in')
+    expect(out).toContain('VELLARIS_WEBAUTHN_RP_ORIGINS=https://vellaris.subhayu.in')
+  })
+
+  it('falls back to proxy hostname for WebAuthn RP when SPA host is empty', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'pip',
+      proxyMode: 'caddy',
+      // The placeholder hostname (vault.example.com) is treated as
+      // "still default" and skipped; use a real-looking host so the
+      // fallback actually fires.
+      proxyHostname: 'vellaris.example.com',
+      webauthnSpaHost: '',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_WEBAUTHN_RP_ID=vellaris.example.com')
+    expect(out).toContain('VELLARIS_WEBAUTHN_RP_ORIGINS=https://vellaris.example.com')
+  })
+
+  it('treats the placeholder vault.example.com hostname as "not yet set"', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'pip',
+      proxyMode: 'caddy',
+      proxyHostname: 'vault.example.com',
+      webauthnSpaHost: '',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).not.toContain('VELLARIS_WEBAUTHN_RP_ID')
+  })
+
+  it('omits WebAuthn env vars when neither SPA nor proxy hostname is configured', () => {
+    const out = generateRunSnippet({ ...defaultInstallState, runMode: 'pip' }, VERSION)
+    expect(out).not.toContain('VELLARIS_WEBAUTHN_RP_ID')
+    expect(out).not.toContain('VELLARIS_WEBAUTHN_RP_ORIGINS')
+  })
+
+  it('explicit SPA host overrides the proxy hostname', () => {
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'pip',
+      proxyMode: 'caddy',
+      proxyHostname: 'api.vellaris.subhayu.in',
+      webauthnSpaHost: 'vellaris.subhayu.in',
+    }
+    const out = generateRunSnippet(s, VERSION)
+    expect(out).toContain('VELLARIS_WEBAUTHN_RP_ID=vellaris.subhayu.in')
+    expect(out).not.toContain('VELLARIS_WEBAUTHN_RP_ID=api.vellaris.subhayu.in')
+  })
 })
 
 describe('replicas in compose', () => {
