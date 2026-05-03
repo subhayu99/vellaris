@@ -1,19 +1,22 @@
 /**
- * Login screen — challenge-response flow.
+ * Login screen — passphrase and / or passkey sign-in.
  *
- * On submit:
- *   1. POST /auth/challenge with the username → server returns
- *      (challenge_id, nonce, expires_at).
- *   2. Read the wrapped private key from localStorage and unwrap it
- *      with the passphrase (Argon2id-derive key, AES-GCM decrypt).
- *      Wrong passphrase ⇒ DecryptError, surfaced as "Incorrect passphrase".
- *   3. Import the PEM as an RSA-PSS private key, sign
- *      `challenge_id.bytes + nonce` (matches src/vellaris/server/routes/auth.py
- *      :_signed_blob).
- *   4. POST /auth/verify → bearer token + user. Cache both in sessionStorage
- *      (so the connection pill reads "Connected to <url> · alice" without an
- *      extra /users/me round-trip on every page).
- *   5. Navigate to /home — a placeholder until the dashboard lands.
+ * Two paths are surfaced depending on what this device has:
+ *
+ *   - **Passphrase (legacy / always-supported).** Requires a local
+ *     wrapped private key in IndexedDB. Posts /auth/challenge, unwraps
+ *     via Argon2id + AES-GCM, signs the challenge with PSS, posts
+ *     /auth/verify.
+ *   - **Passkey (preferred when available).** Requires the platform to
+ *     expose a user-verifying authenticator. Calls /webauthn/auth/begin
+ *     and /finish; the WebAuthn PRF extension yields a 32-byte secret
+ *     that unwraps the server-side wrapped private key blob.
+ *
+ * The screen renders if EITHER input is usable. A user landing on a
+ * fresh device with their iCloud / Google-synced passkey but no local
+ * wrapped blob still gets here and sees the passkey button — that's the
+ * headline UX of the WebAuthn integration. If neither is available we
+ * bounce to /signup, since the user has nothing to sign in with.
  */
 
 import { useEffect, useState, type FormEvent } from 'react'
@@ -50,40 +53,59 @@ const STAGE_HEADLINE: Record<Exclude<Stage, 'idle' | 'error'>, string> = {
 export function LoginRoute() {
   const navigate = useNavigate()
   const serverUrl = getServerUrl()
+  // hasWrappedKey() reads localStorage synchronously; capture once so the
+  // value is stable across the render and the effect below.
+  const hasLocalKey = hasWrappedKey()
 
   const [username, setUsername] = useState('')
   const [passphrase, setPassphrase] = useState('')
   const [stage, setStage] = useState<Stage>('idle')
   const [error, setError] = useState<string | null>(null)
 
-  // Passkey state — when the platform offers a built-in authenticator the
-  // login screen surfaces a "Use a passkey" button as the default. The
-  // passphrase form stays available as the recovery path.
-  const [passkeyAvailable, setPasskeyAvailable] = useState(false)
+  // null = still detecting (async probe hasn't resolved), true / false
+  // = known. We need the tristate so we don't redirect a fresh-device-
+  // with-passkey user to /signup before the platform-authenticator
+  // probe has a chance to come back. When WebAuthn isn't supported at
+  // all, we know the answer synchronously and short-circuit the probe.
+  const [passkeyAvailable, setPasskeyAvailable] = useState<boolean | null>(() =>
+    isWebAuthnSupported() ? null : false,
+  )
   const [passkeyBusy, setPasskeyBusy] = useState(false)
   const [passkeyError, setPasskeyError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!serverUrl) {
-      navigate('/connect', { replace: true })
-    } else if (!hasWrappedKey()) {
-      navigate('/signup', { replace: true })
-    }
-  }, [navigate, serverUrl])
-  useEffect(() => {
-    trackPageview('/login')
-  }, [])
-  useEffect(() => {
+    if (passkeyAvailable !== null) return
     let cancelled = false
-    if (!isWebAuthnSupported()) return
     void isPlatformAuthenticatorAvailable().then((avail) => {
       if (!cancelled) setPasskeyAvailable(avail)
     })
     return () => {
       cancelled = true
     }
+  }, [passkeyAvailable])
+
+  useEffect(() => {
+    if (!serverUrl) {
+      navigate('/connect', { replace: true })
+      return
+    }
+    // Only bounce once we *know* there's no passkey-capable authenticator
+    // either. If the user has neither a local wrapped key nor a platform
+    // authenticator, they have nothing to sign in with → /signup.
+    if (!hasLocalKey && passkeyAvailable === false) {
+      navigate('/signup', { replace: true })
+    }
+  }, [navigate, serverUrl, hasLocalKey, passkeyAvailable])
+
+  useEffect(() => {
+    trackPageview('/login')
   }, [])
-  if (!serverUrl || !hasWrappedKey()) return null
+
+  if (!serverUrl) return null
+  // Still resolving the platform-authenticator probe — render nothing
+  // briefly to avoid a flicker of "/signup redirect" before we know.
+  if (!hasLocalKey && passkeyAvailable === null) return null
+  if (!hasLocalKey && passkeyAvailable === false) return null
 
   function disconnect() {
     clearServerUrl()
@@ -195,6 +217,9 @@ export function LoginRoute() {
 
   const busy = stage === 'requesting' || stage === 'unwrapping' || stage === 'verifying'
   const animLabel = busy ? STAGE_HEADLINE[stage as Exclude<Stage, 'idle' | 'error'>] : undefined
+  const showPasskey = passkeyAvailable === true
+  const showPassphrase = hasLocalKey
+  const showDivider = showPasskey && showPassphrase
 
   return (
     <AuthLayout serverUrl={serverUrl} onDisconnect={disconnect}>
@@ -203,8 +228,9 @@ export function LoginRoute() {
           <VSigil size={42} />
           <h1 className="text-fg font-serif text-2xl tracking-tight">Sign in</h1>
           <p className="text-fg-2 text-[13px]">
-            We'll sign a challenge from the server with your local key. Nothing is sent that the
-            server hasn't already seen.
+            {showPassphrase
+              ? "We'll sign a challenge from the server with your local key. Nothing is sent that the server hasn't already seen."
+              : "Use your synced passkey to unlock your private key on this device. The PRF secret never leaves the authenticator."}
           </p>
         </div>
 
@@ -220,11 +246,11 @@ export function LoginRoute() {
           />
         </Field>
 
-        {passkeyAvailable && (
+        {showPasskey && (
           <>
             <Button
               type="button"
-              variant="secondary"
+              variant={showPassphrase ? 'secondary' : 'primary'}
               size="lg"
               fullWidth
               leading={passkeyBusy ? <Spinner size={14} /> : <Icons.IKey size={14} />}
@@ -239,58 +265,77 @@ export function LoginRoute() {
                 {passkeyError}
               </Notice>
             )}
-            <div className="border-line text-fg-3 relative my-1 flex items-center text-[11px] tracking-[0.16em] uppercase before:mr-3 before:h-px before:flex-1 before:bg-current before:opacity-30 after:ml-3 after:h-px after:flex-1 after:bg-current after:opacity-30">
-              or use your passphrase
-            </div>
           </>
         )}
 
-        <Field
-          label="Passphrase"
-          htmlFor="login-passphrase"
-          error={stage === 'error' ? error : undefined}
-        >
-          <Input
-            id="login-passphrase"
-            type="password"
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            autoComplete="current-password"
-            disabled={busy || passkeyBusy}
-            data-testid="login-passphrase"
-          />
-        </Field>
-
-        {busy && (
-          <div className="border-line-2 bg-bg-elev rounded-lg border px-4 py-3">
-            <EncryptAnim
-              active
-              label={animLabel}
-              description="Argon2id unwrapping uses 256 MiB · 3 passes · 4 lanes — about 1 to 2 seconds."
-            />
+        {showDivider && (
+          <div className="border-line text-fg-3 relative my-1 flex items-center text-[11px] tracking-[0.16em] uppercase before:mr-3 before:h-px before:flex-1 before:bg-current before:opacity-30 after:ml-3 after:h-px after:flex-1 after:bg-current after:opacity-30">
+            or use your passphrase
           </div>
         )}
 
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          size="lg"
-          disabled={busy}
-          data-testid="login-submit"
-        >
-          {busy ? 'Signing in…' : 'Sign in'}
-        </Button>
+        {showPassphrase && (
+          <>
+            <Field
+              label="Passphrase"
+              htmlFor="login-passphrase"
+              error={stage === 'error' ? error : undefined}
+            >
+              <Input
+                id="login-passphrase"
+                type="password"
+                value={passphrase}
+                onChange={(e) => setPassphrase(e.target.value)}
+                autoComplete="current-password"
+                disabled={busy || passkeyBusy}
+                data-testid="login-passphrase"
+              />
+            </Field>
 
-        <div className="text-fg-3 text-center text-[12.5px]">
-          New device?{' '}
-          <button
-            type="button"
-            onClick={() => navigate('/signup')}
-            className="text-fg-2 decoration-line-2 hover:text-fg underline underline-offset-2"
-          >
-            Create an account
-          </button>
+            {busy && (
+              <div className="border-line-2 bg-bg-elev rounded-lg border px-4 py-3">
+                <EncryptAnim
+                  active
+                  label={animLabel}
+                  description="Argon2id unwrapping uses 256 MiB · 3 passes · 4 lanes — about 1 to 2 seconds."
+                />
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              size="lg"
+              disabled={busy}
+              data-testid="login-submit"
+            >
+              {busy ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </>
+        )}
+
+        <div className="text-fg-3 flex flex-col gap-1 text-center text-[12.5px]">
+          <span>
+            New device?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/signup')}
+              className="text-fg-2 decoration-line-2 hover:text-fg underline underline-offset-2"
+            >
+              Create an account
+            </button>
+          </span>
+          <span>
+            Lost access?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/recover')}
+              className="text-fg-2 decoration-line-2 hover:text-fg underline underline-offset-2"
+            >
+              Recovery options
+            </button>
+          </span>
         </div>
       </form>
     </AuthLayout>
