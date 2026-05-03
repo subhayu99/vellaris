@@ -195,8 +195,22 @@ export function SettingsRoute() {
     setPasskeyNotice(null)
     try {
       const summary = await enrollPasskey(client, { name, privatePem: pem })
-      setPasskeys((prev) => [...prev, summary])
-      setPasskeyNotice(`Passkey "${summary.name}" registered.`)
+      // We need the post-registration count to decide whether to nudge
+      // the user toward adding a backup. Compute against the new array
+      // rather than reading state mid-update.
+      const newPasskeys = [...passkeys, summary]
+      setPasskeys(newPasskeys)
+      if (newPasskeys.length === 1) {
+        // First passkey just landed. Without a second, recovery on a
+        // lost device falls back to the passphrase only — push them
+        // toward redundancy now rather than after they've forgotten.
+        setPasskeyNotice(
+          `Passkey "${summary.name}" registered. Consider adding a second one as a backup — ` +
+            'losing your only passkey leaves the passphrase as your sole recovery anchor.',
+        )
+      } else {
+        setPasskeyNotice(`Passkey "${summary.name}" registered.`)
+      }
       setPasskeyName('')
     } catch (err) {
       if (err instanceof PasskeyCancelledError) {
@@ -590,7 +604,11 @@ export function SettingsRoute() {
               ? `Remove "${confirmingDeletePasskey.name}"?`
               : 'Remove passkey?'
           }
-          body="You won’t be able to use this authenticator to sign in. Your other passkeys + your passphrase still work."
+          body={
+            passkeys.length <= 1
+              ? "This is your last passkey. After this, only your passphrase will sign you in — and on a brand new device you'll need to type it manually."
+              : 'You won’t be able to use this authenticator to sign in. Your other passkeys + your passphrase still work.'
+          }
           confirmLabel={passkeyBusy ? 'Removing…' : 'Remove passkey'}
           busy={passkeyBusy}
           onConfirm={() => confirmingDeletePasskey && removePasskey(confirmingDeletePasskey)}
