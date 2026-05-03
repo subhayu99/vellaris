@@ -187,9 +187,7 @@ async def register_begin(
 ) -> PasskeyRegisterBeginResponse:
     """Issue a fresh challenge + options for registering a new passkey."""
     existing_creds = (
-        await db.exec(
-            select(WebAuthnCredential).where(WebAuthnCredential.user_id == current.id)
-        )
+        await db.exec(select(WebAuthnCredential).where(WebAuthnCredential.user_id == current.id))
     ).all()
 
     options = generate_registration_options(
@@ -198,9 +196,13 @@ async def register_begin(
         user_id=current.id.bytes,
         user_name=current.username,
         user_display_name=current.username,
+        # User verification is REQUIRED: an E2E document store whose whole
+        # promise is "your face / fingerprint unlocks your files" cannot
+        # accept an authenticator that skipped UV. Hardware keys without
+        # a configured PIN are correctly rejected by this setting.
         authenticator_selection=AuthenticatorSelectionCriteria(
             resident_key=ResidentKeyRequirement.PREFERRED,
-            user_verification=UserVerificationRequirement.PREFERRED,
+            user_verification=UserVerificationRequirement.REQUIRED,
         ),
         exclude_credentials=[
             PublicKeyCredentialDescriptor(id=c.credential_id) for c in existing_creds
@@ -247,7 +249,7 @@ async def register_finish(
             expected_challenge=challenge.challenge,
             expected_origin=settings.webauthn_rp_origins,
             expected_rp_id=settings.webauthn_rp_id,
-            require_user_verification=False,
+            require_user_verification=True,
         )
     except InvalidRegistrationResponse as exc:
         await db.commit()
@@ -359,9 +361,7 @@ async def auth_begin(
     allow_credentials: list[PublicKeyCredentialDescriptor] = []
 
     if body.username:
-        user = (
-            await db.exec(select(User).where(User.username == body.username))
-        ).one_or_none()
+        user = (await db.exec(select(User).where(User.username == body.username))).one_or_none()
         if user is not None and user.deleted_at is None:
             user_id = user.id
             rows = (
@@ -388,7 +388,7 @@ async def auth_begin(
     options = generate_authentication_options(
         rp_id=settings.webauthn_rp_id,
         allow_credentials=allow_credentials or None,
-        user_verification=UserVerificationRequirement.PREFERRED,
+        user_verification=UserVerificationRequirement.REQUIRED,
     )
 
     row = await _new_challenge(
@@ -471,7 +471,7 @@ async def auth_finish(
             expected_origin=settings.webauthn_rp_origins,
             credential_public_key=cred.public_key,
             credential_current_sign_count=cred.sign_count,
-            require_user_verification=False,
+            require_user_verification=True,
         )
     except InvalidAuthenticationResponse as exc:
         raise HTTPException(

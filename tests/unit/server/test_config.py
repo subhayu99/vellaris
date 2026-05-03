@@ -65,3 +65,44 @@ def test_legacy_blob_vars_are_not_read(monkeypatch: pytest.MonkeyPatch) -> None:
     # Defaults still apply — old vars don't bleed through
     assert s.blob_url.startswith("file://")
     assert "wrong" not in s.blob_url
+
+
+def test_webauthn_rp_origins_accepts_csv(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Comma-separated string is the friendly Docker form."""
+    monkeypatch.setenv(
+        "VELLARIS_WEBAUTHN_RP_ORIGINS",
+        "https://app.example.com,https://staging.example.com",
+    )
+    s = VellarisSettings()
+    assert s.webauthn_rp_origins == [
+        "https://app.example.com",
+        "https://staging.example.com",
+    ]
+
+
+def test_webauthn_rp_origins_accepts_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    """JSON list is also accepted — whichever the operator prefers."""
+    monkeypatch.setenv(
+        "VELLARIS_WEBAUTHN_RP_ORIGINS",
+        '["https://a.example.com", "https://b.example.com"]',
+    )
+    s = VellarisSettings()
+    assert s.webauthn_rp_origins == ["https://a.example.com", "https://b.example.com"]
+
+
+def test_webauthn_rp_origins_csv_drops_empty_entries(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("VELLARIS_WEBAUTHN_RP_ORIGINS", "https://a.example.com, ,,")
+    s = VellarisSettings()
+    assert s.webauthn_rp_origins == ["https://a.example.com"]
+
+
+def test_cors_allow_origins_accepts_csv(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "VELLARIS_CORS_ALLOW_ORIGINS",
+        "https://app.example.com,https://docs.example.com",
+    )
+    s = VellarisSettings()
+    assert s.cors_allow_origins == [
+        "https://app.example.com",
+        "https://docs.example.com",
+    ]
