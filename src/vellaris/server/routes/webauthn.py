@@ -166,9 +166,12 @@ def _inject_prf_extension(options_json: str) -> str:
     """
     import base64
 
-    payload: dict = json.loads(options_json)
+    payload: dict[str, object] = json.loads(options_json)
     salt_b64 = base64.urlsafe_b64encode(PRF_SALT_INPUT).rstrip(b"=").decode("ascii")
-    payload.setdefault("extensions", {})["prf"] = {"eval": {"first": salt_b64}}
+    extensions = payload.setdefault("extensions", {})
+    if not isinstance(extensions, dict):  # pragma: no cover - shape-guarantee from py_webauthn
+        raise TypeError("options.extensions must be an object")
+    extensions["prf"] = {"eval": {"first": salt_b64}}
     return json.dumps(payload)
 
 
