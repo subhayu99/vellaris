@@ -22,10 +22,7 @@ import {
   type PasskeySummary,
   type VellarisClient,
 } from '../api/index.ts'
-import {
-  unwrapPrivateKeyWithPrf,
-  wrapPrivateKeyWithPrf,
-} from '../crypto/wrap.ts'
+import { unwrapPrivateKeyWithPrf, wrapPrivateKeyWithPrf } from '../crypto/wrap.ts'
 
 export class PasskeyUnsupportedError extends Error {
   constructor() {

@@ -20,7 +20,8 @@ export function CredsPanel({ state, onChange, onForgetEverything }: Props) {
             checked={state.credsMode === 'export'}
             onChange={() => onChange({ credsMode: 'export' })}
           />
-          Generate <code>export</code> block — paste creds in shell <em>(recommended; snippets stay shareable)</em>
+          Generate <code>export</code> block — paste creds in shell{' '}
+          <em>(recommended; snippets stay shareable)</em>
         </label>
         <label>
           <input

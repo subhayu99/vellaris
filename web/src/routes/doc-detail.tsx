@@ -393,7 +393,11 @@ export function DocDetailRoute() {
                       Wrap the document key with their public key, in your browser.
                     </p>
                   </div>
-                  <Field label="Recipient username" htmlFor="share-input" error={shareError ?? undefined}>
+                  <Field
+                    label="Recipient username"
+                    htmlFor="share-input"
+                    error={shareError ?? undefined}
+                  >
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Input
                         id="share-input"

@@ -34,9 +34,7 @@ function pipExtras(s: InstallState): string[] {
 export function generateDatabaseUrl(s: InstallState): string {
   const driver = DB_DRIVER[s.db]
   if (s.db === 'sqlite') return `${driver}:////data/vellaris.db`
-  const password = s.credsMode === 'inline'
-    ? (s.credDbPassword || '...')
-    : '${DB_PASSWORD}'
+  const password = s.credsMode === 'inline' ? s.credDbPassword || '...' : '${DB_PASSWORD}'
   return `${driver}://${s.dbUser}:${password}@${s.dbHost}:${s.dbPort}/${s.dbName}`
 }
 
@@ -83,26 +81,19 @@ function resolveWebAuthnHost(s: InstallState): string | null {
 
 function advancedEnvVars(s: InstallState): Record<string, string> {
   const out: Record<string, string> = {}
-  if (s.maxUploadMb !== 100)
-    out.VELLARIS_MAX_UPLOAD_BYTES = String(s.maxUploadMb * 1024 * 1024)
-  if (s.rateLimitPerMin !== 120)
-    out.VELLARIS_RATE_LIMIT_PER_MINUTE = String(s.rateLimitPerMin)
-  if (s.rateLimitBurst !== 20)
-    out.VELLARIS_RATE_LIMIT_BURST = String(s.rateLimitBurst)
-  if (s.sessionTtlHours !== 8)
-    out.VELLARIS_SESSION_TTL_SECONDS = String(s.sessionTtlHours * 3600)
-  if (s.challengeTtlMin !== 5)
-    out.VELLARIS_CHALLENGE_TTL_SECONDS = String(s.challengeTtlMin * 60)
+  if (s.maxUploadMb !== 100) out.VELLARIS_MAX_UPLOAD_BYTES = String(s.maxUploadMb * 1024 * 1024)
+  if (s.rateLimitPerMin !== 120) out.VELLARIS_RATE_LIMIT_PER_MINUTE = String(s.rateLimitPerMin)
+  if (s.rateLimitBurst !== 20) out.VELLARIS_RATE_LIMIT_BURST = String(s.rateLimitBurst)
+  if (s.sessionTtlHours !== 8) out.VELLARIS_SESSION_TTL_SECONDS = String(s.sessionTtlHours * 3600)
+  if (s.challengeTtlMin !== 5) out.VELLARIS_CHALLENGE_TTL_SECONDS = String(s.challengeTtlMin * 60)
   if (s.corsOrigins !== '*')
     out.VELLARIS_CORS_ALLOW_ORIGINS = s.corsOrigins
       .split(',')
       .map((x) => x.trim())
       .filter(Boolean)
       .join(',')
-  if (s.auditKeyMode === 'path')
-    out.VELLARIS_AUDIT_SIGNING_KEY_PATH = s.auditKeyPath
-  if (!s.autoMigrate)
-    out.VELLARIS_AUTO_MIGRATE = '0'
+  if (s.auditKeyMode === 'path') out.VELLARIS_AUDIT_SIGNING_KEY_PATH = s.auditKeyPath
+  if (!s.autoMigrate) out.VELLARIS_AUTO_MIGRATE = '0'
 
   const rpHost = resolveWebAuthnHost(s)
   if (rpHost) {
@@ -169,7 +160,9 @@ function dockerEnvFlags(s: InstallState): string[] {
 }
 
 function generateDockerRun(s: InstallState, version: string): string {
-  const flags = dockerEnvFlags(s).map((l) => `  ${l} \\`).join('\n')
+  const flags = dockerEnvFlags(s)
+    .map((l) => `  ${l} \\`)
+    .join('\n')
   return [
     `docker run -d --name vellaris \\`,
     `  -p 8000:8000 \\`,
@@ -179,7 +172,9 @@ function generateDockerRun(s: InstallState, version: string): string {
 }
 
 function generateCustomDockerfile(s: InstallState, version: string): string {
-  const extras = pipExtras(s).filter((e) => e !== 'server').join(',')
+  const extras = pipExtras(s)
+    .filter((e) => e !== 'server')
+    .join(',')
   const runBlock = generateDockerRun({ ...s, image: 'slim' }, version).replace(
     imageTag({ ...s, image: 'slim' }, version),
     'my-vellaris',
@@ -199,10 +194,10 @@ function generateCustomDockerfile(s: InstallState, version: string): string {
 
 function generateCompose(s: InstallState, version: string): string {
   const inline = s.credsMode === 'inline'
-  const dbPwValue = inline ? (s.credDbPassword || '...') : '${DB_PASSWORD}'
-  const awsKeyId = inline ? (s.credAwsAccessKeyId || '...') : '${AWS_ACCESS_KEY_ID}'
-  const awsSecret = inline ? (s.credAwsSecretAccessKey || '...') : '${AWS_SECRET_ACCESS_KEY}'
-  const awsRegion = inline ? (s.credAwsRegion || 'us-east-1') : '${AWS_REGION:-us-east-1}'
+  const dbPwValue = inline ? s.credDbPassword || '...' : '${DB_PASSWORD}'
+  const awsKeyId = inline ? s.credAwsAccessKeyId || '...' : '${AWS_ACCESS_KEY_ID}'
+  const awsSecret = inline ? s.credAwsSecretAccessKey || '...' : '${AWS_SECRET_ACCESS_KEY}'
+  const awsRegion = inline ? s.credAwsRegion || 'us-east-1' : '${AWS_REGION:-us-east-1}'
 
   const advYaml = Object.entries(advancedEnvVars(s)).map(
     ([k, v]) => `      ${k}: '${v.replace(/'/g, "''")}'`,
@@ -289,9 +284,7 @@ function generatePip(s: InstallState, version: string): string {
   const extras = pipExtras(s).join(',')
   const url = generateDatabaseUrl(s)
   const blob = generateBlobUrl(s)
-  const dbPwValue = s.credsMode === 'inline'
-    ? (s.credDbPassword || '...')
-    : '...'
+  const dbPwValue = s.credsMode === 'inline' ? s.credDbPassword || '...' : '...'
   return [
     `pip install 'vellaris[${extras}]==${version}'`,
     ``,
@@ -375,7 +368,9 @@ function generateSystemd(s: InstallState, version: string): string {
     ...advancedEnvVars(s),
   }
   const envLines = Object.entries(env).map(([k, v]) => `Environment="${k}=${v}"`)
-  const extras = pipExtras(s).filter((e) => e !== 'server').join(',')
+  const extras = pipExtras(s)
+    .filter((e) => e !== 'server')
+    .join(',')
   const pipExtraSpec = extras ? `[server,${extras}]` : '[server]'
   return [
     `# 1. Install vellaris from PyPI:`,
@@ -435,7 +430,10 @@ export function generateProxySnippet(s: InstallState): ProxySnippet | null {
         `  server_name ${s.proxyHostname};`,
         ...(isManual
           ? [`  ssl_certificate ${s.tlsCertPath};`, `  ssl_certificate_key ${s.tlsKeyPath};`]
-          : [`  # ssl_certificate /path/to/cert.pem;`, `  # ssl_certificate_key /path/to/key.pem;`]),
+          : [
+              `  # ssl_certificate /path/to/cert.pem;`,
+              `  # ssl_certificate_key /path/to/key.pem;`,
+            ]),
         `  location / {`,
         `    proxy_pass http://127.0.0.1:8000;`,
         `    proxy_set_header Host $host;`,

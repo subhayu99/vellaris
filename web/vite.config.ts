@@ -17,10 +17,7 @@ const basePath = process.env.VITE_BASE_PATH || '/'
 // (e.g. running the SPA outside the monorepo).
 const APP_VERSION = (() => {
   try {
-    const text = fs.readFileSync(
-      path.resolve(import.meta.dirname, '..', 'pyproject.toml'),
-      'utf8',
-    )
+    const text = fs.readFileSync(path.resolve(import.meta.dirname, '..', 'pyproject.toml'), 'utf8')
     const match = text.match(/^version\s*=\s*"([^"]+)"/m)
     return match?.[1] ?? '0.0.0'
   } catch {

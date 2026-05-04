@@ -30,22 +30,19 @@ export interface ParamInfo {
   name: string
   required: boolean
   description: string
-  schema?: OpenApiSchemaObject  // resolved (no $ref)
+  schema?: OpenApiSchemaObject // resolved (no $ref)
 }
 
 export interface RequestBodyInfo {
   required: boolean
   description: string
-  contentType: string  // e.g. 'application/json'
-  schema?: OpenApiSchemaObject  // resolved one level
+  contentType: string // e.g. 'application/json'
+  schema?: OpenApiSchemaObject // resolved one level
 }
 
 const METHODS: readonly HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 
-function resolveRef(
-  ref: OpenApiRef,
-  schema: OpenApiSchema,
-): OpenApiSchemaObject | undefined {
+function resolveRef(ref: OpenApiRef, schema: OpenApiSchema): OpenApiSchemaObject | undefined {
   // $ref looks like "#/components/schemas/UserCreate"
   const m = ref.$ref.match(/^#\/components\/schemas\/(.+)$/)
   if (!m) return undefined
@@ -57,10 +54,7 @@ function resolveRef(
   return resolveProperties(out, schema)
 }
 
-function resolveProperties(
-  obj: OpenApiSchemaObject,
-  schema: OpenApiSchema,
-): OpenApiSchemaObject {
+function resolveProperties(obj: OpenApiSchemaObject, schema: OpenApiSchema): OpenApiSchemaObject {
   if (!obj.properties) return obj
   const newProps: Record<string, OpenApiSchemaObject> = {}
   for (const [k, v] of Object.entries(obj.properties)) {
@@ -101,8 +95,12 @@ function operationFromOpenApi(
   schema: OpenApiSchema,
 ): EndpointSummary {
   const allParams = [...(pathItemParams ?? []), ...(op.parameters ?? [])]
-  const pathParams = allParams.filter((p) => p.in === 'path').map((p) => paramFromOpenApi(p, schema))
-  const queryParams = allParams.filter((p) => p.in === 'query').map((p) => paramFromOpenApi(p, schema))
+  const pathParams = allParams
+    .filter((p) => p.in === 'path')
+    .map((p) => paramFromOpenApi(p, schema))
+  const queryParams = allParams
+    .filter((p) => p.in === 'query')
+    .map((p) => paramFromOpenApi(p, schema))
 
   let requestBody: RequestBodyInfo | undefined
   if (op.requestBody) {
@@ -110,7 +108,7 @@ function operationFromOpenApi(
     const contentType =
       'application/json' in op.requestBody.content
         ? 'application/json'
-        : Object.keys(op.requestBody.content)[0] ?? 'application/json'
+        : (Object.keys(op.requestBody.content)[0] ?? 'application/json')
     const media = op.requestBody.content[contentType]
     requestBody = {
       required: op.requestBody.required ?? false,
@@ -153,7 +151,9 @@ export function parseOpenApi(schema: OpenApiSchema): EndpointSummary[] {
   })
 }
 
-export function endpointsByTag(endpoints: readonly EndpointSummary[]): Record<string, EndpointSummary[]> {
+export function endpointsByTag(
+  endpoints: readonly EndpointSummary[],
+): Record<string, EndpointSummary[]> {
   const out: Record<string, EndpointSummary[]> = {}
   for (const e of endpoints) {
     const tag = e.tags[0] ?? 'untagged'

@@ -8,11 +8,31 @@ export interface RecipeInfo {
 
 export const RECIPES: readonly RecipeInfo[] = [
   { recipe: 'upload', label: 'Upload a file', description: 'Encrypt and upload to your account.' },
-  { recipe: 'upload-and-share', label: 'Upload + share', description: 'Upload and grant a recipient access in one step.' },
-  { recipe: 'download', label: 'Download a document', description: 'Pull a document by ID and decrypt it locally.' },
-  { recipe: 'list', label: 'List documents', description: 'List documents you own + ones shared with you.' },
-  { recipe: 'share', label: 'Share with another user', description: 'Grant an existing document to a recipient.' },
-  { recipe: 'revoke', label: "Revoke a recipient's access", description: 'Remove a previously-granted recipient.' },
+  {
+    recipe: 'upload-and-share',
+    label: 'Upload + share',
+    description: 'Upload and grant a recipient access in one step.',
+  },
+  {
+    recipe: 'download',
+    label: 'Download a document',
+    description: 'Pull a document by ID and decrypt it locally.',
+  },
+  {
+    recipe: 'list',
+    label: 'List documents',
+    description: 'List documents you own + ones shared with you.',
+  },
+  {
+    recipe: 'share',
+    label: 'Share with another user',
+    description: 'Grant an existing document to a recipient.',
+  },
+  {
+    recipe: 'revoke',
+    label: "Revoke a recipient's access",
+    description: 'Remove a previously-granted recipient.',
+  },
 ]
 
 function asyncBoilerplate(serverUrl: string): string {

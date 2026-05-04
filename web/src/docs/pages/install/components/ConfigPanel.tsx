@@ -8,8 +8,7 @@ interface Props {
 
 export function ConfigPanel({ state, onChange, onReset }: Props) {
   const showS3 = state.storage === 's3'
-  const showBucket =
-    state.storage === 's3' || state.storage === 'gcs' || state.storage === 'azure'
+  const showBucket = state.storage === 's3' || state.storage === 'gcs' || state.storage === 'azure'
   const showDb: Record<DbBackend, boolean> = {
     sqlite: false,
     postgres: true,
@@ -36,7 +35,8 @@ export function ConfigPanel({ state, onChange, onReset }: Props) {
         )}
         {showS3 && (
           <label>
-            S3 endpoint URL <span className="install-hint">(MinIO / R2 / B2 — leave blank for AWS)</span>
+            S3 endpoint URL{' '}
+            <span className="install-hint">(MinIO / R2 / B2 — leave blank for AWS)</span>
             <input
               type="text"
               placeholder="https://s3.example.com"

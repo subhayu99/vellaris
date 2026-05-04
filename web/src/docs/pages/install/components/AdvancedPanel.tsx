@@ -100,7 +100,8 @@ export function AdvancedPanel({ state, onChange }: Props) {
                 checked={state.auditKeyMode === 'generate'}
                 onChange={() => onChange({ auditKeyMode: 'generate' })}
               />
-              Generate fresh in memory <em>(dev only — log entries can't be verified across restarts)</em>
+              Generate fresh in memory{' '}
+              <em>(dev only — log entries can't be verified across restarts)</em>
             </label>
             <label>
               <input
@@ -192,13 +193,15 @@ export function AdvancedPanel({ state, onChange }: Props) {
                 type="text"
                 value={state.webauthnSpaHost}
                 onChange={(e) => onChange({ webauthnSpaHost: e.target.value })}
-                placeholder={state.proxyMode !== 'none' && state.proxyHostname
-                  ? `defaults to ${state.proxyHostname}`
-                  : 'vellaris.example.com'}
+                placeholder={
+                  state.proxyMode !== 'none' && state.proxyHostname
+                    ? `defaults to ${state.proxyHostname}`
+                    : 'vellaris.example.com'
+                }
               />
               <span className="install-hint">
-                Where the browser loads the SPA. Passkeys are bound to this domain. Leave empty
-                to use the proxy hostname above when the SPA + API share a host.
+                Where the browser loads the SPA. Passkeys are bound to this domain. Leave empty to
+                use the proxy hostname above when the SPA + API share a host.
               </span>
             </label>
           </fieldset>

@@ -98,9 +98,7 @@ function decodeExtensions(
   return { prf: { eval: evalInput } } as unknown as AuthenticationExtensionsClientInputs
 }
 
-export function decodeCreationOptionsJson(
-  optionsJson: string,
-): PublicKeyCredentialCreationOptions {
+export function decodeCreationOptionsJson(optionsJson: string): PublicKeyCredentialCreationOptions {
   const raw = JSON.parse(optionsJson) as RawCreationOptions
   return {
     rp: raw.rp,
@@ -122,9 +120,7 @@ export function decodeCreationOptionsJson(
   }
 }
 
-export function decodeRequestOptionsJson(
-  optionsJson: string,
-): PublicKeyCredentialRequestOptions {
+export function decodeRequestOptionsJson(optionsJson: string): PublicKeyCredentialRequestOptions {
   const raw = JSON.parse(optionsJson) as RawRequestOptions
   return {
     challenge: base64urlToBytes(raw.challenge),
@@ -147,8 +143,7 @@ export function encodeRegistrationResponse(credential: PublicKeyCredential): str
     response: {
       attestationObject: bytesToBase64url(r.attestationObject),
       clientDataJSON: bytesToBase64url(r.clientDataJSON),
-      transports:
-        typeof r.getTransports === 'function' ? r.getTransports() : [],
+      transports: typeof r.getTransports === 'function' ? r.getTransports() : [],
     },
     clientExtensionResults: credential.getClientExtensionResults(),
     authenticatorAttachment: credential.authenticatorAttachment ?? null,

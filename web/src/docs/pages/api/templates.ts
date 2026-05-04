@@ -128,7 +128,7 @@ function pythonRepr(value: unknown, indent = 0): string {
   if (value === null) return 'None'
   if (typeof value === 'boolean') return value ? 'True' : 'False'
   if (typeof value === 'number') return String(value)
-  if (typeof value === 'string') return JSON.stringify(value)  // double-quote, escape correctly
+  if (typeof value === 'string') return JSON.stringify(value) // double-quote, escape correctly
   if (Array.isArray(value)) {
     if (value.length === 0) return '[]'
     return `[\n${value.map((v) => `${padN}${pythonRepr(v, indent + 1)}`).join(',\n')},\n${pad}]`

@@ -56,7 +56,14 @@ describe('sdk builder state codec', () => {
   })
 
   it('decodes all valid recipe values', () => {
-    for (const recipe of ['upload', 'upload-and-share', 'download', 'list', 'share', 'revoke'] as const) {
+    for (const recipe of [
+      'upload',
+      'upload-and-share',
+      'download',
+      'list',
+      'share',
+      'revoke',
+    ] as const) {
       const decoded = decodeStateFromUrl(`?r=${recipe}`)
       expect(decoded.recipe).toBe(recipe)
     }

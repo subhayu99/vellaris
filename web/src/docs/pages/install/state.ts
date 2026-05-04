@@ -190,20 +190,23 @@ export function decodeStateFromUrl(search: string): InstallState {
     else if (key === 'db' && DBS.has(raw as DbBackend)) out.db = raw as DbBackend
     else if (key === 'storage' && STORES.has(raw as StorageBackend))
       out.storage = raw as StorageBackend
-    else if (key === 'image' && IMAGES.has(raw as ImageVariant))
-      out.image = raw as ImageVariant
-    else if (key === 'credsMode' && (raw === 'export' || raw === 'inline'))
-      out.credsMode = raw
-    else if (key === 'bucket' || key === 'endpoint' || key === 'dbHost'
-             || key === 'dbPort' || key === 'dbName' || key === 'dbUser') {
+    else if (key === 'image' && IMAGES.has(raw as ImageVariant)) out.image = raw as ImageVariant
+    else if (key === 'credsMode' && (raw === 'export' || raw === 'inline')) out.credsMode = raw
+    else if (
+      key === 'bucket' ||
+      key === 'endpoint' ||
+      key === 'dbHost' ||
+      key === 'dbPort' ||
+      key === 'dbName' ||
+      key === 'dbUser'
+    ) {
       ;(out[key] as string) = raw
     }
     // --- Advanced boolean fields ---
     else if (key === 'advancedOpen') {
       const b = parseBool(raw)
       if (b !== null) out.advancedOpen = b
-    }
-    else if (key === 'autoMigrate') {
+    } else if (key === 'autoMigrate') {
       const b = parseBool(raw)
       if (b !== null) out.autoMigrate = b
     }
@@ -211,24 +214,19 @@ export function decodeStateFromUrl(search: string): InstallState {
     else if (key === 'maxUploadMb') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.maxUploadMb = n
-    }
-    else if (key === 'rateLimitPerMin') {
+    } else if (key === 'rateLimitPerMin') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.rateLimitPerMin = n
-    }
-    else if (key === 'rateLimitBurst') {
+    } else if (key === 'rateLimitBurst') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.rateLimitBurst = n
-    }
-    else if (key === 'sessionTtlHours') {
+    } else if (key === 'sessionTtlHours') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.sessionTtlHours = n
-    }
-    else if (key === 'challengeTtlMin') {
+    } else if (key === 'challengeTtlMin') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.challengeTtlMin = n
-    }
-    else if (key === 'replicas') {
+    } else if (key === 'replicas') {
       const n = parsePositiveInt(raw)
       if (n !== null) out.replicas = n
     }
@@ -237,8 +235,7 @@ export function decodeStateFromUrl(search: string): InstallState {
       out.auditKeyMode = raw as AuditKeyMode
     else if (key === 'proxyMode' && PROXY_MODES.has(raw as ProxyMode))
       out.proxyMode = raw as ProxyMode
-    else if (key === 'tlsMode' && TLS_MODES.has(raw as TlsMode))
-      out.tlsMode = raw as TlsMode
+    else if (key === 'tlsMode' && TLS_MODES.has(raw as TlsMode)) out.tlsMode = raw as TlsMode
     // --- Advanced free-string fields ---
     else if (key === 'corsOrigins') out.corsOrigins = raw
     else if (key === 'auditKeyPath') out.auditKeyPath = raw

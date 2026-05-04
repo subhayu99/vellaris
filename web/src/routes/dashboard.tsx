@@ -16,10 +16,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Button, Icons, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
-import {
-  isPlatformAuthenticatorAvailable,
-  isWebAuthnSupported,
-} from '../api/index.ts'
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
 import type { DocumentScope, DocumentSummary } from '../api/index.ts'
 import { decryptBundle, deserializePrivateKeyForOaep } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
@@ -251,8 +248,8 @@ export function DashboardRoute() {
             <div className="flex items-center gap-3">
               <Icons.IKey size={16} />
               <div className="text-fg-2 text-[13px]">
-                <span className="text-fg font-medium">Sign in faster next time.</span>{' '}
-                Add a passkey so future sign-ins use Touch ID, Face ID, or your device password.
+                <span className="text-fg font-medium">Sign in faster next time.</span> Add a passkey
+                so future sign-ins use Touch ID, Face ID, or your device password.
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">

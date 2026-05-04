@@ -50,7 +50,10 @@ export function CLIReferencePage() {
         Pick a command, fill in the args, copy the result. Bookmark the URL to share a configured
         invocation.
       </p>
-      <CommandPicker value={state.command} onChange={(command) => setState((p) => ({ ...p, command }))} />
+      <CommandPicker
+        value={state.command}
+        onChange={(command) => setState((p) => ({ ...p, command }))}
+      />
       <ArgsForm state={state} onChange={(patch) => setState((p) => ({ ...p, ...patch }))} />
       <SnippetBox title="Run this" contents={`$ ${cmd}`} />
 
@@ -204,40 +207,40 @@ Commands:
 
       <h2>Exit codes</h2>
       <div className="docs-table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Meaning</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <code>0</code>
-            </td>
-            <td>Success.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>1</code>
-            </td>
-            <td>
-              Operation failed — server returned 4xx/5xx, decryption failed, document missing, etc.{' '}
-              <code>stderr</code> carries the detail.
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <code>2</code>
-            </td>
-            <td>
-              Missing required input — e.g. <code>vellaris login</code> with no saved server URL, or{' '}
-              <code>vellaris key export</code> with no user on file.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <code>0</code>
+              </td>
+              <td>Success.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>1</code>
+              </td>
+              <td>
+                Operation failed — server returned 4xx/5xx, decryption failed, document missing,
+                etc. <code>stderr</code> carries the detail.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <code>2</code>
+              </td>
+              <td>
+                Missing required input — e.g. <code>vellaris login</code> with no saved server URL,
+                or <code>vellaris key export</code> with no user on file.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <p>Use these in scripts:</p>

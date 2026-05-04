@@ -74,10 +74,15 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
   }, [navigate, serverUrl, token, user])
 
   // Auto-close the drawer on every navigation so a tap on a nav link
-  // doesn't leave the overlay open over the new route.
+  // doesn't leave the overlay open over the new route. The setState
+  // here is the deliberate effect — the drawer is *external* UI state
+  // that needs to synchronise with route changes; no derived-during-
+  // render alternative fits.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname, location.search])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Lock body scroll while the drawer is open.
   useEffect(() => {

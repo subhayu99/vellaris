@@ -27,106 +27,106 @@ export function TrustModelPage() {
       </p>
 
       <div className="docs-table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Adversary</th>
-            <th>Defended?</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Server reading your file content</td>
-            <td>
-              <DefenseBadge kind="ok" />
-            </td>
-            <td>
-              Ciphertext only on disk + on the wire. The server never holds a DEK in plaintext.
-            </td>
-          </tr>
-          <tr>
-            <td>Server reading filenames</td>
-            <td>
-              <DefenseBadge kind="ok" />
-            </td>
-            <td>Filenames are AES-encrypted under the per-document DEK.</td>
-          </tr>
-          <tr>
-            <td>Server impersonating a user</td>
-            <td>
-              <DefenseBadge kind="ok" />
-            </td>
-            <td>
-              Auth is challenge-response with the user&rsquo;s private key — server never sees
-              passwords.
-            </td>
-          </tr>
-          <tr>
-            <td>Server tampering with audit log</td>
-            <td>
-              <DefenseBadge kind="ok" />
-            </td>
-            <td>
-              Each entry Ed25519-signed. Tampering is detectable; deletion is not (forward-only).
-            </td>
-          </tr>
-          <tr>
-            <td>Network eavesdropper</td>
-            <td>
-              <DefenseBadge kind="ok">Defended (HTTPS)</DefenseBadge>
-            </td>
-            <td>The wire is base64-over-HTTPS. Run behind TLS in production.</td>
-          </tr>
-          <tr>
-            <td>Active attacker swapping the SPA</td>
-            <td>
-              <DefenseBadge kind="no" />
-            </td>
-            <td>
-              If the host serving <code>index.html</code> is compromised, you lose. SRI helps; pin a
-              tarball.
-            </td>
-          </tr>
-          <tr>
-            <td>Stolen device with the wrapped key</td>
-            <td>
-              <DefenseBadge kind="partial" />
-            </td>
-            <td>The wrapped key is Argon2id-protected. A weak passphrase fails.</td>
-          </tr>
-          <tr>
-            <td>Compromised browser session</td>
-            <td>
-              <DefenseBadge kind="no" />
-            </td>
-            <td>Anything that can run JS in the same origin can decrypt your files.</td>
-          </tr>
-          <tr>
-            <td>Stolen passkey-bearing device</td>
-            <td>
-              <DefenseBadge kind="partial" />
-            </td>
-            <td>
-              The PRF-wrapped key requires the original authenticator to decrypt. Lose the
-              authenticator, lose the passkey&rsquo;s decryption ability — but the passphrase still
-              works as the recovery anchor.
-            </td>
-          </tr>
-          <tr>
-            <td>Compromised passkey-sync provider</td>
-            <td>
-              <DefenseBadge kind="partial" />
-            </td>
-            <td>
-              iCloud Keychain / Google Password Manager / 1Password sync passkeys across devices.
-              A breach of the provider could let an attacker derive the same PRF output and unwrap
-              your private key. Trust transferred from your local laptop password to your sync
-              provider&rsquo;s security.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Adversary</th>
+              <th>Defended?</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Server reading your file content</td>
+              <td>
+                <DefenseBadge kind="ok" />
+              </td>
+              <td>
+                Ciphertext only on disk + on the wire. The server never holds a DEK in plaintext.
+              </td>
+            </tr>
+            <tr>
+              <td>Server reading filenames</td>
+              <td>
+                <DefenseBadge kind="ok" />
+              </td>
+              <td>Filenames are AES-encrypted under the per-document DEK.</td>
+            </tr>
+            <tr>
+              <td>Server impersonating a user</td>
+              <td>
+                <DefenseBadge kind="ok" />
+              </td>
+              <td>
+                Auth is challenge-response with the user&rsquo;s private key — server never sees
+                passwords.
+              </td>
+            </tr>
+            <tr>
+              <td>Server tampering with audit log</td>
+              <td>
+                <DefenseBadge kind="ok" />
+              </td>
+              <td>
+                Each entry Ed25519-signed. Tampering is detectable; deletion is not (forward-only).
+              </td>
+            </tr>
+            <tr>
+              <td>Network eavesdropper</td>
+              <td>
+                <DefenseBadge kind="ok">Defended (HTTPS)</DefenseBadge>
+              </td>
+              <td>The wire is base64-over-HTTPS. Run behind TLS in production.</td>
+            </tr>
+            <tr>
+              <td>Active attacker swapping the SPA</td>
+              <td>
+                <DefenseBadge kind="no" />
+              </td>
+              <td>
+                If the host serving <code>index.html</code> is compromised, you lose. SRI helps; pin
+                a tarball.
+              </td>
+            </tr>
+            <tr>
+              <td>Stolen device with the wrapped key</td>
+              <td>
+                <DefenseBadge kind="partial" />
+              </td>
+              <td>The wrapped key is Argon2id-protected. A weak passphrase fails.</td>
+            </tr>
+            <tr>
+              <td>Compromised browser session</td>
+              <td>
+                <DefenseBadge kind="no" />
+              </td>
+              <td>Anything that can run JS in the same origin can decrypt your files.</td>
+            </tr>
+            <tr>
+              <td>Stolen passkey-bearing device</td>
+              <td>
+                <DefenseBadge kind="partial" />
+              </td>
+              <td>
+                The PRF-wrapped key requires the original authenticator to decrypt. Lose the
+                authenticator, lose the passkey&rsquo;s decryption ability — but the passphrase
+                still works as the recovery anchor.
+              </td>
+            </tr>
+            <tr>
+              <td>Compromised passkey-sync provider</td>
+              <td>
+                <DefenseBadge kind="partial" />
+              </td>
+              <td>
+                iCloud Keychain / Google Password Manager / 1Password sync passkeys across devices.
+                A breach of the provider could let an attacker derive the same PRF output and unwrap
+                your private key. Trust transferred from your local laptop password to your sync
+                provider&rsquo;s security.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <h2>What&rsquo;s NOT protected</h2>
