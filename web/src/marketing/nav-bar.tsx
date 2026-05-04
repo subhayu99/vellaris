@@ -134,12 +134,7 @@ export function NavBar({ theme, onToggleTheme }: NavBarProps) {
               </>
             )}
           </button>
-          <Link
-            className="btn btn-primary btn-sm"
-            to={APP_ROUTE}
-            onClick={close}
-            role="menuitem"
-          >
+          <Link className="btn btn-primary btn-sm" to={APP_ROUTE} onClick={close} role="menuitem">
             Sign in
           </Link>
         </div>

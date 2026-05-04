@@ -323,7 +323,12 @@ describe('systemd output', () => {
   })
 
   it('includes a pip install hint at the top', () => {
-    const s: InstallState = { ...defaultInstallState, runMode: 'systemd', db: 'postgres', storage: 's3' }
+    const s: InstallState = {
+      ...defaultInstallState,
+      runMode: 'systemd',
+      db: 'postgres',
+      storage: 's3',
+    }
     const out = generateRunSnippet(s, VERSION)
     expect(out).toContain("pip install 'vellaris[server,postgres,s3]")
   })

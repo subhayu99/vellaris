@@ -102,29 +102,13 @@ export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
         role="menu"
         aria-hidden={!open}
       >
-        <NavLink
-          end
-          className="nav-mobile-link"
-          to={DOCS_URL}
-          onClick={close}
-          role="menuitem"
-        >
+        <NavLink end className="nav-mobile-link" to={DOCS_URL} onClick={close} role="menuitem">
           Docs
         </NavLink>
-        <NavLink
-          className="nav-mobile-link"
-          to={DOCS_QUICKSTART}
-          onClick={close}
-          role="menuitem"
-        >
+        <NavLink className="nav-mobile-link" to={DOCS_QUICKSTART} onClick={close} role="menuitem">
           Quickstart
         </NavLink>
-        <NavLink
-          className="nav-mobile-link"
-          to={DOCS_TRUST}
-          onClick={close}
-          role="menuitem"
-        >
+        <NavLink className="nav-mobile-link" to={DOCS_TRUST} onClick={close} role="menuitem">
           Trust
         </NavLink>
         <a
@@ -157,12 +141,7 @@ export function DocsNavBar({ theme, onToggleTheme }: DocsNavBarProps) {
               </>
             )}
           </button>
-          <Link
-            className="btn btn-primary btn-sm"
-            to={APP_ROUTE}
-            onClick={close}
-            role="menuitem"
-          >
+          <Link className="btn btn-primary btn-sm" to={APP_ROUTE} onClick={close} role="menuitem">
             Sign in
           </Link>
         </div>

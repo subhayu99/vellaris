@@ -53,12 +53,7 @@ export function BackendPickers({
           <legend>Image flavor</legend>
           {(['slim', 'full', 'custom'] as const).map((i) => (
             <label key={i}>
-              <input
-                type="radio"
-                name="image"
-                checked={image === i}
-                onChange={() => onImage(i)}
-              />
+              <input type="radio" name="image" checked={image === i} onChange={() => onImage(i)} />
               {i === 'slim'
                 ? 'Slim (~120 MB)'
                 : i === 'full'

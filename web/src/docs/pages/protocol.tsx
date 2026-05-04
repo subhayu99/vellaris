@@ -170,41 +170,42 @@ export function ProtocolPage() {
       <p>
         The eval input the SPA hands the authenticator is a fixed 32-byte salt (SHA-256 of a domain
         separator string). Server stores the ciphertext only — it has no way to derive the unwrap
-        key without the authenticator hardware. Reference:{' '}
-        <code>web/src/crypto/wrap.ts</code> ({' '}<code>WRAPPED_V2_PRF</code>).
+        key without the authenticator hardware. Reference: <code>web/src/crypto/wrap.ts</code> (
+        {' '}
+        <code>WRAPPED_V2_PRF</code>).
       </p>
 
       <h2>RSA usage</h2>
       <div className="docs-table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Operation</th>
-            <th>Padding</th>
-            <th>Hash</th>
-            <th>Salt</th>
-            <th>Used for</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Encrypt the per-document AES key</td>
-            <td>OAEP</td>
-            <td>SHA-256 + MGF1(SHA-256)</td>
-            <td>label = empty</td>
-            <td>Wrapping the DEK per recipient.</td>
-          </tr>
-          <tr>
-            <td>Sign the auth challenge</td>
-            <td>PSS</td>
-            <td>SHA-256 + MGF1(SHA-256)</td>
-            <td>32 bytes</td>
-            <td>
-              <code>POST /auth/verify</code>.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Operation</th>
+              <th>Padding</th>
+              <th>Hash</th>
+              <th>Salt</th>
+              <th>Used for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Encrypt the per-document AES key</td>
+              <td>OAEP</td>
+              <td>SHA-256 + MGF1(SHA-256)</td>
+              <td>label = empty</td>
+              <td>Wrapping the DEK per recipient.</td>
+            </tr>
+            <tr>
+              <td>Sign the auth challenge</td>
+              <td>PSS</td>
+              <td>SHA-256 + MGF1(SHA-256)</td>
+              <td>32 bytes</td>
+              <td>
+                <code>POST /auth/verify</code>.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div className="docs-callout is-danger">
         <span className="label">Distinct key handles</span>

@@ -30,7 +30,9 @@
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
 }
-.api-endpoint-group { margin-bottom: 1.25rem; }
+.api-endpoint-group {
+  margin-bottom: 1.25rem;
+}
 .api-endpoint-group-title {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -38,7 +40,11 @@
   opacity: 0.6;
   margin: 0 0 0.4rem;
 }
-.api-endpoint-list ul { list-style: none; padding: 0; margin: 0; }
+.api-endpoint-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 .api-endpoint-item {
   display: flex;
   align-items: baseline;
@@ -58,7 +64,9 @@
   font-size: 0.85rem;
   transition: background 100ms;
 }
-.api-endpoint-item:hover { background: rgba(255, 255, 255, 0.04); }
+.api-endpoint-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
 .api-endpoint-item-active {
   background: rgba(203, 166, 90, 0.07);
   border-color: var(--accent, #cba65a);
@@ -78,11 +86,26 @@
   border-radius: 3px;
   flex: 0 0 auto;
 }
-.api-method-get { background: rgba(94, 158, 245, 0.18); color: #7aa9ee; }
-.api-method-post { background: rgba(80, 200, 120, 0.18); color: #6cc88c; }
-.api-method-put { background: rgba(245, 175, 76, 0.18); color: #e3a64a; }
-.api-method-delete { background: rgba(245, 92, 92, 0.18); color: #e07070; }
-.api-method-patch { background: rgba(180, 130, 220, 0.18); color: #b582dc; }
+.api-method-get {
+  background: rgba(94, 158, 245, 0.18);
+  color: #7aa9ee;
+}
+.api-method-post {
+  background: rgba(80, 200, 120, 0.18);
+  color: #6cc88c;
+}
+.api-method-put {
+  background: rgba(245, 175, 76, 0.18);
+  color: #e3a64a;
+}
+.api-method-delete {
+  background: rgba(245, 92, 92, 0.18);
+  color: #e07070;
+}
+.api-method-patch {
+  background: rgba(180, 130, 220, 0.18);
+  color: #b582dc;
+}
 .api-path {
   font-family: var(--font-mono, monospace);
   font-size: 0.85rem;
@@ -138,9 +161,20 @@
   gap: 0.3rem;
   font-size: 0.85rem;
 }
-.api-param-name { display: flex; gap: 0.3rem; align-items: baseline; font-weight: 500; }
-.api-required { color: var(--accent, #cba65a); }
-.api-hint { font-size: 0.8em; opacity: 0.6; font-weight: 400; }
+.api-param-name {
+  display: flex;
+  gap: 0.3rem;
+  align-items: baseline;
+  font-weight: 500;
+}
+.api-required {
+  color: var(--accent, #cba65a);
+}
+.api-hint {
+  font-size: 0.8em;
+  opacity: 0.6;
+  font-weight: 400;
+}
 .api-form-fieldset input[type='text'],
 .api-form-fieldset input[type='password'] {
   width: 100%;
@@ -176,7 +210,9 @@
   color: inherit;
   cursor: pointer;
 }
-.api-fill-stub:hover { border-color: var(--accent, #cba65a); }
+.api-fill-stub:hover {
+  border-color: var(--accent, #cba65a);
+}
 
 /* === Language tabs === */
 .api-lang-tabs {
@@ -197,7 +233,9 @@
   margin-bottom: -1px;
   transition: border-color 150ms;
 }
-.api-lang-tab:hover { border-bottom-color: rgba(255, 255, 255, 0.3); }
+.api-lang-tab:hover {
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
 .api-lang-tab-active {
   border-bottom-color: var(--accent, #cba65a);
   font-weight: 600;

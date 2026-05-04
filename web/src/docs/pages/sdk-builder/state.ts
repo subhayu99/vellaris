@@ -24,7 +24,12 @@ export const defaultSdkBuilderState: SdkBuilderState = {
 }
 
 const RECIPES: ReadonlySet<SdkRecipe> = new Set([
-  'upload', 'upload-and-share', 'download', 'list', 'share', 'revoke',
+  'upload',
+  'upload-and-share',
+  'download',
+  'list',
+  'share',
+  'revoke',
 ])
 const VARIANTS: ReadonlySet<SdkVariant> = new Set(['async', 'sync'])
 

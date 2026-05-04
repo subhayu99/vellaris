@@ -8,7 +8,9 @@ function state(overrides: Partial<CliBuilderState>): CliBuilderState {
 
 describe('generateCliCommand', () => {
   it('signup — contains vellaris signup, --username, and --server when serverUrl set', () => {
-    const cmd = generateCliCommand(state({ command: 'signup', username: 'alice', serverUrl: 'https://vault.example.com' }))
+    const cmd = generateCliCommand(
+      state({ command: 'signup', username: 'alice', serverUrl: 'https://vault.example.com' }),
+    )
     expect(cmd).toContain('vellaris signup')
     expect(cmd).toContain('--username alice')
     expect(cmd).toContain('--server https://vault.example.com')
@@ -43,7 +45,9 @@ describe('generateCliCommand', () => {
   })
 
   it('push — includes --share-with when shareWith is non-empty', () => {
-    const cmd = generateCliCommand(state({ command: 'push', filePath: 'doc.pdf', shareWith: 'bob,carol' }))
+    const cmd = generateCliCommand(
+      state({ command: 'push', filePath: 'doc.pdf', shareWith: 'bob,carol' }),
+    )
     expect(cmd).toContain('--share-with bob,carol')
   })
 
@@ -75,14 +79,18 @@ describe('generateCliCommand', () => {
   })
 
   it('share — contains vellaris share, document ID, and --to recipient', () => {
-    const cmd = generateCliCommand(state({ command: 'share', documentId: 'ghi-789', recipient: 'dana' }))
+    const cmd = generateCliCommand(
+      state({ command: 'share', documentId: 'ghi-789', recipient: 'dana' }),
+    )
     expect(cmd).toContain('vellaris share')
     expect(cmd).toContain('ghi-789')
     expect(cmd).toContain('--to dana')
   })
 
   it('revoke — contains vellaris revoke, document ID, and --from recipient', () => {
-    const cmd = generateCliCommand(state({ command: 'revoke', documentId: 'jkl-012', recipient: 'evan' }))
+    const cmd = generateCliCommand(
+      state({ command: 'revoke', documentId: 'jkl-012', recipient: 'evan' }),
+    )
     expect(cmd).toContain('vellaris revoke')
     expect(cmd).toContain('jkl-012')
     expect(cmd).toContain('--from evan')

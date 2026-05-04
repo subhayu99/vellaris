@@ -21,12 +21,12 @@ export interface CliBuilderState {
   username?: string
   filePath?: string
   documentId?: string
-  shareWith?: string  // comma-separated for push --share-with
-  recipient?: string  // for share/revoke --to/--from
+  shareWith?: string // comma-separated for push --share-with
+  recipient?: string // for share/revoke --to/--from
   scope?: LsScope
   keyExportPath?: string
   keyImportPath?: string
-  serverUrl?: string  // for signup
+  serverUrl?: string // for signup
 }
 
 export const defaultCliBuilderState: CliBuilderState = {
@@ -43,10 +43,18 @@ export const defaultCliBuilderState: CliBuilderState = {
 }
 
 const COMMANDS: ReadonlySet<CliCommand> = new Set([
-  'signup', 'login', 'logout', 'whoami',
-  'push', 'pull', 'ls', 'rm',
-  'share', 'revoke',
-  'key-export', 'key-import',
+  'signup',
+  'login',
+  'logout',
+  'whoami',
+  'push',
+  'pull',
+  'ls',
+  'rm',
+  'share',
+  'revoke',
+  'key-export',
+  'key-import',
 ])
 
 const SCOPES: ReadonlySet<LsScope> = new Set(['all', 'mine', 'shared'])

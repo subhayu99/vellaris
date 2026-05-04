@@ -49,7 +49,10 @@ export function SDKPage() {
         Pick a recipe, fill in the args, copy the result. Bookmark the URL to share a configured
         snippet.
       </p>
-      <RecipePicker value={state.recipe} onChange={(recipe) => setState((p) => ({ ...p, recipe }))} />
+      <RecipePicker
+        value={state.recipe}
+        onChange={(recipe) => setState((p) => ({ ...p, recipe }))}
+      />
       <SdkConfigForm state={state} onChange={(patch) => setState((p) => ({ ...p, ...patch }))} />
       <SnippetBox title="Run this Python" contents={snippet} />
 
@@ -211,60 +214,60 @@ async def test_round_trip():
 
       <h2>Errors</h2>
       <div className="docs-table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Class</th>
-            <th>When</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <code>VellarisAPIError</code>
-            </td>
-            <td>
-              Server returned 4xx / 5xx. <code>.status_code</code> and <code>.detail</code> set.
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.VellarisCryptoError</code>
-            </td>
-            <td>Base class for the four crypto failures below.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.DecryptError</code>
-            </td>
-            <td>Wrong passphrase, tampered blob, AEAD tag mismatch.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.SignatureError</code>
-            </td>
-            <td>PSS / Ed25519 verification failed.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.KdfError</code>
-            </td>
-            <td>Argon2 params invalid (or below the safety floor).</td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.WireFormatError</code>
-            </td>
-            <td>Blob is malformed / truncated / unknown version.</td>
-          </tr>
-          <tr>
-            <td>
-              <code>vellaris.core.errors.KeyFormatError</code>
-            </td>
-            <td>PEM / PKCS#8 deserialization failed.</td>
-          </tr>
-        </tbody>
-      </table>
+        <table>
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <code>VellarisAPIError</code>
+              </td>
+              <td>
+                Server returned 4xx / 5xx. <code>.status_code</code> and <code>.detail</code> set.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.VellarisCryptoError</code>
+              </td>
+              <td>Base class for the four crypto failures below.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.DecryptError</code>
+              </td>
+              <td>Wrong passphrase, tampered blob, AEAD tag mismatch.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.SignatureError</code>
+              </td>
+              <td>PSS / Ed25519 verification failed.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.KdfError</code>
+              </td>
+              <td>Argon2 params invalid (or below the safety floor).</td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.WireFormatError</code>
+              </td>
+              <td>Blob is malformed / truncated / unknown version.</td>
+            </tr>
+            <tr>
+              <td>
+                <code>vellaris.core.errors.KeyFormatError</code>
+              </td>
+              <td>PEM / PKCS#8 deserialization failed.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <p>
         Network failures (DNS, TLS, connection refused) propagate as <code>httpx</code> exceptions —

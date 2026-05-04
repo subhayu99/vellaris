@@ -44,7 +44,10 @@ export function ApiPage() {
     ENDPOINTS.find((e) => e.operationId === state.selectedOperationId) ?? ENDPOINTS[0]
 
   // When the selected endpoint changes, reset path/query/body to defaults for that endpoint
-  // (otherwise filled values from previous endpoint stick around).
+  // (otherwise filled values from previous endpoint stick around). This is a deliberate
+  // sync: the form's *internal* state must follow the externally-selected endpoint,
+  // and there's no derived-state alternative because the user edits these fields after.
+  /* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!selected) return
     setState((prev) => ({
@@ -53,8 +56,8 @@ export function ApiPage() {
       queryParams: {},
       body: selected.requestBody ? bodyTemplateFor(selected.requestBody.schema) : '',
     }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.operationId])
+  /* eslint-enable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 
   const snippet = useMemo(() => {
     if (!selected) return ''
@@ -109,9 +112,8 @@ export function ApiPage() {
         hand-rolled DTOs, no version drift.
       </p>
       <p>
-        See also the{' '}
-        <a href={DOCS_PROTOCOL}>protocol notes</a> for the cryptographic flow on top of the HTTP
-        layer.
+        See also the <a href={DOCS_PROTOCOL}>protocol notes</a> for the cryptographic flow on top of
+        the HTTP layer.
       </p>
 
       <h3>Codegen examples</h3>

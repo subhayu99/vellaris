@@ -230,7 +230,7 @@ export function LoginRoute() {
           <p className="text-fg-2 text-[13px]">
             {showPassphrase
               ? "We'll sign a challenge from the server with your local key. Nothing is sent that the server hasn't already seen."
-              : "Use your synced passkey to unlock your private key on this device. The PRF secret never leaves the authenticator."}
+              : 'Use your synced passkey to unlock your private key on this device. The PRF secret never leaves the authenticator.'}
           </p>
         </div>
 

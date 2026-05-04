@@ -126,7 +126,7 @@ function CLISnippet() {
         <span className="tok-cmt"># ↳ doc-c1d37e90 audit-q1.zip from carol 2h</span>
       </div>
       <div>
-        <span className="tok-cmt"># ↳ doc-42afee1c notes.md     from ops   3d</span>
+        <span className="tok-cmt"># ↳ doc-42afee1c notes.md from ops 3d</span>
       </div>
       <div>&nbsp;</div>
       <div>

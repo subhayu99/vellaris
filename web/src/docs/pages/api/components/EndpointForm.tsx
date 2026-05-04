@@ -19,9 +19,7 @@ export function EndpointForm({ endpoint, state, onChange }: Props) {
           <code>{endpoint.path}</code>
         </h3>
         {endpoint.summary && <p className="api-endpoint-summary">{endpoint.summary}</p>}
-        {endpoint.description && (
-          <p className="api-endpoint-description">{endpoint.description}</p>
-        )}
+        {endpoint.description && <p className="api-endpoint-description">{endpoint.description}</p>}
       </div>
 
       <fieldset className="api-form-fieldset">
@@ -110,9 +108,7 @@ export function EndpointForm({ endpoint, state, onChange }: Props) {
           <button
             type="button"
             className="api-fill-stub"
-            onClick={() =>
-              onChange({ body: bodyTemplateFor(endpoint.requestBody?.schema) })
-            }
+            onClick={() => onChange({ body: bodyTemplateFor(endpoint.requestBody?.schema) })}
           >
             Fill with stub
           </button>

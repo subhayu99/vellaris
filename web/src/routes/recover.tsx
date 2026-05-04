@@ -41,18 +41,18 @@ export function RecoverRoute() {
           <VSigil size={42} />
           <h1 className="text-fg font-serif text-2xl tracking-tight">Recovery options</h1>
           <p className="text-fg-2 text-[13px]">
-            Vellaris encrypts your files end-to-end. The server never holds your private key.
-            That's a deliberate design choice with a real cost: there is no &ldquo;reset
-            password&rdquo; flow.
+            Vellaris encrypts your files end-to-end. The server never holds your private key. That's
+            a deliberate design choice with a real cost: there is no &ldquo;reset password&rdquo;
+            flow.
           </p>
         </div>
 
         <section className="border-line bg-bg-card/40 flex flex-col gap-3 rounded-lg border p-5">
           <h2 className="text-fg text-[14px] font-semibold">If you have your passphrase</h2>
           <p className="text-fg-2 text-[12.5px]">
-            Sign in normally. If this device doesn't have your wrapped key yet, sign in on a
-            device that does, push the wrapped key to the server (Settings → Wrapped key sync →
-            Push to server), then come back here and pull it down.
+            Sign in normally. If this device doesn't have your wrapped key yet, sign in on a device
+            that does, push the wrapped key to the server (Settings → Wrapped key sync → Push to
+            server), then come back here and pull it down.
           </p>
           <Button variant="primary" size="default" onClick={() => navigate('/login')} fullWidth>
             Go to sign in
@@ -72,9 +72,7 @@ export function RecoverRoute() {
         </section>
 
         <section className="border-line bg-bg-card/40 flex flex-col gap-3 rounded-lg border p-5">
-          <h2 className="text-fg text-[14px] font-semibold">
-            If you've lost everything
-          </h2>
+          <h2 className="text-fg text-[14px] font-semibold">If you've lost everything</h2>
           <p className="text-fg-2 text-[12.5px]">
             We can't decrypt your files for you — we never had the key. The only thing left is to
             close the account, freeing up your username, and start over with a fresh keypair.

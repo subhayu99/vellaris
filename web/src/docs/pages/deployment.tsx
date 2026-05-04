@@ -98,18 +98,12 @@ export function DeploymentPage() {
         )}
 
         <SnippetBox
-          title={
-            state.credsMode === 'export' && exportBlock
-              ? '2. Run Vellaris'
-              : 'Run Vellaris'
-          }
+          title={state.credsMode === 'export' && exportBlock ? '2. Run Vellaris' : 'Run Vellaris'}
           contents={runSnippet}
           warn={state.credsMode === 'inline'}
         />
 
-        {proxySnippet && (
-          <SnippetBox title={proxySnippet.title} contents={proxySnippet.contents} />
-        )}
+        {proxySnippet && <SnippetBox title={proxySnippet.title} contents={proxySnippet.contents} />}
       </div>
 
       <section>
@@ -117,214 +111,214 @@ export function DeploymentPage() {
 
         <h3>Sizing</h3>
         <div className="docs-table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Workload</th>
-              <th>RAM</th>
-              <th>CPU</th>
-              <th>Disk</th>
-              <th>Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Single user</td>
-              <td>256 MB</td>
-              <td>1 vCPU</td>
-              <td>1 GB</td>
-              <td>SQLite + local FS, slim image.</td>
-            </tr>
-            <tr>
-              <td>10 users</td>
-              <td>512 MB</td>
-              <td>1 vCPU</td>
-              <td>matches data</td>
-              <td>Postgres recommended.</td>
-            </tr>
-            <tr>
-              <td>100 users</td>
-              <td>1 GB</td>
-              <td>2 vCPU</td>
-              <td>matches data</td>
-              <td>S3-compatible storage recommended.</td>
-            </tr>
-            <tr>
-              <td>1000+ users</td>
-              <td>2+ GB</td>
-              <td>4+ vCPU</td>
-              <td>unbounded (S3)</td>
-              <td>Run &gt;=2 replicas behind a load balancer.</td>
-            </tr>
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Workload</th>
+                <th>RAM</th>
+                <th>CPU</th>
+                <th>Disk</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Single user</td>
+                <td>256 MB</td>
+                <td>1 vCPU</td>
+                <td>1 GB</td>
+                <td>SQLite + local FS, slim image.</td>
+              </tr>
+              <tr>
+                <td>10 users</td>
+                <td>512 MB</td>
+                <td>1 vCPU</td>
+                <td>matches data</td>
+                <td>Postgres recommended.</td>
+              </tr>
+              <tr>
+                <td>100 users</td>
+                <td>1 GB</td>
+                <td>2 vCPU</td>
+                <td>matches data</td>
+                <td>S3-compatible storage recommended.</td>
+              </tr>
+              <tr>
+                <td>1000+ users</td>
+                <td>2+ GB</td>
+                <td>4+ vCPU</td>
+                <td>unbounded (S3)</td>
+                <td>Run &gt;=2 replicas behind a load balancer.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <h3>Environment variables</h3>
         <p>All config flows through environment variables:</p>
         <div className="docs-table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Variable</th>
-              <th>Default</th>
-              <th>Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <code>VELLARIS_HOST</code>
-              </td>
-              <td>
-                <code>0.0.0.0</code>
-              </td>
-              <td>Bind address.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_PORT</code>
-              </td>
-              <td>
-                <code>8000</code>
-              </td>
-              <td>Bind port.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_DATABASE_URL</code>
-              </td>
-              <td>
-                <code>sqlite+aiosqlite:///./vellaris.db</code>
-              </td>
-              <td>
-                SQLAlchemy URL — <code>postgresql+asyncpg://…</code>, <code>mysql+asyncmy://…</code>,
-                or <code>sqlite+aiosqlite://…</code>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_AUTO_MIGRATE</code>
-              </td>
-              <td>
-                <code>1</code>
-              </td>
-              <td>
-                Run <code>alembic upgrade head</code> on startup. Set <code>0</code> for blue/green
-                pipelines.
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_BLOB_URL</code>
-              </td>
-              <td>
-                <code>file://./var/blobs</code>
-              </td>
-              <td>
-                fsspec URL — <code>file://</code>, <code>s3://</code>, <code>gs://</code>,{' '}
-                <code>az://</code>, <code>memory://</code>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_BLOB_OPTIONS_JSON</code>
-              </td>
-              <td>(unset)</td>
-              <td>Optional JSON-encoded storage_options (endpoint URL, custom certs, etc.).</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>
-              </td>
-              <td>(generated in memory)</td>
-              <td>Path to a 32-byte raw Ed25519 private key. Persist this in production.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_MAX_UPLOAD_BYTES</code>
-              </td>
-              <td>
-                <code>104857600</code> (100 MiB)
-              </td>
-              <td>Per-file ceiling.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_RATE_LIMIT_PER_MINUTE</code>
-              </td>
-              <td>
-                <code>120</code>
-              </td>
-              <td>Per-IP soft limit.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_RATE_LIMIT_BURST</code>
-              </td>
-              <td>
-                <code>20</code>
-              </td>
-              <td>Per-IP burst budget.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_CORS_ALLOW_ORIGINS</code>
-              </td>
-              <td>
-                <code>{`["*"]`}</code>
-              </td>
-              <td>Restrict in production.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_SESSION_TTL_SECONDS</code>
-              </td>
-              <td>
-                <code>28800</code> (8 h)
-              </td>
-              <td>Session lifetime.</td>
-            </tr>
-            <tr>
-              <td>
-                <code>VELLARIS_CHALLENGE_TTL_SECONDS</code>
-              </td>
-              <td>
-                <code>300</code> (5 m)
-              </td>
-              <td>Login-challenge lifetime.</td>
-            </tr>
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>Default</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <code>VELLARIS_HOST</code>
+                </td>
+                <td>
+                  <code>0.0.0.0</code>
+                </td>
+                <td>Bind address.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_PORT</code>
+                </td>
+                <td>
+                  <code>8000</code>
+                </td>
+                <td>Bind port.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_DATABASE_URL</code>
+                </td>
+                <td>
+                  <code>sqlite+aiosqlite:///./vellaris.db</code>
+                </td>
+                <td>
+                  SQLAlchemy URL — <code>postgresql+asyncpg://…</code>,{' '}
+                  <code>mysql+asyncmy://…</code>, or <code>sqlite+aiosqlite://…</code>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_AUTO_MIGRATE</code>
+                </td>
+                <td>
+                  <code>1</code>
+                </td>
+                <td>
+                  Run <code>alembic upgrade head</code> on startup. Set <code>0</code> for
+                  blue/green pipelines.
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_BLOB_URL</code>
+                </td>
+                <td>
+                  <code>file://./var/blobs</code>
+                </td>
+                <td>
+                  fsspec URL — <code>file://</code>, <code>s3://</code>, <code>gs://</code>,{' '}
+                  <code>az://</code>, <code>memory://</code>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_BLOB_OPTIONS_JSON</code>
+                </td>
+                <td>(unset)</td>
+                <td>Optional JSON-encoded storage_options (endpoint URL, custom certs, etc.).</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>
+                </td>
+                <td>(generated in memory)</td>
+                <td>Path to a 32-byte raw Ed25519 private key. Persist this in production.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_MAX_UPLOAD_BYTES</code>
+                </td>
+                <td>
+                  <code>104857600</code> (100 MiB)
+                </td>
+                <td>Per-file ceiling.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_RATE_LIMIT_PER_MINUTE</code>
+                </td>
+                <td>
+                  <code>120</code>
+                </td>
+                <td>Per-IP soft limit.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_RATE_LIMIT_BURST</code>
+                </td>
+                <td>
+                  <code>20</code>
+                </td>
+                <td>Per-IP burst budget.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_CORS_ALLOW_ORIGINS</code>
+                </td>
+                <td>
+                  <code>{`["*"]`}</code>
+                </td>
+                <td>Restrict in production.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_SESSION_TTL_SECONDS</code>
+                </td>
+                <td>
+                  <code>28800</code> (8 h)
+                </td>
+                <td>Session lifetime.</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_CHALLENGE_TTL_SECONDS</code>
+                </td>
+                <td>
+                  <code>300</code> (5 m)
+                </td>
+                <td>Login-challenge lifetime.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <h3>Image variants</h3>
         <div className="docs-table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Tag</th>
-              <th>Size</th>
-              <th>Bundled drivers</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <code>ghcr.io/subhayu99/vellaris:0.5.0</code>
-              </td>
-              <td>~120 MB</td>
-              <td>SQLite + local FS only</td>
-            </tr>
-            <tr>
-              <td>
-                <code>ghcr.io/subhayu99/vellaris:0.5.0-full</code>
-              </td>
-              <td>~350 MB</td>
-              <td>All DBs (Postgres / MySQL / SQLite) + S3 / GCS / Azure</td>
-            </tr>
-          </tbody>
-        </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Size</th>
+                <th>Bundled drivers</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <code>ghcr.io/subhayu99/vellaris:0.5.0</code>
+                </td>
+                <td>~120 MB</td>
+                <td>SQLite + local FS only</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>ghcr.io/subhayu99/vellaris:0.5.0-full</code>
+                </td>
+                <td>~350 MB</td>
+                <td>All DBs (Postgres / MySQL / SQLite) + S3 / GCS / Azure</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <h3>Docker — single container (SQLite)</h3>
@@ -393,8 +387,8 @@ resources:
   limits:   { cpu: 1000m, memory: 1Gi }`}
         </CodeBlock>
         <p>
-          A real chart isn&rsquo;t published yet — drop the manifests at <code>deploy/k8s/</code> when
-          you do this.
+          A real chart isn&rsquo;t published yet — drop the manifests at <code>deploy/k8s/</code>{' '}
+          when you do this.
         </p>
 
         <h3>Fly.io — one-click</h3>
@@ -448,15 +442,15 @@ railway up`}
           <span className="label">Persist the audit signing key</span>
           <span>
             The audit signing key (<code>VELLARIS_AUDIT_SIGNING_KEY_PATH</code>) must persist or
-            existing audit log entries become unverifiable. Stash it in your secret store before going
-            live.
+            existing audit log entries become unverifiable. Stash it in your secret store before
+            going live.
           </span>
         </div>
 
         <h3>Health check</h3>
         <p>
-          <code>GET /health</code> returns <code>{'{"status":"ok"}'}</code> when the DB is reachable.
-          Use it as your liveness + readiness probe.
+          <code>GET /health</code> returns <code>{'{"status":"ok"}'}</code> when the DB is
+          reachable. Use it as your liveness + readiness probe.
         </p>
       </section>
     </DocsPageShell>

@@ -6,11 +6,11 @@ export type ApiLanguage = 'curl' | 'python' | 'js'
 export interface ApiBuilderState {
   selectedOperationId: string | null
   language: ApiLanguage
-  serverUrl: string  // e.g. https://vellaris.example.com
+  serverUrl: string // e.g. https://vellaris.example.com
   pathParams: Record<string, string>
   queryParams: Record<string, string>
-  body: string  // raw JSON string the user is editing
-  authToken: string  // session token for endpoints that require auth
+  body: string // raw JSON string the user is editing
+  authToken: string // session token for endpoints that require auth
 }
 
 export const defaultApiBuilderState: ApiBuilderState = {

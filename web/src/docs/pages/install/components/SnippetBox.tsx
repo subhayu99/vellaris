@@ -30,8 +30,7 @@ export function SnippetBox({
       </header>
       {warn && (
         <p className="install-warn">
-          This snippet contains real credentials — do not paste into chat, screenshots, or
-          commits.
+          This snippet contains real credentials — do not paste into chat, screenshots, or commits.
         </p>
       )}
       <pre>

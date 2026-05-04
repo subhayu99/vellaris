@@ -1456,8 +1456,14 @@ body[data-theme='light'] .marketing-root .install-card .cmd {
   animation: nav-mobile-slide 160ms ease-out;
 }
 @keyframes nav-mobile-slide {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .marketing-root .nav-mobile-link {
   display: inline-flex;

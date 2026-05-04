@@ -77,7 +77,6 @@ function defaultPasskeyName(): string {
   return 'Passkey'
 }
 
-
 function pemBodyToBytes(pem: Uint8Array): Uint8Array {
   const text = new TextDecoder().decode(pem)
   const body = text
@@ -473,9 +472,7 @@ export function SettingsRoute() {
                         <div className="text-fg truncate text-[13.5px]">{p.name}</div>
                         <div className="text-fg-3 text-[11.5px]">
                           Added {p.createdAt.toLocaleDateString()}
-                          {p.lastUsedAt
-                            ? ` · last used ${p.lastUsedAt.toLocaleDateString()}`
-                            : ''}
+                          {p.lastUsedAt ? ` · last used ${p.lastUsedAt.toLocaleDateString()}` : ''}
                           {p.transports.length > 0 ? ` · ${p.transports.join(', ')}` : ''}
                         </div>
                       </div>

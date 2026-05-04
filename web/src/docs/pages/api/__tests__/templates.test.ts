@@ -135,7 +135,7 @@ describe('generateCurlSnippet', () => {
 
   it('missing path param uses <id> placeholder', () => {
     const snippet = generateCurlSnippet(getUserEndpoint, makeState())
-    expect(snippet).toContain('%3Cid%3E')  // URL-encoded <id>
+    expect(snippet).toContain('%3Cid%3E') // URL-encoded <id>
   })
 
   it('filled query params appear in URL', () => {
