@@ -15,7 +15,10 @@
             "type": "string"
           }
         },
-        "required": ["user_id", "encrypted_dek"],
+        "required": [
+          "user_id",
+          "encrypted_dek"
+        ],
         "title": "AccessGrant",
         "type": "object"
       },
@@ -28,7 +31,9 @@
             "type": "string"
           }
         },
-        "required": ["username"],
+        "required": [
+          "username"
+        ],
         "title": "ChallengeRequest",
         "type": "object"
       },
@@ -50,7 +55,11 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "nonce", "expires_at"],
+        "required": [
+          "challenge_id",
+          "nonce",
+          "expires_at"
+        ],
         "title": "ChallengeResponse",
         "type": "object"
       },
@@ -81,7 +90,12 @@
             "type": "string"
           }
         },
-        "required": ["encrypted_filename", "content_hash", "ciphertext", "access"],
+        "required": [
+          "encrypted_filename",
+          "content_hash",
+          "ciphertext",
+          "access"
+        ],
         "title": "DocumentCreate",
         "type": "object"
       },
@@ -195,7 +209,10 @@
             "type": "string"
           }
         },
-        "required": ["user_id", "username"],
+        "required": [
+          "user_id",
+          "username"
+        ],
         "title": "GrantSummary",
         "type": "object"
       },
@@ -229,7 +246,11 @@
             "type": "string"
           }
         },
-        "required": ["user_id", "wrapped_key", "updated_at"],
+        "required": [
+          "user_id",
+          "wrapped_key",
+          "updated_at"
+        ],
         "title": "KeyBlobResponse",
         "type": "object"
       },
@@ -241,7 +262,9 @@
             "type": "string"
           }
         },
-        "required": ["wrapped_key"],
+        "required": [
+          "wrapped_key"
+        ],
         "title": "KeyBlobUpload",
         "type": "object"
       },
@@ -279,7 +302,10 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "options_json"],
+        "required": [
+          "challenge_id",
+          "options_json"
+        ],
         "title": "PasskeyAuthBeginResponse",
         "type": "object"
       },
@@ -297,7 +323,10 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "credential_json"],
+        "required": [
+          "challenge_id",
+          "credential_json"
+        ],
         "title": "PasskeyAuthFinishRequest",
         "type": "object"
       },
@@ -321,7 +350,12 @@
             "type": "string"
           }
         },
-        "required": ["token", "expires_at", "user", "wrapped_key"],
+        "required": [
+          "token",
+          "expires_at",
+          "user",
+          "wrapped_key"
+        ],
         "title": "PasskeyAuthFinishResponse",
         "type": "object"
       },
@@ -339,7 +373,10 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "options_json"],
+        "required": [
+          "challenge_id",
+          "options_json"
+        ],
         "title": "PasskeyRegisterBeginResponse",
         "type": "object"
       },
@@ -378,7 +415,12 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "name", "credential_json", "wrapped_key"],
+        "required": [
+          "challenge_id",
+          "name",
+          "credential_json",
+          "wrapped_key"
+        ],
         "title": "PasskeyRegisterFinishRequest",
         "type": "object"
       },
@@ -419,7 +461,11 @@
             "type": "array"
           }
         },
-        "required": ["id", "name", "created_at"],
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
         "title": "PasskeySummary",
         "type": "object"
       },
@@ -436,7 +482,10 @@
             "type": "string"
           }
         },
-        "required": ["user_id", "encrypted_dek"],
+        "required": [
+          "user_id",
+          "encrypted_dek"
+        ],
         "title": "ShareRequest",
         "type": "object"
       },
@@ -455,7 +504,11 @@
             "$ref": "#/components/schemas/UserPrivate"
           }
         },
-        "required": ["token", "expires_at", "user"],
+        "required": [
+          "token",
+          "expires_at",
+          "user"
+        ],
         "title": "TokenResponse",
         "type": "object"
       },
@@ -484,7 +537,11 @@
             "type": "string"
           }
         },
-        "required": ["username", "email", "public_key"],
+        "required": [
+          "username",
+          "email",
+          "public_key"
+        ],
         "title": "UserCreate",
         "type": "object"
       },
@@ -515,7 +572,13 @@
             "type": "string"
           }
         },
-        "required": ["id", "username", "email", "public_key", "created_at"],
+        "required": [
+          "id",
+          "username",
+          "email",
+          "public_key",
+          "created_at"
+        ],
         "title": "UserPrivate",
         "type": "object"
       },
@@ -536,7 +599,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "username", "public_key"],
+        "required": [
+          "id",
+          "username",
+          "public_key"
+        ],
         "title": "UserPublic",
         "type": "object"
       },
@@ -572,7 +639,11 @@
             "type": "string"
           }
         },
-        "required": ["loc", "msg", "type"],
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
         "title": "ValidationError",
         "type": "object"
       },
@@ -590,7 +661,10 @@
             "type": "string"
           }
         },
-        "required": ["challenge_id", "signature"],
+        "required": [
+          "challenge_id",
+          "signature"
+        ],
         "title": "VerifyRequest",
         "type": "object"
       }
@@ -647,7 +721,9 @@
           }
         },
         "summary": "Issue Challenge",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/logout": {
@@ -693,7 +769,9 @@
           }
         ],
         "summary": "Logout",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/verify": {
@@ -751,7 +829,9 @@
           }
         },
         "summary": "Verify Challenge",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/documents": {
@@ -802,7 +882,9 @@
           }
         ],
         "summary": "List Documents",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       },
       "post": {
         "description": "Store ciphertext + per-recipient encrypted DEK rows.",
@@ -845,7 +927,9 @@
           }
         ],
         "summary": "Upload",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       }
     },
     "/documents/{document_id}": {
@@ -885,7 +969,9 @@
           }
         ],
         "summary": "Delete Document",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       },
       "get": {
         "description": "Return the ciphertext + the requesting user's encrypted_dek.",
@@ -930,7 +1016,9 @@
           }
         ],
         "summary": "Download",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       }
     },
     "/documents/{document_id}/access": {
@@ -980,7 +1068,9 @@
           }
         ],
         "summary": "Share",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       }
     },
     "/documents/{document_id}/access/{user_id}": {
@@ -1030,7 +1120,9 @@
           }
         ],
         "summary": "Revoke",
-        "tags": ["documents"]
+        "tags": [
+          "documents"
+        ]
       }
     },
     "/health": {
@@ -1054,7 +1146,9 @@
           }
         },
         "summary": "Health",
-        "tags": ["meta"]
+        "tags": [
+          "meta"
+        ]
       }
     },
     "/key-blobs/me": {
@@ -1072,7 +1166,9 @@
           }
         ],
         "summary": "Delete",
-        "tags": ["key-blobs"]
+        "tags": [
+          "key-blobs"
+        ]
       },
       "get": {
         "description": "Return the caller's stored wrapped-key blob, or 404 if none.",
@@ -1095,7 +1191,9 @@
           }
         ],
         "summary": "Pull",
-        "tags": ["key-blobs"]
+        "tags": [
+          "key-blobs"
+        ]
       },
       "put": {
         "description": "Upsert the caller's wrapped-key blob.",
@@ -1138,7 +1236,9 @@
           }
         ],
         "summary": "Push",
-        "tags": ["key-blobs"]
+        "tags": [
+          "key-blobs"
+        ]
       }
     },
     "/users": {
@@ -1178,7 +1278,9 @@
           }
         },
         "summary": "Signup",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/by-id/{user_id}": {
@@ -1224,7 +1326,9 @@
           }
         ],
         "summary": "By Id",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/by-username/{username}": {
@@ -1269,7 +1373,9 @@
           }
         ],
         "summary": "By Username",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/me": {
@@ -1293,7 +1399,9 @@
           }
         ],
         "summary": "Me",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/webauthn/auth/begin": {
@@ -1333,7 +1441,9 @@
           }
         },
         "summary": "Auth Begin",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     },
     "/webauthn/auth/finish": {
@@ -1373,7 +1483,9 @@
           }
         },
         "summary": "Auth Finish",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     },
     "/webauthn/credentials": {
@@ -1402,7 +1514,9 @@
           }
         ],
         "summary": "List Credentials",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     },
     "/webauthn/credentials/{credential_id}": {
@@ -1442,7 +1556,9 @@
           }
         ],
         "summary": "Delete Credential",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     },
     "/webauthn/register/begin": {
@@ -1467,7 +1583,9 @@
           }
         ],
         "summary": "Register Begin",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     },
     "/webauthn/register/finish": {
@@ -1512,7 +1630,9 @@
           }
         ],
         "summary": "Register Finish",
-        "tags": ["webauthn"]
+        "tags": [
+          "webauthn"
+        ]
       }
     }
   }
