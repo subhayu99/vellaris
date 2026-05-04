@@ -131,6 +131,49 @@ export function ProtocolPage() {
         OWASP recommendations: 256 MiB · 3 passes · 4 lanes · 32-byte output.
       </p>
 
+      <h2>Passkey-wrapped private key</h2>
+      <p>
+        When a user enrolls a passkey, the same RSA-4096 private key is also AES-GCM-wrapped under a
+        32-byte secret returned by the WebAuthn PRF extension — no Argon2id needed. The PRF output
+        is deterministic for a given (credential, eval input) pair, so the same passkey unwraps the
+        same blob across logins.
+      </p>
+      <CodeBlock lang="binary">
+        {`┌─────────┬──────────────────┐
+│ version │ inner ciphertext │
+│  1 byte │   (envelope)     │
+└─────────┴──────────────────┘`}
+      </CodeBlock>
+      <FieldList
+        items={[
+          {
+            name: 'version',
+            body: (
+              <>
+                <code>0x02</code> for AES-256-GCM under a PRF-derived key. The version byte is bound
+                to the AES-GCM AAD so a v2 blob can&rsquo;t be re-tagged as v1 (or vice-versa)
+                without invalidating the tag.
+              </>
+            ),
+          },
+          {
+            name: 'inner ciphertext',
+            body: (
+              <>
+                Standard AES-GCM envelope (the same v1 wire format documented above). Plaintext is
+                the PKCS#8 PEM-encoded RSA-4096 private key.
+              </>
+            ),
+          },
+        ]}
+      />
+      <p>
+        The eval input the SPA hands the authenticator is a fixed 32-byte salt (SHA-256 of a domain
+        separator string). Server stores the ciphertext only — it has no way to derive the unwrap
+        key without the authenticator hardware. Reference:{' '}
+        <code>web/src/crypto/wrap.ts</code> ({' '}<code>WRAPPED_V2_PRF</code>).
+      </p>
+
       <h2>RSA usage</h2>
       <div className="docs-table-scroll">
       <table>

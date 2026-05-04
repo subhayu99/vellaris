@@ -268,6 +268,207 @@
         "title": "KeyBlobUpload",
         "type": "object"
       },
+      "PasskeyAuthBeginRequest": {
+        "description": "Input for POST /webauthn/auth/begin.\n\nUsername is optional. If provided, the server returns the matching\nuser's credentials in ``allowCredentials`` so the browser can prompt\nfor the right authenticator. If omitted, the response uses an empty\nallow-list \u2014 the browser will present any discoverable resident\ncredential the user has for this RP.",
+        "properties": {
+          "username": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          }
+        },
+        "title": "PasskeyAuthBeginRequest",
+        "type": "object"
+      },
+      "PasskeyAuthBeginResponse": {
+        "description": "Output of POST /webauthn/auth/begin.",
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "options_json": {
+            "description": "JSON-encoded PublicKeyCredentialRequestOptions.",
+            "title": "Options Json",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "options_json"
+        ],
+        "title": "PasskeyAuthBeginResponse",
+        "type": "object"
+      },
+      "PasskeyAuthFinishRequest": {
+        "description": "Input for POST /webauthn/auth/finish.",
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "credential_json": {
+            "description": "JSON-stringified PublicKeyCredential as returned by navigator.credentials.get() (with .response and .clientExtensionResults).",
+            "title": "Credential Json",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "credential_json"
+        ],
+        "title": "PasskeyAuthFinishRequest",
+        "type": "object"
+      },
+      "PasskeyAuthFinishResponse": {
+        "description": "Output of POST /webauthn/auth/finish \u2014 session token + the credential's wrapped key.\n\nThe wrapped_key is the AES-GCM-wrapped RSA private key bound to the\ncredential the client just used. Client AES-GCM-decrypts it under\nthe PRF output that came back in the same navigator.credentials.get()\ncall \u2014 server never sees the unwrap key.",
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserPrivate"
+          },
+          "wrapped_key": {
+            "title": "Wrapped Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "expires_at",
+          "user",
+          "wrapped_key"
+        ],
+        "title": "PasskeyAuthFinishResponse",
+        "type": "object"
+      },
+      "PasskeyRegisterBeginResponse": {
+        "description": "Output of POST /webauthn/register/begin.\n\nThe fields mirror PublicKeyCredentialCreationOptions so the client\ncan pass them straight into navigator.credentials.create() after\nbase64url-decoding the byte fields. ``challenge_id`` is a server-\nside handle the client echoes back at finish time so we know which\npending challenge to verify against.",
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "options_json": {
+            "description": "JSON-encoded PublicKeyCredentialCreationOptions (challenge / user.id / excludeCredentials are base64url-encoded).",
+            "title": "Options Json",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "options_json"
+        ],
+        "title": "PasskeyRegisterBeginResponse",
+        "type": "object"
+      },
+      "PasskeyRegisterFinishRequest": {
+        "description": "Input for POST /webauthn/register/finish.",
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "credential_json": {
+            "description": "JSON-stringified PublicKeyCredential as returned by navigator.credentials.create() (with .response and .clientExtensionResults).",
+            "title": "Credential Json",
+            "type": "string"
+          },
+          "name": {
+            "description": "Display name for the passkey.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "transports": {
+            "description": "Authenticator transports hint (`internal`, `hybrid`, `usb`, `nfc`, `ble`).",
+            "items": {
+              "type": "string"
+            },
+            "title": "Transports",
+            "type": "array"
+          },
+          "wrapped_key": {
+            "contentMediaType": "application/octet-stream",
+            "description": "The user's RSA-4096 private key, AES-GCM-wrapped under the credential's PRF output. Server stores this opaquely.",
+            "title": "Wrapped Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "name",
+          "credential_json",
+          "wrapped_key"
+        ],
+        "title": "PasskeyRegisterFinishRequest",
+        "type": "object"
+      },
+      "PasskeySummary": {
+        "description": "One row from GET /webauthn/credentials \u2014 what the user sees in Settings.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "transports": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Transports",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "PasskeySummary",
+        "type": "object"
+      },
       "ShareRequest": {
         "properties": {
           "encrypted_dek": {
@@ -479,7 +680,7 @@
   "info": {
     "description": "End-to-end encrypted document sharing \u2014 server.",
     "title": "Vellaris",
-    "version": "0.5.7"
+    "version": "0.6.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1200,6 +1401,237 @@
         "summary": "Me",
         "tags": [
           "users"
+        ]
+      }
+    },
+    "/webauthn/auth/begin": {
+      "post": {
+        "description": "Issue an authentication challenge (anonymous endpoint).",
+        "operationId": "auth_begin_webauthn_auth_begin_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyAuthBeginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyAuthBeginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Auth Begin",
+        "tags": [
+          "webauthn"
+        ]
+      }
+    },
+    "/webauthn/auth/finish": {
+      "post": {
+        "description": "Verify the assertion, issue a session token, return the wrapped key.",
+        "operationId": "auth_finish_webauthn_auth_finish_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyAuthFinishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyAuthFinishResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Auth Finish",
+        "tags": [
+          "webauthn"
+        ]
+      }
+    },
+    "/webauthn/credentials": {
+      "get": {
+        "description": "Return the caller's registered passkeys (no public-key bytes).",
+        "operationId": "list_credentials_webauthn_credentials_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PasskeySummary"
+                  },
+                  "title": "Response List Credentials Webauthn Credentials Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Credentials",
+        "tags": [
+          "webauthn"
+        ]
+      }
+    },
+    "/webauthn/credentials/{credential_id}": {
+      "delete": {
+        "description": "Remove a registered passkey. The platform-side credential isn't deleted.",
+        "operationId": "delete_credential_webauthn_credentials__credential_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credential_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Credential Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Credential",
+        "tags": [
+          "webauthn"
+        ]
+      }
+    },
+    "/webauthn/register/begin": {
+      "post": {
+        "description": "Issue a fresh challenge + options for registering a new passkey.",
+        "operationId": "register_begin_webauthn_register_begin_post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyRegisterBeginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Begin",
+        "tags": [
+          "webauthn"
+        ]
+      }
+    },
+    "/webauthn/register/finish": {
+      "post": {
+        "description": "Verify the attestation and store the credential + wrapped key.",
+        "operationId": "register_finish_webauthn_register_finish_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasskeyRegisterFinishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeySummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Finish",
+        "tags": [
+          "webauthn"
         ]
       }
     }

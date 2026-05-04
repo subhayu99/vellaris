@@ -153,6 +153,9 @@ class AuditAction(StrEnum):
     KEYBLOB_PUSH = "keyblob.push"
     KEYBLOB_PULL = "keyblob.pull"
     KEYBLOB_DELETE = "keyblob.delete"
+    PASSKEY_REGISTER = "passkey.register"
+    PASSKEY_LOGIN = "passkey.login"
+    PASSKEY_DELETE = "passkey.delete"
 
 
 class AuditLog(SQLModel, table=True):
@@ -188,6 +191,70 @@ class KeyBlob(SQLModel, table=True):
     )
 
 
+class WebAuthnCredential(SQLModel, table=True):
+    """A registered WebAuthn / passkey credential, bound to a user.
+
+    Stores the attestation public key for verifying future signatures, plus
+    an opaque AES-GCM-wrapped copy of the user's RSA-4096 private key
+    encrypted under the credential's PRF output. The PRF output never
+    leaves the client; the server stores only its byproduct (wrapped_key)
+    and cannot derive the unwrap key.
+
+    `transports` is a comma-separated subset of WebAuthn's transport hints
+    (`internal`, `hybrid`, `usb`, `nfc`, `ble`) — used by the browser at
+    auth time to surface only relevant authenticators.
+    """
+
+    __tablename__ = "webauthn_credentials"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id", index=True, nullable=False)
+    credential_id: bytes = Field(
+        sa_column=Column(LargeBinary, nullable=False, index=True, unique=True),
+    )
+    public_key: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    sign_count: int = Field(default=0, nullable=False, ge=0)
+    transports: str = Field(default="", max_length=128)
+    name: str = Field(max_length=64)
+    wrapped_key: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    created_at: datetime = Field(
+        default_factory=_utcnow,
+        sa_column=Column(UtcDateTime(), nullable=False),
+    )
+    last_used_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(UtcDateTime(), nullable=True),
+    )
+
+
+class WebAuthnChallenge(SQLModel, table=True):
+    """Pending WebAuthn challenge bytes for a register or authenticate ceremony.
+
+    The begin endpoint stashes the random challenge here keyed by id; the
+    finish endpoint reads and deletes it. Cleaned up on expiry too. We use
+    a dedicated table (rather than reusing ``auth_challenges``) because
+    the bytes are signed by the authenticator over its own
+    ``clientDataJSON`` envelope, not via the RSA-PSS signed-blob format.
+    """
+
+    __tablename__ = "webauthn_challenges"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID | None = Field(
+        default=None,
+        foreign_key="users.id",
+        index=True,
+        nullable=True,
+    )
+    challenge: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    purpose: str = Field(max_length=16)
+    expires_at: datetime = Field(sa_column=Column(UtcDateTime(), nullable=False, index=True))
+    created_at: datetime = Field(
+        default_factory=_utcnow,
+        sa_column=Column(UtcDateTime(), nullable=False),
+    )
+
+
 __all__ = [
     "AuditAction",
     "AuditLog",
@@ -197,4 +264,6 @@ __all__ = [
     "KeyBlob",
     "Session",
     "User",
+    "WebAuthnChallenge",
+    "WebAuthnCredential",
 ]

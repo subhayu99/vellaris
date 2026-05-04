@@ -151,7 +151,91 @@ export async function unwrapPrivateKey(
   return aesDecrypt(sealed, key, { associatedData: aad })
 }
 
-/** Cheap sniff: does `blob` start with a known wrapped-key version byte? */
+/** Cheap sniff: is this a passphrase-wrapped V1 blob? */
 export function isWrappedBlob(blob: Uint8Array): boolean {
   return blob.length >= 1 && blob[0] === WRAPPED_V1
+}
+
+/** Cheap sniff: is this a PRF-wrapped V2 blob? */
+export function isPrfWrappedBlob(blob: Uint8Array): boolean {
+  return blob.length >= 1 && blob[0] === WRAPPED_V2_PRF
+}
+
+/* ---------- WRAPPED_V2_PRF ----------
+ *
+ * Wrapped under a key supplied directly by the caller — no KDF run. Used
+ * for passkey enrollment, where the AES key comes from the WebAuthn PRF
+ * extension's 32-byte output. Layout:
+ *
+ *   ┌─────────┬──────────────────┐
+ *   │ version │ inner ciphertext │
+ *   │  1 byte │   (envelope v1)  │
+ *   └─────────┴──────────────────┘
+ *
+ * The version byte is bound to the AES-GCM ciphertext via AAD so a v2
+ * blob can't be re-tagged as v1 (or vice-versa) without invalidating the
+ * tag.
+ *
+ * The PRF output is 32 bytes — perfect AES-256 key length. It's
+ * deterministic for a given (credential, eval input) pair, so enrolling
+ * a passkey today and re-deriving on login tomorrow yields the same key
+ * and unwraps the same blob. */
+
+export const WRAPPED_V2_PRF = 0x02
+
+function prfAssociatedData(version: number): Uint8Array {
+  return new Uint8Array([version])
+}
+
+/**
+ * AES-GCM-wrap `pemBytes` directly under `prfKey` (must be 32 bytes).
+ *
+ * `prfKey` is typically the WebAuthn PRF extension's `results.first`
+ * output — a 32-byte secret deterministically derived from the
+ * credential and the eval input. Caller is responsible for not
+ * persisting the key or the unwrapped PEM.
+ */
+export async function wrapPrivateKeyWithPrf(
+  pemBytes: Uint8Array,
+  prfKey: Uint8Array,
+): Promise<Uint8Array> {
+  if (prfKey.length !== 32) {
+    throw new WireFormatError(`prfKey must be 32 bytes, got ${prfKey.length}`)
+  }
+  const aad = prfAssociatedData(WRAPPED_V2_PRF)
+  const sealed = await aesEncrypt(pemBytes, prfKey, { associatedData: aad })
+  const inner = pack(sealed)
+  const out = new Uint8Array(1 + inner.length)
+  out[0] = WRAPPED_V2_PRF
+  out.set(inner, 1)
+  return out
+}
+
+/**
+ * Reverse of {@link wrapPrivateKeyWithPrf}. Throws {@link WireFormatError}
+ * for structural problems and {@link DecryptError} for crypto failures
+ * (wrong PRF output, tampered bytes).
+ */
+export async function unwrapPrivateKeyWithPrf(
+  blob: Uint8Array,
+  prfKey: Uint8Array,
+): Promise<Uint8Array> {
+  if (blob.length < 1) {
+    throw new WireFormatError(`blob too short: ${blob.length}`)
+  }
+  const version = blob[0]
+  if (version !== WRAPPED_V2_PRF) {
+    throw new WireFormatError(
+      `expected PRF-wrapped blob (0x${WRAPPED_V2_PRF.toString(16)}), got 0x${version
+        .toString(16)
+        .padStart(2, '0')}`,
+    )
+  }
+  if (prfKey.length !== 32) {
+    throw new WireFormatError(`prfKey must be 32 bytes, got ${prfKey.length}`)
+  }
+  const inner = blob.slice(1)
+  const sealed = unpack(inner)
+  const aad = prfAssociatedData(version)
+  return aesDecrypt(sealed, prfKey, { associatedData: aad })
 }

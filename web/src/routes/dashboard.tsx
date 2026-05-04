@@ -16,12 +16,22 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Button, Icons, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
+import {
+  isPlatformAuthenticatorAvailable,
+  isWebAuthnSupported,
+} from '../api/index.ts'
 import type { DocumentScope, DocumentSummary } from '../api/index.ts'
 import { decryptBundle, deserializePrivateKeyForOaep } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
 import { getCachedUser, getToken } from '../state/session.ts'
 import { getUnwrappedPem, hasUnwrappedPem } from '../state/key-cache.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
+
+// Per-session dismissal: the banner re-appears next time the user signs
+// in fresh, but stays out of their face for the rest of this session.
+// localStorage would be too sticky (we *want* the nag eventually if they
+// keep ignoring it); a single session is the right cadence.
+const PASSKEY_NUDGE_DISMISSED_KEY = 'vellaris.dashboard.passkey-nudge-dismissed'
 
 interface FileRow {
   summary: DocumentSummary
@@ -70,6 +80,15 @@ export function DashboardRoute() {
   const [rows, setRows] = useState<FileRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Passkey-nudge banner state. We render it only when:
+  //   1. The browser supports WebAuthn AND has a platform authenticator
+  //      (Touch ID / Windows Hello / Android biometric) — no point
+  //      nudging if they couldn't act on it.
+  //   2. The user has zero registered passkeys server-side.
+  //   3. They haven't dismissed the banner this session.
+  // Tristate so we don't render anything during the probe.
+  const [passkeyNudge, setPasskeyNudge] = useState<'show' | 'hide' | null>(null)
 
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
@@ -161,6 +180,54 @@ export function DashboardRoute() {
     }
   }, [client, scope, serverUrl, user])
 
+  useEffect(() => {
+    if (!client) return
+    let cancelled = false
+
+    async function probePasskey() {
+      if (!isWebAuthnSupported()) {
+        if (!cancelled) setPasskeyNudge('hide')
+        return
+      }
+      try {
+        const dismissed = sessionStorage.getItem(PASSKEY_NUDGE_DISMISSED_KEY) === '1'
+        if (dismissed) {
+          if (!cancelled) setPasskeyNudge('hide')
+          return
+        }
+      } catch {
+        /* sessionStorage may be unavailable in some embeddings — fall through and probe */
+      }
+      const available = await isPlatformAuthenticatorAvailable()
+      if (cancelled || !available) {
+        if (!cancelled) setPasskeyNudge('hide')
+        return
+      }
+      try {
+        const list = await client!.listPasskeys()
+        if (cancelled) return
+        setPasskeyNudge(list.length === 0 ? 'show' : 'hide')
+      } catch {
+        // /webauthn endpoints may be absent on a downgraded server — silently skip.
+        if (!cancelled) setPasskeyNudge('hide')
+      }
+    }
+
+    void probePasskey()
+    return () => {
+      cancelled = true
+    }
+  }, [client])
+
+  function dismissPasskeyNudge() {
+    try {
+      sessionStorage.setItem(PASSKEY_NUDGE_DISMISSED_KEY, '1')
+    } catch {
+      /* fine — banner just won't persist its dismissal in private browsing */
+    }
+    setPasskeyNudge('hide')
+  }
+
   return (
     <DashboardLayout
       topBarTrailing={
@@ -176,6 +243,40 @@ export function DashboardRoute() {
       }
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
+        {passkeyNudge === 'show' && (
+          <div
+            className="border-line bg-bg-card/60 flex flex-col items-start gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            data-testid="passkey-nudge"
+          >
+            <div className="flex items-center gap-3">
+              <Icons.IKey size={16} />
+              <div className="text-fg-2 text-[13px]">
+                <span className="text-fg font-medium">Sign in faster next time.</span>{' '}
+                Add a passkey so future sign-ins use Touch ID, Face ID, or your device password.
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate('/settings')}
+                data-testid="passkey-nudge-action"
+              >
+                Add a passkey
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={dismissPasskeyNudge}
+                aria-label="Dismiss"
+                data-testid="passkey-nudge-dismiss"
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-fg font-serif text-xl tracking-tight sm:text-2xl">Files</h1>
           <div className="border-line-2 bg-bg-elev inline-flex rounded-md border p-0.5">

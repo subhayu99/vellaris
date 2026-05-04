@@ -1,3 +1,22 @@
+## 0.6.0 — 2026-05-02
+
+### Added
+
+- **Passkey / WebAuthn login + decryption.** Users can register a fingerprint, Face ID, Windows Hello, or hardware-key passkey on their account and use it to (a) authenticate to the server *and* (b) unwrap their RSA-4096 private key — no passphrase typed at login time. Implemented via WebAuthn's PRF extension: each registered authenticator deterministically returns a 32-byte secret per credential, which the SPA uses as the AES key to wrap the user's private key. The PRF output never reaches the server; only opaque ciphertext does, so a stolen database can't decrypt files without the original authenticator.
+
+  **What's new:**
+  - Six new endpoints under `/webauthn`: `register/{begin,finish}`, `auth/{begin,finish}`, `GET /credentials`, `DELETE /credentials/{id}`. Backed by the `webauthn>=2.5` Python library and a new `WebAuthnCredential` table (alongside a small `WebAuthnChallenge` scratchpad table). Three new audit-log actions: `passkey.register`, `passkey.login`, `passkey.delete`.
+  - Three new `VELLARIS_WEBAUTHN_*` settings: `RP_ID`, `RP_NAME`, `RP_ORIGINS`. Defaults to `localhost` for dev; production deploys must set the registrable domain.
+  - New SPA crypto path `WRAPPED_V2_PRF` in `web/src/crypto/wrap.ts` — `wrapPrivateKeyWithPrf(pem, key)` / `unwrapPrivateKeyWithPrf(blob, key)`. Wire format documented at `/docs/protocol`.
+  - "Add a passkey" section in `/settings` with a list of registered passkeys + their last-used dates and remove buttons.
+  - "Sign in with a passkey" button on `/login`, surfaced when the platform reports a built-in user-verifying authenticator. Falls back to the passphrase form for older browsers / authenticators without PRF.
+  - New trust-model rows for "stolen passkey-bearing device" and "compromised passkey-sync provider".
+
+### Migration notes
+
+- Run `alembic upgrade head` (the new revision adds `webauthn_credentials` + `webauthn_challenges`; on Postgres it also `ALTER TYPE auditaction ADD VALUE` for the three new audit actions).
+- For browsers / authenticators without the PRF extension (Firefox <135, very old Touch ID), passkey enrollment surfaces a friendly error and the user keeps using their passphrase. No data migration required.
+
 ## 0.5.7 — 2026-05-02
 
 ### Fixed

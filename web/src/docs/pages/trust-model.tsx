@@ -102,6 +102,29 @@ export function TrustModelPage() {
             </td>
             <td>Anything that can run JS in the same origin can decrypt your files.</td>
           </tr>
+          <tr>
+            <td>Stolen passkey-bearing device</td>
+            <td>
+              <DefenseBadge kind="partial" />
+            </td>
+            <td>
+              The PRF-wrapped key requires the original authenticator to decrypt. Lose the
+              authenticator, lose the passkey&rsquo;s decryption ability — but the passphrase still
+              works as the recovery anchor.
+            </td>
+          </tr>
+          <tr>
+            <td>Compromised passkey-sync provider</td>
+            <td>
+              <DefenseBadge kind="partial" />
+            </td>
+            <td>
+              iCloud Keychain / Google Password Manager / 1Password sync passkeys across devices.
+              A breach of the provider could let an attacker derive the same PRF output and unwrap
+              your private key. Trust transferred from your local laptop password to your sync
+              provider&rsquo;s security.
+            </td>
+          </tr>
         </tbody>
       </table>
       </div>

@@ -20,6 +20,9 @@ import type {
   DocumentScope,
   DocumentSummary,
   KeyBlobResponse,
+  PasskeyAuthFinishResponse,
+  PasskeyBeginResponse,
+  PasskeySummary,
   TokenResponse,
   UserPrivate,
   UserPublic,
@@ -306,6 +309,102 @@ export class VellarisClient {
       requireAuth: true,
     })
   }
+
+  // ---------- passkeys (WebAuthn) ----------
+
+  /** POST /webauthn/register/begin — authenticated; gets a challenge + options. */
+  async passkeyRegisterBegin(): Promise<PasskeyBeginResponse> {
+    const r = await this._request('/webauthn/register/begin', {
+      method: 'POST',
+      expectStatus: 201,
+      requireAuth: true,
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    return {
+      challengeId: String(body.challenge_id),
+      optionsJson: String(body.options_json),
+    }
+  }
+
+  /** POST /webauthn/register/finish — submits the credential + wrapped-key blob. */
+  async passkeyRegisterFinish(input: {
+    challengeId: string
+    name: string
+    credentialJson: string
+    transports: string[]
+    wrappedKey: Uint8Array
+  }): Promise<PasskeySummary> {
+    const r = await this._request('/webauthn/register/finish', {
+      method: 'POST',
+      expectStatus: 201,
+      requireAuth: true,
+      body: {
+        challenge_id: input.challengeId,
+        name: input.name,
+        credential_json: input.credentialJson,
+        transports: input.transports,
+        wrapped_key: bytesToBase64(input.wrappedKey),
+      },
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    return parsePasskeySummary(body)
+  }
+
+  /** GET /webauthn/credentials — list the caller's registered passkeys. */
+  async listPasskeys(): Promise<PasskeySummary[]> {
+    const r = await this._request('/webauthn/credentials', {
+      method: 'GET',
+      requireAuth: true,
+    })
+    const arr = (await r.json()) as Array<Record<string, unknown>>
+    return arr.map(parsePasskeySummary)
+  }
+
+  /** DELETE /webauthn/credentials/:id — remove a registered passkey. */
+  async deletePasskey(id: string): Promise<void> {
+    await this._request(`/webauthn/credentials/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      expectStatus: 204,
+      requireAuth: true,
+    })
+  }
+
+  /** POST /webauthn/auth/begin — anonymous; optional username for allowCredentials. */
+  async passkeyAuthBegin(username?: string): Promise<PasskeyBeginResponse> {
+    const r = await this._request('/webauthn/auth/begin', {
+      method: 'POST',
+      expectStatus: 201,
+      body: { username: username ?? null },
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    return {
+      challengeId: String(body.challenge_id),
+      optionsJson: String(body.options_json),
+    }
+  }
+
+  /** POST /webauthn/auth/finish — server returns session token + wrapped-key blob. */
+  async passkeyAuthFinish(input: {
+    challengeId: string
+    credentialJson: string
+  }): Promise<PasskeyAuthFinishResponse> {
+    const r = await this._request('/webauthn/auth/finish', {
+      method: 'POST',
+      body: {
+        challenge_id: input.challengeId,
+        credential_json: input.credentialJson,
+      },
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    const token = String(body.token)
+    this._token = token
+    return {
+      token,
+      expiresAt: new Date(String(body.expires_at)),
+      user: parseUserPrivate(body.user as Record<string, unknown>),
+      wrappedKey: base64ToBytes(String(body.wrapped_key)),
+    }
+  }
 }
 
 // ---------- field decoders ----------
@@ -336,5 +435,15 @@ function parseDocumentSummary(body: Record<string, unknown>): DocumentSummary {
     contentHash: String(body.content_hash),
     encryptedFilename: base64ToBytes(String(body.encrypted_filename)),
     createdAt: new Date(String(body.created_at)),
+  }
+}
+
+function parsePasskeySummary(body: Record<string, unknown>): PasskeySummary {
+  return {
+    id: String(body.id),
+    name: String(body.name),
+    transports: Array.isArray(body.transports) ? (body.transports as string[]) : [],
+    createdAt: new Date(String(body.created_at)),
+    lastUsedAt: body.last_used_at ? new Date(String(body.last_used_at)) : null,
   }
 }

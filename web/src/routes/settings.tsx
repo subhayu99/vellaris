@@ -19,9 +19,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, ConfirmDialog, Field, Icons, Notice, Spinner } from '../components/index.ts'
+import { Button, ConfirmDialog, Field, Icons, Input, Notice, Spinner } from '../components/index.ts'
 import { IMoon, ISun } from '../marketing/icons.tsx'
 import { useTheme } from '../marketing/hooks.ts'
+import {
+  enrollPasskey,
+  PasskeyCancelledError,
+  PasskeyUnsupportedError,
+  PrfUnsupportedError,
+} from '../state/passkey.ts'
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
+import type { PasskeySummary } from '../api/index.ts'
+import { getUnwrappedPem } from '../state/key-cache.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -55,6 +64,20 @@ async function publicKeyFingerprint(spkiBytes: Uint8Array): Promise<string> {
   return formatFingerprint(hex)
 }
 
+function defaultPasskeyName(): string {
+  // Best-effort label so the user doesn't have to think one up. Falls back
+  // to a generic string in environments without `userAgent` (SSR, locked-
+  // down WebViews).
+  if (typeof navigator === 'undefined') return 'Passkey'
+  const ua = navigator.userAgent ?? ''
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iPhone passkey'
+  if (/Mac/.test(ua)) return 'Mac passkey'
+  if (/Android/.test(ua)) return 'Android passkey'
+  if (/Windows/.test(ua)) return 'Windows passkey'
+  return 'Passkey'
+}
+
+
 function pemBodyToBytes(pem: Uint8Array): Uint8Array {
   const text = new TextDecoder().decode(pem)
   const body = text
@@ -86,6 +109,17 @@ export function SettingsRoute() {
   const [confirmDifferentServer, setConfirmDifferentServer] = useState(false)
   const [confirmingDeleteBlob, setConfirmingDeleteBlob] = useState(false)
   const [theme, toggleTheme] = useTheme()
+
+  // Passkey state
+  const [passkeySupported, setPasskeySupported] = useState<boolean | null>(null)
+  const [passkeys, setPasskeys] = useState<PasskeySummary[]>([])
+  const [passkeyName, setPasskeyName] = useState('')
+  const [passkeyBusy, setPasskeyBusy] = useState(false)
+  const [passkeyError, setPasskeyError] = useState<string | null>(null)
+  const [passkeyNotice, setPasskeyNotice] = useState<string | null>(null)
+  const [confirmingDeletePasskey, setConfirmingDeletePasskey] = useState<PasskeySummary | null>(
+    null,
+  )
 
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
@@ -123,10 +157,92 @@ export function SettingsRoute() {
       }
     }
     void probeBlob()
+
+    async function probePasskeys() {
+      if (!isWebAuthnSupported()) {
+        if (!cancelled) setPasskeySupported(false)
+        return
+      }
+      const platform = await isPlatformAuthenticatorAvailable()
+      if (cancelled) return
+      setPasskeySupported(platform)
+      try {
+        const list = await client!.listPasskeys()
+        if (!cancelled) setPasskeys(list)
+      } catch {
+        // Server may not support /webauthn yet; absent passkeys is a valid state.
+      }
+    }
+    void probePasskeys()
+
     return () => {
       cancelled = true
     }
   }, [client])
+
+  async function addPasskey() {
+    if (!client) return
+    const name = passkeyName.trim() || defaultPasskeyName()
+    const pem = getUnwrappedPem()
+    if (!pem) {
+      setPasskeyError(
+        'Your private key isn’t loaded in this tab. Sign in with your passphrase first.',
+      )
+      return
+    }
+    setPasskeyBusy(true)
+    setPasskeyError(null)
+    setPasskeyNotice(null)
+    try {
+      const summary = await enrollPasskey(client, { name, privatePem: pem })
+      // We need the post-registration count to decide whether to nudge
+      // the user toward adding a backup. Compute against the new array
+      // rather than reading state mid-update.
+      const newPasskeys = [...passkeys, summary]
+      setPasskeys(newPasskeys)
+      if (newPasskeys.length === 1) {
+        // First passkey just landed. Without a second, recovery on a
+        // lost device falls back to the passphrase only — push them
+        // toward redundancy now rather than after they've forgotten.
+        setPasskeyNotice(
+          `Passkey "${summary.name}" registered. Consider adding a second one as a backup — ` +
+            'losing your only passkey leaves the passphrase as your sole recovery anchor.',
+        )
+      } else {
+        setPasskeyNotice(`Passkey "${summary.name}" registered.`)
+      }
+      setPasskeyName('')
+    } catch (err) {
+      if (err instanceof PasskeyCancelledError) {
+        setPasskeyError('Cancelled before the authenticator finished.')
+      } else if (err instanceof PrfUnsupportedError) {
+        setPasskeyError(err.message)
+      } else if (err instanceof PasskeyUnsupportedError) {
+        setPasskeyError(err.message)
+      } else {
+        setPasskeyError((err as Error).message)
+      }
+    } finally {
+      setPasskeyBusy(false)
+    }
+  }
+
+  async function removePasskey(summary: PasskeySummary) {
+    if (!client) return
+    setConfirmingDeletePasskey(null)
+    setPasskeyBusy(true)
+    setPasskeyError(null)
+    setPasskeyNotice(null)
+    try {
+      await client.deletePasskey(summary.id)
+      setPasskeys((prev) => prev.filter((p) => p.id !== summary.id))
+      setPasskeyNotice(`Passkey "${summary.name}" removed.`)
+    } catch (err) {
+      setPasskeyError((err as Error).message)
+    } finally {
+      setPasskeyBusy(false)
+    }
+  }
 
   async function pushBlob() {
     if (!client) return
@@ -297,6 +413,100 @@ export function SettingsRoute() {
           )}
         </section>
 
+        {/* Passkeys */}
+        <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
+          <div>
+            <h2 className="text-fg text-[15px] font-semibold">Passkeys</h2>
+            <p className="text-fg-3 mt-0.5 text-[12.5px]">
+              Sign in with your fingerprint, Face ID, or device password instead of typing your
+              passphrase. Each passkey holds an encrypted copy of your private key — losing all
+              passkeys is fine because your passphrase still works as the recovery anchor.
+            </p>
+          </div>
+
+          {passkeySupported === false && (
+            <Notice variant="info">
+              This browser doesn’t expose WebAuthn. Try a recent Chrome, Edge, Safari, or Firefox.
+            </Notice>
+          )}
+
+          {passkeySupported && (
+            <>
+              <Field
+                label="Add a passkey"
+                htmlFor="passkey-name"
+                hint="Pick a label so you can find it later — e.g., 'Work MacBook' or 'YubiKey 5'."
+              >
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    id="passkey-name"
+                    value={passkeyName}
+                    onChange={(e) => setPasskeyName(e.target.value)}
+                    placeholder={defaultPasskeyName()}
+                    disabled={passkeyBusy}
+                    data-testid="passkey-name"
+                  />
+                  <Button
+                    variant="primary"
+                    size="default"
+                    leading={passkeyBusy ? <Spinner size={14} /> : <Icons.IKey size={14} />}
+                    onClick={addPasskey}
+                    disabled={passkeyBusy}
+                    fullWidth
+                    className="sm:w-auto"
+                    data-testid="passkey-add"
+                  >
+                    {passkeyBusy ? 'Working…' : 'Add passkey'}
+                  </Button>
+                </div>
+              </Field>
+
+              {passkeys.length > 0 && (
+                <ul className="border-line divide-line flex flex-col divide-y rounded-md border">
+                  {passkeys.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between gap-3 px-3 py-2.5"
+                      data-testid={`passkey-row-${p.id}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-fg truncate text-[13.5px]">{p.name}</div>
+                        <div className="text-fg-3 text-[11.5px]">
+                          Added {p.createdAt.toLocaleDateString()}
+                          {p.lastUsedAt
+                            ? ` · last used ${p.lastUsedAt.toLocaleDateString()}`
+                            : ''}
+                          {p.transports.length > 0 ? ` · ${p.transports.join(', ')}` : ''}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmingDeletePasskey(p)}
+                        disabled={passkeyBusy}
+                        data-testid={`passkey-remove-${p.id}`}
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {passkeyNotice && (
+                <Notice variant="success" data-testid="passkey-notice">
+                  {passkeyNotice}
+                </Notice>
+              )}
+              {passkeyError && (
+                <Notice variant="error" data-testid="passkey-error">
+                  {passkeyError}
+                </Notice>
+              )}
+            </>
+          )}
+        </section>
+
         {/* Keys */}
         <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
           <div>
@@ -385,6 +595,25 @@ export function SettingsRoute() {
           onConfirm={deleteRemoteBlob}
           onCancel={() => setConfirmingDeleteBlob(false)}
           testIdPrefix="confirm-delete-blob"
+        />
+
+        <ConfirmDialog
+          open={confirmingDeletePasskey !== null}
+          title={
+            confirmingDeletePasskey
+              ? `Remove "${confirmingDeletePasskey.name}"?`
+              : 'Remove passkey?'
+          }
+          body={
+            passkeys.length <= 1
+              ? "This is your last passkey. After this, only your passphrase will sign you in — and on a brand new device you'll need to type it manually."
+              : 'You won’t be able to use this authenticator to sign in. Your other passkeys + your passphrase still work.'
+          }
+          confirmLabel={passkeyBusy ? 'Removing…' : 'Remove passkey'}
+          busy={passkeyBusy}
+          onConfirm={() => confirmingDeletePasskey && removePasskey(confirmingDeletePasskey)}
+          onCancel={() => setConfirmingDeletePasskey(null)}
+          testIdPrefix="confirm-delete-passkey"
         />
       </div>
     </DashboardLayout>
