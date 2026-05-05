@@ -10,12 +10,15 @@
  *   - Phase 2: runtime caching for safe GETs against the user-supplied
  *     Vellaris API origin (the SPA can talk to any host they configured
  *     at /connect, so we match by pathname not origin).
+ *   - Phase 3: BackgroundSyncPlugin queue for offline mutations
+ *     (POST /documents, PUT /key-blobs/me, DELETE /documents/{id}) with
+ *     custom onSync that broadcasts sync-done / sync-failed messages.
  *
  * Phases pending:
- *   - Phase 3: BackgroundSyncPlugin queue for offline mutations.
  *   - Phase 5: push / notificationclick / pushsubscriptionchange handlers.
  */
 
+import { BackgroundSyncPlugin } from 'workbox-background-sync'
 import { ExpirationPlugin } from 'workbox-expiration'
 import {
   cleanupOutdatedCaches,
@@ -23,7 +26,7 @@ import {
   precacheAndRoute,
 } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
-import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies'
+import { NetworkFirst, NetworkOnly, StaleWhileRevalidate } from 'workbox-strategies'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -49,8 +52,8 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL('index.html')))
 // SPA's documents to that arbitrary origin still flow through the SW's
 // fetch handler; we just have to match them ourselves.
 //
-// All routes are GET-only — POST/PUT/DELETE pass through untouched
-// (Phase 3 will queue those via BackgroundSyncPlugin).
+// Read routes are GET-only; mutation routes are wired further down via
+// the BackgroundSyncPlugin queue.
 //
 // Auth note: Workbox keys cache by URL, not headers. Two users on the
 // same browser would otherwise see each other's responses. Logout in
@@ -104,6 +107,72 @@ registerRoute(
   new NetworkFirst({ cacheName: 'vellaris-passkeys', networkTimeoutSeconds: 3 }),
   'GET',
 )
+
+// ----------------------------------------------------------------------
+// Mutation queue for offline replay.
+//
+// Three idempotent / queue-safe mutations land here:
+//   - POST   /documents        (encrypt-and-upload — order doesn't matter)
+//   - PUT    /key-blobs/me     (passphrase-rotation — last write wins)
+//   - DELETE /documents/{id}   (own-doc delete — idempotent)
+//
+// share / revoke are deliberately NOT queued: a queued revoke would
+// leave the revokee with access during the queue window, which violates
+// the access-control invariant. The SPA fail-fasts those when offline.
+//
+// `onSync` runs when the browser fires a `sync` event after reconnect
+// (or, on browsers without Background Sync, when the tab regains focus
+// — Workbox falls back to a `forceSyncFallback` retry loop). We replay
+// each queued request and broadcast `sync-done` / `sync-failed` so the
+// SPA can clear pending placeholders + refetch the dashboard.
+// ----------------------------------------------------------------------
+
+interface SwSyncMessage {
+  type: 'sync-done' | 'sync-failed'
+  url: string
+  method: string
+  status: number
+}
+
+async function broadcastToClients(message: SwSyncMessage): Promise<void> {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  for (const client of clients) {
+    client.postMessage(message)
+  }
+}
+
+const uploadsQueue = new BackgroundSyncPlugin('vellaris-uploads', {
+  // 24h retention is long enough to cover overnight subway commutes,
+  // short enough that a stale upload doesn't surface a week later as a
+  // surprise document on someone's dashboard.
+  maxRetentionTime: 24 * 60,
+  async onSync({ queue }) {
+    let entry = await queue.shiftRequest()
+    while (entry) {
+      try {
+        const response = await fetch(entry.request.clone())
+        await broadcastToClients({
+          type: response.ok ? 'sync-done' : 'sync-failed',
+          url: entry.request.url,
+          method: entry.request.method,
+          status: response.status,
+        })
+      } catch (err) {
+        // Network still down — put the entry back at the head of the
+        // queue and rethrow so the browser will retry the sync later.
+        await queue.unshiftRequest(entry)
+        throw err
+      }
+      entry = await queue.shiftRequest()
+    }
+  },
+})
+
+const queuedMutationHandler = new NetworkOnly({ plugins: [uploadsQueue] })
+
+registerRoute(matchPath(/^\/documents$/), queuedMutationHandler, 'POST')
+registerRoute(matchPath(/^\/key-blobs\/me$/), queuedMutationHandler, 'PUT')
+registerRoute(matchPath(/^\/documents\/[^/]+$/), queuedMutationHandler, 'DELETE')
 
 // ----------------------------------------------------------------------
 // Client → SW message handlers.

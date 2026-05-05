@@ -27,6 +27,12 @@ import {
   readDashboardRefresh,
   rememberDashboardRefresh,
 } from '../state/dashboard-cache.ts'
+import {
+  listPendingUploads,
+  shiftPendingUpload,
+  type PendingUpload,
+} from '../state/pending-uploads.ts'
+import { onSyncEvent } from '../state/sw-events.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
 
 // Per-session dismissal: the banner re-appears next time the user signs
@@ -88,6 +94,12 @@ export function DashboardRoute() {
   const [online, setOnline] = useState<boolean>(() =>
     typeof navigator === 'undefined' ? true : navigator.onLine,
   )
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>(() =>
+    user ? listPendingUploads(user.id) : [],
+  )
+  // Bumped after every successful list refetch so the SW's sync-done
+  // callback can trigger a re-load of the dashboard rows.
+  const [refetchTick, setRefetchTick] = useState(0)
 
   // Passkey-nudge banner state. We render it only when:
   //   1. The browser supports WebAuthn AND has a platform authenticator
@@ -102,6 +114,11 @@ export function DashboardRoute() {
     if (!serverUrl || !token) return null
     return new VellarisClient(serverUrl, { token })
   }, [serverUrl, token])
+
+  // Pending uploads only show under "mine" — they're documents the user
+  // is creating, so they belong in their own files. The "shared with me"
+  // tab is for grants from other people, which can't be queued anyway.
+  const pendingForScope = scope === 'mine' ? pendingUploads : []
 
   useEffect(() => {
     if (!client || !user) return
@@ -190,7 +207,7 @@ export function DashboardRoute() {
     return () => {
       cancelled = true
     }
-  }, [client, scope, serverUrl, user])
+  }, [client, refetchTick, scope, serverUrl, user])
 
   useEffect(() => {
     function onOnline() {
@@ -213,6 +230,24 @@ export function DashboardRoute() {
     if (!user) return
     setLastRefreshedAt(readDashboardRefresh(user.id, scope))
   }, [user, scope])
+
+  // Subscribe to the SW's sync-done broadcasts. Each successful POST
+  // /documents replay drops the oldest pending placeholder and re-loads
+  // the dashboard rows so the freshly-synced doc appears with its real
+  // server-side id. Other queued mutations (key-blobs, deletes) trigger
+  // a refetch but don't touch the pending-uploads list.
+  useEffect(() => {
+    if (!user) return
+    return onSyncEvent((message) => {
+      if (message.type !== 'sync-done') return
+      const url = new URL(message.url)
+      if (message.method === 'POST' && /^\/documents$/.test(url.pathname)) {
+        shiftPendingUpload(user.id)
+        setPendingUploads(listPendingUploads(user.id))
+      }
+      setRefetchTick((n) => n + 1)
+    })
+  }, [user])
 
   useEffect(() => {
     if (!client) return
@@ -352,7 +387,7 @@ export function DashboardRoute() {
           </div>
         )}
 
-        {!loading && rows.length === 0 && !error && (
+        {!loading && rows.length === 0 && !error && pendingForScope.length === 0 && (
           <div className="border-line-2 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
             <Icons.IFolder size={28} />
             <div className="text-fg-2">
@@ -371,6 +406,36 @@ export function DashboardRoute() {
               </Button>
             )}
           </div>
+        )}
+
+        {pendingForScope.length > 0 && (
+          <ul
+            className="divide-line border-line bg-bg-card/40 flex flex-col divide-y rounded-lg border"
+            data-testid="pending-upload-list"
+          >
+            {pendingForScope.map((p) => (
+              <li
+                key={p.id}
+                className="flex items-center gap-3 px-3 py-3 sm:gap-4 sm:px-4"
+                data-testid={`pending-row-${p.id}`}
+              >
+                <Icons.IFile size={16} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-fg-2 truncate text-[14px]">{p.filename}</span>
+                    <span className="border-warn/40 bg-warn/10 text-warn rounded-full border px-1.5 py-px text-[10px] tracking-wider uppercase">
+                      Pending
+                    </span>
+                  </div>
+                  <div className="text-fg-3 mt-0.5 flex flex-wrap gap-3 text-[11.5px]">
+                    <span>{formatBytes(p.size)}</span>
+                    <span>Will upload when online</span>
+                    <span>queued {formatRelativeTime(new Date(p.queuedAt))}</span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
 
         {!loading && rows.length > 0 && (
