@@ -2,30 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.vellaris.dev/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/build-your-own-client/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/cli/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/deployment/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
+    </url>
+    <url>
+         <loc>https://docs.vellaris.dev/qa-pwa-v0.7.0/</loc>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/quickstart/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/sdk/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
     <url>
          <loc>https://docs.vellaris.dev/security-model/</loc>
-         <lastmod>2026-05-01</lastmod>
+         <lastmod>2026-05-05</lastmod>
     </url>
 </urlset>
