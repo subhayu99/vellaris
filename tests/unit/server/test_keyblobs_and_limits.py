@@ -92,6 +92,54 @@ def test_keyblob_requires_auth(server: TestClient) -> None:
     assert server.delete("/key-blobs/me").status_code == 401
 
 
+# ---------- /key-blobs/by-username/{username} (public) ----------
+
+
+def test_keyblob_pull_by_username_returns_pushed_blob(
+    server: TestClient, alice_keypair: RSAKeyPair, alice_public_pem: bytes
+) -> None:
+    """The fresh-device sign-in flow's bootstrap step."""
+    _signup(server, "alice", alice_public_pem)
+    token = _login(server, "alice", alice_keypair)
+    blob = b"\x01passphrase-wrapped-private-key"
+    server.put("/key-blobs/me", json={"wrapped_key": _b64(blob)}, headers=_bearer(token))
+
+    # Critically: NO Authorization header. This is the unauthenticated path.
+    pull = server.get("/key-blobs/by-username/alice")
+    assert pull.status_code == 200
+    assert base64.b64decode(pull.json()["wrapped_key"]) == blob
+
+
+def test_keyblob_pull_by_username_when_user_pushed_nothing(
+    server: TestClient, alice_public_pem: bytes
+) -> None:
+    """User exists but never pushed a blob → 404."""
+    _signup(server, "alice", alice_public_pem)
+    pull = server.get("/key-blobs/by-username/alice")
+    assert pull.status_code == 404
+
+
+def test_keyblob_pull_by_username_when_user_does_not_exist(server: TestClient) -> None:
+    """Same 404 for a missing user — no enumeration distinction."""
+    pull = server.get("/key-blobs/by-username/nobody-by-this-name")
+    assert pull.status_code == 404
+
+
+def test_keyblob_pull_by_username_response_matches_authenticated_pull(
+    server: TestClient, alice_keypair: RSAKeyPair, alice_public_pem: bytes
+) -> None:
+    """Same response shape as GET /key-blobs/me — the SPA reuses the same parser."""
+    _signup(server, "alice", alice_public_pem)
+    token = _login(server, "alice", alice_keypair)
+    server.put("/key-blobs/me", json={"wrapped_key": _b64(b"x")}, headers=_bearer(token))
+
+    auth_resp = server.get("/key-blobs/me", headers=_bearer(token)).json()
+    public_resp = server.get("/key-blobs/by-username/alice").json()
+    assert auth_resp.keys() == public_resp.keys()
+    assert auth_resp["user_id"] == public_resp["user_id"]
+    assert auth_resp["wrapped_key"] == public_resp["wrapped_key"]
+
+
 # ---------- upload-size cap ----------
 
 

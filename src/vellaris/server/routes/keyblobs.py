@@ -18,7 +18,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from vellaris.server.audit import record as audit_record
 from vellaris.server.db import get_session as get_db_session
-from vellaris.server.models import AuditAction, KeyBlob
+from vellaris.server.models import AuditAction, KeyBlob, User
 from vellaris.server.schemas import KeyBlobResponse, KeyBlobUpload
 from vellaris.server.security import CurrentUser
 
@@ -78,3 +78,44 @@ async def delete(
     await db.delete(blob)
     await audit_record(db, AuditAction.KEYBLOB_DELETE, user_id=current.id)
     await db.commit()
+
+
+@router.get("/by-username/{username}", response_model=KeyBlobResponse)
+async def pull_by_username(
+    username: str,
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+) -> KeyBlob:
+    """Fetch the wrapped-key blob for ``username`` — public, unauthenticated.
+
+    Used by the SPA's "sign in on a fresh device" flow: the user types
+    their username + passphrase, the SPA pulls the (opaque) blob via this
+    endpoint, unwraps locally with the passphrase, then runs the normal
+    challenge-response login. Without this endpoint a user with no synced
+    passkey + no local wrapped key has no way to recover their account on
+    a new device.
+
+    Security:
+
+    * The blob is opaque ciphertext — Argon2id (256 MB · 3 passes · 4
+      lanes) wraps the AES key. Leaking the blob to anyone who guesses
+      the username gives them an offline target equivalent to a
+      passphrase hash; the Argon2id cost is what bounds the brute force.
+    * Returns 404 in BOTH "user not found" and "user found but no blob"
+      cases — no information leak about which usernames exist beyond
+      what ``GET /users/by-username/{username}`` already discloses.
+    * The global per-IP rate limiter applies (see ``server.limits``); a
+      determined attacker can still try, just slowly.
+    * No audit-log entry is written. Audit log records *actions* tied to
+      a session; an unauthenticated read of opaque ciphertext from a
+      possibly-misspelled username would be log spam at best and an
+      enumeration oracle at worst.
+    """
+    # Same "look up then check deleted_at" pattern as auth.py — keeps the
+    # 404 message identical regardless of which case triggers it.
+    user = (await db.exec(select(User).where(User.username == username))).one_or_none()
+    if user is None or user.deleted_at is not None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no key blob stored")
+    blob = (await db.exec(select(KeyBlob).where(KeyBlob.user_id == user.id))).one_or_none()
+    if blob is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no key blob stored")
+    return blob
