@@ -50,9 +50,11 @@ export function RecoverRoute() {
         <section className="border-line bg-bg-card/40 flex flex-col gap-3 rounded-lg border p-5">
           <h2 className="text-fg text-[14px] font-semibold">If you have your passphrase</h2>
           <p className="text-fg-2 text-[12.5px]">
-            Sign in normally. If this device doesn't have your wrapped key yet, sign in on a device
-            that does, push the wrapped key to the server (Settings → Wrapped key sync → Push to
-            server), then come back here and pull it down.
+            Just sign in. The login screen knows what to do whether you have a wrapped key on this
+            device or not — if you don't, it pulls the encrypted blob from the server (assuming you
+            pushed it from another device first via{' '}
+            <strong>Settings → Wrapped key sync → Push to server</strong>) and unwraps it locally
+            with your passphrase. The server only ever sees ciphertext.
           </p>
           <Button variant="primary" size="default" onClick={() => navigate('/login')} fullWidth>
             Go to sign in

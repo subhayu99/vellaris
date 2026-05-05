@@ -1151,6 +1151,49 @@
         ]
       }
     },
+    "/key-blobs/by-username/{username}": {
+      "get": {
+        "description": "Fetch the wrapped-key blob for ``username`` \u2014 public, unauthenticated.\n\nUsed by the SPA's \"sign in on a fresh device\" flow: the user types\ntheir username + passphrase, the SPA pulls the (opaque) blob via this\nendpoint, unwraps locally with the passphrase, then runs the normal\nchallenge-response login. Without this endpoint a user with no synced\npasskey + no local wrapped key has no way to recover their account on\na new device.\n\nSecurity:\n\n* The blob is opaque ciphertext \u2014 Argon2id (256 MB \u00b7 3 passes \u00b7 4\n  lanes) wraps the AES key. Leaking the blob to anyone who guesses\n  the username gives them an offline target equivalent to a\n  passphrase hash; the Argon2id cost is what bounds the brute force.\n* Returns 404 in BOTH \"user not found\" and \"user found but no blob\"\n  cases \u2014 no information leak about which usernames exist beyond\n  what ``GET /users/by-username/{username}`` already discloses.\n* The global per-IP rate limiter applies (see ``server.limits``); a\n  determined attacker can still try, just slowly.\n* No audit-log entry is written. Audit log records *actions* tied to\n  a session; an unauthenticated read of opaque ciphertext from a\n  possibly-misspelled username would be log spam at best and an\n  enumeration oracle at worst.",
+        "operationId": "pull_by_username_key_blobs_by_username__username__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "title": "Username",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyBlobResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pull By Username",
+        "tags": [
+          "key-blobs"
+        ]
+      }
+    },
     "/key-blobs/me": {
       "delete": {
         "description": "Remove the caller's wrapped-key blob.",
