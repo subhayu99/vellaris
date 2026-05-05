@@ -22,6 +22,11 @@ import { decryptBundle, deserializePrivateKeyForOaep } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
 import { getCachedUser, getToken } from '../state/session.ts'
 import { getUnwrappedPem, hasUnwrappedPem } from '../state/key-cache.ts'
+import {
+  formatRelativeTime,
+  readDashboardRefresh,
+  rememberDashboardRefresh,
+} from '../state/dashboard-cache.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
 
 // Per-session dismissal: the banner re-appears next time the user signs
@@ -77,6 +82,12 @@ export function DashboardRoute() {
   const [rows, setRows] = useState<FileRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(() =>
+    user ? readDashboardRefresh(user.id, scope) : null,
+  )
+  const [online, setOnline] = useState<boolean>(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine,
+  )
 
   // Passkey-nudge banner state. We render it only when:
   //   1. The browser supports WebAuthn AND has a platform authenticator
@@ -114,6 +125,10 @@ export function DashboardRoute() {
       try {
         const summaries = await client!.listDocuments(scope)
         if (cancelled) return
+
+        const now = new Date()
+        rememberDashboardRefresh(user!.id, scope, now)
+        setLastRefreshedAt(now)
 
         // Render skeletons immediately, then fan out per-doc fetches.
         const initial: FileRow[] = summaries.map((summary) => ({
@@ -176,6 +191,28 @@ export function DashboardRoute() {
       cancelled = true
     }
   }, [client, scope, serverUrl, user])
+
+  useEffect(() => {
+    function onOnline() {
+      setOnline(true)
+    }
+    function onOffline() {
+      setOnline(false)
+    }
+    window.addEventListener('online', onOnline)
+    window.addEventListener('offline', onOffline)
+    return () => {
+      window.removeEventListener('online', onOnline)
+      window.removeEventListener('offline', onOffline)
+    }
+  }, [])
+
+  // Re-read the persisted timestamp when the scope changes — each scope
+  // (mine/shared/all) has its own last-refreshed entry.
+  useEffect(() => {
+    if (!user) return
+    setLastRefreshedAt(readDashboardRefresh(user.id, scope))
+  }, [user, scope])
 
   useEffect(() => {
     if (!client) return
@@ -241,6 +278,14 @@ export function DashboardRoute() {
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
         <InstallPrompt />
+        {!online && (
+          <Notice variant="warn" data-testid="offline-hint">
+            Working offline.{' '}
+            {lastRefreshedAt
+              ? `Last refreshed ${formatRelativeTime(lastRefreshedAt)}.`
+              : 'No cached file list yet — connect to load.'}
+          </Notice>
+        )}
         {passkeyNudge === 'show' && (
           <div
             className="border-line bg-bg-card/60 flex flex-col items-start gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
