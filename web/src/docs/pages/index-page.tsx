@@ -6,6 +6,7 @@ import {
   DOCS_API,
   DOCS_CLI,
   DOCS_DEPLOY,
+  DOCS_PASSKEYS,
   DOCS_PROTOCOL,
   DOCS_QUICKSTART,
   DOCS_SDK,
@@ -16,6 +17,7 @@ import {
   IllusAPI,
   IllusCLI,
   IllusDeploy,
+  IllusPasskeys,
   IllusProtocol,
   IllusQuickstart,
   IllusSDK,
@@ -106,25 +108,34 @@ export function DocsIndexPage() {
             The honest version. What is protected, what is not, and which crypto primitives carry
             the load.
           </HubCard>
-          <HubCard num="03 · CLIENT" title="CLI" to={DOCS_CLI} illus={<IllusCLI />}>
+          <HubCard
+            num="03 · GET GOING"
+            title="Passkeys"
+            to={DOCS_PASSKEYS}
+            illus={<IllusPasskeys />}
+          >
+            Sign in with Touch ID / Face ID / Windows Hello / hardware key. The same passkey unwraps
+            your private key — passphrase still works as the recovery anchor.
+          </HubCard>
+          <HubCard num="04 · CLIENT" title="CLI" to={DOCS_CLI} illus={<IllusCLI />}>
             Interactive command builder — pick a subcommand, fill flags, copy. Plus a flag-by-flag
             reference for every <code>vellaris ...</code> command.
           </HubCard>
-          <HubCard num="04 · CLIENT" title="Python SDK" to={DOCS_SDK} illus={<IllusSDK />}>
+          <HubCard num="05 · CLIENT" title="Python SDK" to={DOCS_SDK} illus={<IllusSDK />}>
             Interactive starter generator — pick a recipe (upload / share / download / list /
             revoke), pick async or sync, copy a runnable snippet. Plus full API reference.
           </HubCard>
-          <HubCard num="05 · SERVER" title="Deployment" to={DOCS_DEPLOY} illus={<IllusDeploy />}>
+          <HubCard num="06 · SERVER" title="Deployment" to={DOCS_DEPLOY} illus={<IllusDeploy />}>
             Interactive config builder — pick run mode, DB, storage, advanced options (rate limits,
             CORS, TLS, reverse proxy), and copy a tailored Docker / Compose / Helm / systemd
             snippet.
           </HubCard>
-          <HubCard num="06 · SERVER" title="OpenAPI" to={DOCS_API} illus={<IllusAPI />}>
+          <HubCard num="07 · SERVER" title="OpenAPI" to={DOCS_API} illus={<IllusAPI />}>
             Interactive endpoint playground — schema-driven; pick an endpoint, fill params, copy
             curl / Python httpx / JS fetch. Schema at <code>/openapi.json</code> is codegen-ready.
           </HubCard>
           <HubCard
-            num="07 · SERVER"
+            num="08 · SERVER"
             title="On-wire protocol"
             to={DOCS_PROTOCOL}
             illus={<IllusProtocol />}

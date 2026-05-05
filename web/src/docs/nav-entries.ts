@@ -4,12 +4,21 @@
  * with the constants in marketing/links.ts. */
 
 import type { ComponentType } from 'react'
-import { IBraces, IKey, ILogTree, IServer, IShield, ITerminal } from '../marketing/icons.tsx'
+import {
+  IBraces,
+  IFingerprint,
+  IKey,
+  ILogTree,
+  IServer,
+  IShield,
+  ITerminal,
+} from '../marketing/icons.tsx'
 import { IBookOpen, ICompass } from './icons.tsx'
 import {
   DOCS_API,
   DOCS_CLI,
   DOCS_DEPLOY,
+  DOCS_PASSKEYS,
   DOCS_PROTOCOL,
   DOCS_QUICKSTART,
   DOCS_SDK,
@@ -54,13 +63,20 @@ export const DOCS_NAV: ReadonlyArray<DocsGroup> = [
         secKind: 'Get going',
       },
       { to: DOCS_TRUST, label: 'Trust model', icon: IShield, secNum: '02', secKind: 'Trust' },
+      {
+        to: DOCS_PASSKEYS,
+        label: 'Passkeys',
+        icon: IFingerprint,
+        secNum: '03',
+        secKind: 'Get going',
+      },
     ],
   },
   {
     group: 'Clients',
     items: [
-      { to: DOCS_CLI, label: 'CLI reference', icon: ITerminal, secNum: '03', secKind: 'Client' },
-      { to: DOCS_SDK, label: 'Python SDK', icon: IBraces, secNum: '04', secKind: 'Client' },
+      { to: DOCS_CLI, label: 'CLI reference', icon: ITerminal, secNum: '04', secKind: 'Client' },
+      { to: DOCS_SDK, label: 'Python SDK', icon: IBraces, secNum: '05', secKind: 'Client' },
     ],
   },
   {
@@ -70,15 +86,15 @@ export const DOCS_NAV: ReadonlyArray<DocsGroup> = [
         to: DOCS_DEPLOY,
         label: 'Deployment',
         icon: IServer,
-        secNum: '05',
+        secNum: '06',
         secKind: 'Run a server',
       },
-      { to: DOCS_API, label: 'OpenAPI', icon: ILogTree, secNum: '06', secKind: 'Run a server' },
+      { to: DOCS_API, label: 'OpenAPI', icon: ILogTree, secNum: '07', secKind: 'Run a server' },
       {
         to: DOCS_PROTOCOL,
         label: 'On-wire protocol',
         icon: IKey,
-        secNum: '07',
+        secNum: '08',
         secKind: 'Run a server',
       },
     ],
