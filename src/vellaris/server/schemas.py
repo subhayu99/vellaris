@@ -249,3 +249,49 @@ class PasskeyAuthFinishResponse(BaseModel):
     expires_at: datetime
     user: UserPrivate
     wrapped_key: B64Bytes
+
+
+# ---------- push notifications ----------
+
+
+class PushVapidKeyResponse(BaseModel):
+    """GET /notifications/public-key — anonymous, served to every client.
+
+    The SPA passes ``public_key`` (base64url-no-pad) into
+    ``pushManager.subscribe({applicationServerKey})``. ``subject`` is the
+    operator-contact URI (mailto: or https://) the push service uses to
+    reach the operator if the keys misbehave.
+    """
+
+    public_key: str = Field(description="VAPID server public key, base64url no-padding.")
+    subject: str = Field(description="VAPID `sub` claim — operator contact URI.")
+
+
+class PushSubscriptionCreate(BaseModel):
+    """POST /notifications/subscriptions body."""
+
+    endpoint: str = Field(min_length=1, max_length=2048, description="Push-service URL.")
+    p256dh_key: B64Bytes = Field(description="Browser subscription public key, raw 65 bytes.")
+    auth_secret: B64Bytes = Field(description="Browser subscription auth secret, raw 16 bytes.")
+    user_agent: str | None = Field(default=None, max_length=255)
+    friendly_name: str | None = Field(default=None, max_length=120)
+
+
+class PushSubscriptionResponse(BaseModel):
+    """POST /notifications/subscriptions response."""
+
+    id: UUID
+    endpoint: str
+    friendly_name: str | None = None
+    user_agent: str | None = None
+    created_at: datetime
+
+
+class PushSubscriptionListItem(BaseModel):
+    """One row from GET /notifications/subscriptions — the Settings list."""
+
+    id: UUID
+    friendly_name: str | None = None
+    user_agent: str | None = None
+    created_at: datetime
+    last_used_at: datetime | None = None

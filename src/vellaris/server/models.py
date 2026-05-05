@@ -12,7 +12,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, Column, DateTime, LargeBinary, TypeDecorator
+from sqlalchemy import JSON, Column, DateTime, LargeBinary, Text, TypeDecorator
 from sqlmodel import Field, SQLModel
 
 
@@ -156,6 +156,9 @@ class AuditAction(StrEnum):
     PASSKEY_REGISTER = "passkey.register"
     PASSKEY_LOGIN = "passkey.login"
     PASSKEY_DELETE = "passkey.delete"
+    PUSH_SUBSCRIBE = "push.subscribe"
+    PUSH_UNSUBSCRIBE = "push.unsubscribe"
+    PUSH_SEND_FAILED = "push.send_failed"
 
 
 class AuditLog(SQLModel, table=True):
@@ -255,6 +258,49 @@ class WebAuthnChallenge(SQLModel, table=True):
     )
 
 
+class PushSubscription(SQLModel, table=True):
+    """A registered Web Push subscription for a single device.
+
+    Three byte fields combine to address the device:
+
+      * ``endpoint`` is the canonical push-service URL the SPA's browser
+        registered against (FCM for Chrome, autopush.services.mozilla.com
+        for Firefox, etc.). UNIQUE across all users — the same endpoint
+        can only be registered once.
+      * ``p256dh_key`` is the subscription's uncompressed P-256 public
+        key (raw 65 bytes). Used by ``pywebpush`` together with the auth
+        secret to derive a per-message AES-GCM key.
+      * ``auth_secret`` is the 16-byte symmetric secret. Same purpose as
+        above; the pair is what makes payloads readable only by this
+        browser.
+
+    ``user_agent`` and ``friendly_name`` are display-only — neither feeds
+    back into the push protocol.
+    """
+
+    __tablename__ = "push_subscriptions"
+
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id", index=True, nullable=False)
+    # FCM endpoints can be ~250 chars; Mozilla autopush a bit longer.
+    # Use TEXT so we don't need to revisit when push-service URL formats
+    # evolve. UNIQUE because the same endpoint always maps to the same
+    # browser-on-device — re-subscribing replaces (upsert at the route).
+    endpoint: str = Field(sa_column=Column(Text, nullable=False, unique=True))
+    p256dh_key: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    auth_secret: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    user_agent: str | None = Field(default=None, max_length=255)
+    friendly_name: str | None = Field(default=None, max_length=120)
+    created_at: datetime = Field(
+        default_factory=_utcnow,
+        sa_column=Column(UtcDateTime(), nullable=False),
+    )
+    last_used_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(UtcDateTime(), nullable=True),
+    )
+
+
 __all__ = [
     "AuditAction",
     "AuditLog",
@@ -262,6 +308,7 @@ __all__ = [
     "Document",
     "DocumentAccess",
     "KeyBlob",
+    "PushSubscription",
     "Session",
     "User",
     "WebAuthnChallenge",

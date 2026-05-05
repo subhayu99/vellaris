@@ -108,6 +108,25 @@ class VellarisSettings(BaseSettings):
         ),
     )
 
+    # --- push notifications (Web Push / VAPID) ---
+    vapid_private_key_path: Path | None = Field(
+        default=None,
+        description=(
+            "Path to a 32-byte raw P-256 private key for VAPID. Generate "
+            "via `vellaris-server generate-vapid-key > vapid.key`. If unset, "
+            "the /notifications/* endpoints return 503 (push notifications "
+            "disabled — fine for single-user / dev installs)."
+        ),
+    )
+    vapid_subject: str = Field(
+        default="mailto:noreply@example.com",
+        description=(
+            "VAPID subject claim (RFC 8292 §2). Push services use this to "
+            "contact the operator if the keys misbehave. Use a real "
+            "mailto: or https:// URI in production."
+        ),
+    )
+
     @field_validator("webauthn_rp_origins", "cors_allow_origins", mode="before")
     @classmethod
     def _split_origins_csv(cls, v: object) -> object:

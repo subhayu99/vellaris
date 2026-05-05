@@ -11,6 +11,7 @@ from vellaris.server.config import get_settings
 from vellaris.server.routes import auth as auth_routes
 from vellaris.server.routes import documents as documents_routes
 from vellaris.server.routes import keyblobs as keyblobs_routes
+from vellaris.server.routes import notifications as notifications_routes
 from vellaris.server.routes import users as users_routes
 from vellaris.server.routes import webauthn as webauthn_routes
 
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     application.include_router(documents_routes.router)
     application.include_router(keyblobs_routes.router)
     application.include_router(webauthn_routes.router)
+    application.include_router(notifications_routes.router)
 
     # CORS is installed LAST so it's the outermost middleware. Starlette
     # composes middleware most-recently-added = outermost, so a 429 from

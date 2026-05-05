@@ -29,8 +29,14 @@ import {
   PrfUnsupportedError,
 } from '../state/passkey.ts'
 import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
-import type { PasskeySummary } from '../api/index.ts'
+import type { PasskeySummary, PushSubscriptionListItem } from '../api/index.ts'
 import { getUnwrappedPem } from '../state/key-cache.ts'
+import {
+  getCurrentSubscription,
+  readPermission,
+  subscribeToPush,
+  unsubscribeFromPush,
+} from '../state/push-subscription.ts'
 import {
   VellarisAPIError,
   VellarisClient,
@@ -120,6 +126,19 @@ export function SettingsRoute() {
     null,
   )
 
+  // Notifications state
+  // Server availability is tristate so the section can show "checking" instead
+  // of flickering between disabled and enabled while we probe `/notifications/public-key`.
+  const [pushAvailable, setPushAvailable] = useState<boolean | null>(null)
+  const [pushPermission, setPushPermission] = useState<
+    'default' | 'granted' | 'denied' | 'unsupported'
+  >('default')
+  const [pushSubscribed, setPushSubscribed] = useState<boolean | null>(null)
+  const [pushDevices, setPushDevices] = useState<PushSubscriptionListItem[]>([])
+  const [pushBusy, setPushBusy] = useState(false)
+  const [pushError, setPushError] = useState<string | null>(null)
+  const [pushNotice, setPushNotice] = useState<string | null>(null)
+
   const client = useMemo(() => {
     if (!serverUrl || !token) return null
     return new VellarisClient(serverUrl, { token })
@@ -174,6 +193,46 @@ export function SettingsRoute() {
     }
     void probePasskeys()
 
+    async function probePush() {
+      const snap = readPermission()
+      if (cancelled) return
+      if (!snap.supported) {
+        setPushAvailable(false)
+        setPushPermission('unsupported')
+        return
+      }
+      setPushPermission(snap.permission)
+      try {
+        await client!.getPushPublicKey()
+        if (cancelled) return
+        setPushAvailable(true)
+      } catch (err) {
+        if (cancelled) return
+        if (err instanceof VellarisAPIError && err.status === 503) {
+          setPushAvailable(false)
+        } else {
+          // Older server without notifications routes — treat as unavailable.
+          setPushAvailable(false)
+        }
+        return
+      }
+      try {
+        const list = await client!.listPushSubscriptions()
+        if (cancelled) return
+        setPushDevices(list)
+      } catch {
+        /* server may not have rolled out push yet */
+      }
+      try {
+        const sub = await getCurrentSubscription()
+        if (cancelled) return
+        setPushSubscribed(sub !== null)
+      } catch {
+        if (!cancelled) setPushSubscribed(false)
+      }
+    }
+    void probePush()
+
     return () => {
       cancelled = true
     }
@@ -223,6 +282,90 @@ export function SettingsRoute() {
       }
     } finally {
       setPasskeyBusy(false)
+    }
+  }
+
+  async function refreshPushDevices() {
+    if (!client) return
+    try {
+      setPushDevices(await client.listPushSubscriptions())
+    } catch {
+      /* swallow — kept the UI honest about state, not the source of truth */
+    }
+  }
+
+  async function enableNotifications() {
+    if (!client) return
+    setPushBusy(true)
+    setPushError(null)
+    setPushNotice(null)
+    try {
+      // Ask the browser for permission first if the user hasn't decided
+      // yet. `requestPermission()` resolves with the chosen state.
+      if (Notification.permission === 'default') {
+        const result = await Notification.requestPermission()
+        setPushPermission(result)
+        if (result !== 'granted') {
+          setPushError('Notification permission was not granted.')
+          return
+        }
+      } else if (Notification.permission === 'denied') {
+        setPushError(
+          'Notifications are blocked at the browser level. Clear the permission in your browser settings to re-enable.',
+        )
+        return
+      }
+      await subscribeToPush(client)
+      setPushSubscribed(true)
+      setPushNotice('Notifications on. Manage devices below.')
+      await refreshPushDevices()
+    } catch (err) {
+      setPushError((err as Error).message)
+    } finally {
+      setPushBusy(false)
+    }
+  }
+
+  async function disableNotifications() {
+    if (!client) return
+    setPushBusy(true)
+    setPushError(null)
+    setPushNotice(null)
+    try {
+      await unsubscribeFromPush(client)
+      setPushSubscribed(false)
+      setPushNotice('Notifications off on this device.')
+      await refreshPushDevices()
+    } catch (err) {
+      setPushError((err as Error).message)
+    } finally {
+      setPushBusy(false)
+    }
+  }
+
+  async function removePushDevice(id: string) {
+    if (!client) return
+    setPushBusy(true)
+    setPushError(null)
+    setPushNotice(null)
+    try {
+      await client.deletePushSubscription(id)
+      setPushDevices((prev) => prev.filter((d) => d.id !== id))
+      // If the row we just removed corresponded to the current browser,
+      // also tear down the local pushManager subscription so the OS
+      // surface gets the message.
+      const localSub = await getCurrentSubscription()
+      if (localSub) {
+        // The id-to-endpoint mapping isn't surfaced in the list; if we
+        // can't be sure, leave the local subscription alone — calling
+        // unsubscribe explicitly is a separate "Disable on this device"
+        // action.
+      }
+      setPushNotice('Device removed.')
+    } catch (err) {
+      setPushError((err as Error).message)
+    } finally {
+      setPushBusy(false)
     }
   }
 
@@ -409,6 +552,128 @@ export function SettingsRoute() {
                 </Button>
               </div>
             </div>
+          )}
+        </section>
+
+        {/* Notifications */}
+        <section className="border-line bg-bg-card/40 flex flex-col gap-4 rounded-lg border p-5">
+          <div>
+            <h2 className="text-fg text-[15px] font-semibold">Notifications</h2>
+            <p className="text-fg-3 mt-0.5 text-[12.5px]">
+              Get notified when someone shares a document with you, or when access is revoked. Push
+              payloads are encrypted in transit; the push service learns your username + event
+              timing, but never document titles or contents.
+            </p>
+          </div>
+
+          {pushAvailable === false && pushPermission === 'unsupported' && (
+            <Notice variant="info">
+              This browser doesn’t support push notifications. Try a recent Chrome, Edge, Safari, or
+              Firefox.
+            </Notice>
+          )}
+          {pushAvailable === false && pushPermission !== 'unsupported' && (
+            <Notice variant="info">
+              Notifications are disabled on this server (no VAPID key configured). Single-user
+              installs can ignore this; operators can enable push by generating a key with{' '}
+              <code className="font-mono">vellaris-server generate-vapid-key</code>.
+            </Notice>
+          )}
+
+          {pushAvailable === null && (
+            <div className="text-fg-3 text-[12.5px]">checking server support…</div>
+          )}
+
+          {pushAvailable && (
+            <>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-fg-2 text-[12.5px]" data-testid="push-status">
+                  Status:{' '}
+                  {pushPermission === 'denied'
+                    ? 'Blocked at the browser level.'
+                    : pushSubscribed
+                      ? 'Enabled on this device.'
+                      : 'Not enabled on this device.'}
+                </div>
+                <div className="flex gap-2">
+                  {pushSubscribed ? (
+                    <Button
+                      variant="secondary"
+                      size="default"
+                      onClick={disableNotifications}
+                      disabled={pushBusy}
+                      data-testid="push-disable"
+                    >
+                      Disable on this device
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="default"
+                      onClick={enableNotifications}
+                      disabled={pushBusy || pushPermission === 'denied'}
+                      data-testid="push-enable"
+                    >
+                      {pushBusy ? 'Working…' : 'Enable on this device'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {pushDevices.length > 0 && (
+                <div>
+                  <div className="text-fg-3 mb-2 text-[10.5px] tracking-wider uppercase">
+                    Devices
+                  </div>
+                  <ul
+                    className="border-line divide-line flex flex-col divide-y rounded-md border"
+                    data-testid="push-devices"
+                  >
+                    {pushDevices.map((d) => (
+                      <li
+                        key={d.id}
+                        className="flex items-center justify-between gap-3 px-3 py-2.5"
+                        data-testid={`push-device-${d.id}`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-fg truncate text-[13.5px]">
+                            {d.friendlyName ?? 'Unnamed device'}
+                          </div>
+                          <div className="text-fg-3 text-[11.5px]">
+                            {d.userAgent ? `${d.userAgent.slice(0, 64)} · ` : ''}
+                            Added {d.createdAt.toLocaleDateString()}
+                            {d.lastUsedAt
+                              ? ` · last used ${d.lastUsedAt.toLocaleDateString()}`
+                              : ''}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removePushDevice(d.id)}
+                          disabled={pushBusy}
+                          aria-label={`Remove ${d.friendlyName ?? 'device'}`}
+                          data-testid={`push-device-remove-${d.id}`}
+                        >
+                          Remove
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {pushNotice && (
+                <Notice variant="success" data-testid="push-notice">
+                  {pushNotice}
+                </Notice>
+              )}
+              {pushError && (
+                <Notice variant="error" data-testid="push-error">
+                  {pushError}
+                </Notice>
+              )}
+            </>
           )}
         </section>
 

@@ -104,3 +104,38 @@ export interface PasskeySummary {
 export interface PasskeyAuthFinishResponse extends TokenResponse {
   wrappedKey: Uint8Array
 }
+
+/* ---------- push notifications ---------- */
+
+/** GET /notifications/public-key — VAPID server public key + subject claim. */
+export interface PushVapidKeyResponse {
+  publicKey: string
+  subject: string
+}
+
+/** Body for POST /notifications/subscriptions. */
+export interface PushSubscriptionCreate {
+  endpoint: string
+  p256dhKey: Uint8Array
+  authSecret: Uint8Array
+  userAgent: string | null
+  friendlyName: string | null
+}
+
+/** Response from POST /notifications/subscriptions. */
+export interface PushSubscriptionRecord {
+  id: string
+  endpoint: string
+  friendlyName: string | null
+  userAgent: string | null
+  createdAt: Date
+}
+
+/** Row from GET /notifications/subscriptions — Settings list. */
+export interface PushSubscriptionListItem {
+  id: string
+  friendlyName: string | null
+  userAgent: string | null
+  createdAt: Date
+  lastUsedAt: Date | null
+}
