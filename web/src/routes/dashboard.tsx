@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Button, Icons, Notice } from '../components/index.ts'
+import { Button, Icons, InstallPrompt, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
 import type { DocumentScope, DocumentSummary } from '../api/index.ts'
@@ -240,6 +240,7 @@ export function DashboardRoute() {
       }
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
+        <InstallPrompt />
         {passkeyNudge === 'show' && (
           <div
             className="border-line bg-bg-card/60 flex flex-col items-start gap-3 rounded-lg border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"

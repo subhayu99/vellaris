@@ -4,6 +4,7 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // SPA is served from a project sub-path on GitHub Pages
 // (subhayu99.github.io/vellaris/). Both Vite's emitted asset URLs and the
@@ -27,7 +28,73 @@ const APP_VERSION = (() => {
 
 export default defineConfig({
   base: basePath,
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      // U2: surface "New version available" banner instead of silently
+      // swapping the SW under the user's feet. The SPA registers via
+      // `workbox-window` and prompts the user when a new SW is waiting.
+      registerType: 'prompt',
+      // We register the SW ourselves from the SPA so we can wire the
+      // update banner — disable the auto-injected registration script.
+      injectRegister: null,
+      // We hand-write the SW (in `src/sw/push-handler.ts`) because later
+      // phases add custom push / notificationclick handlers that
+      // generateSW can't express. injectManifest just splices the
+      // precache file list into our source.
+      strategies: 'injectManifest',
+      srcDir: 'src/sw',
+      filename: 'push-handler.ts',
+      injectManifest: {
+        // The default 2 MB ceiling rejects our marketing PNGs and the
+        // larger built JS chunks; bump to 4 MB so precache covers the
+        // whole shell.
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+      },
+      manifest: {
+        name: 'Vellaris',
+        short_name: 'Vellaris',
+        description: 'End-to-end encrypted document sharing.',
+        theme_color: '#0a0817',
+        background_color: '#0a0817',
+        display: 'standalone',
+        start_url: basePath,
+        scope: basePath,
+        categories: ['productivity', 'utilities'],
+        icons: [
+          {
+            src: 'icons/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'icons/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'icons/pwa-maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: 'icons/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      // The dev server doesn't need a SW (HMR lives there) and turning
+      // it on would mask code changes behind the precache. Leave SW
+      // generation strictly to `pnpm build`.
+      devOptions: { enabled: false },
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
