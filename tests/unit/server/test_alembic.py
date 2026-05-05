@@ -35,6 +35,9 @@ def _expected_tables() -> set[str]:
         "document_access",
         "audit_log",
         "key_blobs",
+        "webauthn_credentials",
+        "webauthn_challenges",
+        "push_subscriptions",
         "alembic_version",
     }
 
