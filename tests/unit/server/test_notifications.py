@@ -53,7 +53,9 @@ def _bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _sample_subscription_body(endpoint: str = "https://fcm.googleapis.com/fcm/send/abc123") -> dict[str, Any]:
+def _sample_subscription_body(
+    endpoint: str = "https://fcm.googleapis.com/fcm/send/abc123",
+) -> dict[str, Any]:
     return {
         "endpoint": endpoint,
         "p256dh_key": _b64(b"\x04" + os.urandom(64)),  # uncompressed P-256
@@ -141,9 +143,7 @@ def test_subscribe_then_list_then_unsubscribe(
     token = _login(server, "alice", alice_keypair)
 
     body = _sample_subscription_body()
-    create = server.post(
-        "/notifications/subscriptions", json=body, headers=_bearer(token)
-    )
+    create = server.post("/notifications/subscriptions", json=body, headers=_bearer(token))
     assert create.status_code == 201, create.text
     subscription = create.json()
     assert subscription["endpoint"] == body["endpoint"]
@@ -175,16 +175,12 @@ def test_subscribe_is_idempotent_on_endpoint(
     token = _login(server, "alice", alice_keypair)
 
     body = _sample_subscription_body()
-    first = server.post(
-        "/notifications/subscriptions", json=body, headers=_bearer(token)
-    ).json()
+    first = server.post("/notifications/subscriptions", json=body, headers=_bearer(token)).json()
 
     # Replay with new keys but the same endpoint → same id.
     body["p256dh_key"] = _b64(b"\x04" + os.urandom(64))
     body["friendly_name"] = "iPhone (renamed)"
-    second = server.post(
-        "/notifications/subscriptions", json=body, headers=_bearer(token)
-    ).json()
+    second = server.post("/notifications/subscriptions", json=body, headers=_bearer(token)).json()
 
     assert second["id"] == first["id"]
     assert second["friendly_name"] == "iPhone (renamed)"
@@ -216,9 +212,7 @@ def test_unsubscribe_404_when_not_owned(
     # Bob's listing is empty.
     assert server.get("/notifications/subscriptions", headers=_bearer(bob_token)).json() == []
     # Bob's delete attempt is 404.
-    res = server.delete(
-        f"/notifications/subscriptions/{sub['id']}", headers=_bearer(bob_token)
-    )
+    res = server.delete(f"/notifications/subscriptions/{sub['id']}", headers=_bearer(bob_token))
     assert res.status_code == 404
 
 

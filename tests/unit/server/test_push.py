@@ -84,9 +84,7 @@ def test_get_vapid_private_key_loads_from_disk(
     assert get_vapid_public_key_b64url() == public
 
 
-def test_get_vapid_private_key_caches_load(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_get_vapid_private_key_caches_load(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Repeated calls don't re-read the file (cache keyed on path)."""
     private, _ = generate_vapid_key_pair()
     key_path = tmp_path / "vapid.key"

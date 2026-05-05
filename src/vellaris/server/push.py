@@ -234,9 +234,7 @@ async def send_push(
                 continue
 
             # Anything else: log + audit + keep the row.
-            _log.warning(
-                "push send failed for subscription %s (status=%s)", sub.id, status
-            )
+            _log.warning("push send failed for subscription %s (status=%s)", sub.id, status)
             await audit_record(
                 db,
                 AuditAction.PUSH_SEND_FAILED,

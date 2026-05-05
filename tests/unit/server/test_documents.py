@@ -519,9 +519,7 @@ def test_revoke_fires_push_to_revokee(
     )
     doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
 
-    res = server.delete(
-        f"/documents/{doc_id}/access/{bob['id']}", headers=_bearer(alice_token)
-    )
+    res = server.delete(f"/documents/{doc_id}/access/{bob['id']}", headers=_bearer(alice_token))
     assert res.status_code == 204
 
     loop = asyncio.new_event_loop()
