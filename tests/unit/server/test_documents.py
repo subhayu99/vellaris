@@ -432,3 +432,106 @@ def test_access_list_reflects_share_and_revoke(
 
     after_revoke = server.get(f"/documents/{doc_id}", headers=_bearer(alice_token)).json()
     assert {g["username"] for g in after_revoke["access"]} == {"alice"}
+
+
+# ---------- Phase 5: share / revoke fire push ----------
+
+
+def test_share_fires_push_to_grantee(
+    server: TestClient,
+    alice_keypair: RSAKeyPair,
+    alice_public_pem: bytes,
+    bob_keypair: RSAKeyPair,
+    bob_public_pem: bytes,
+    monkeypatch: Any,
+) -> None:
+    """Sharing a doc fires `send_push(user_id=grantee, payload={type:share,...})`."""
+    import asyncio
+
+    calls: list[dict[str, Any]] = []
+
+    async def fake_send_push(*, user_id: Any, payload: dict[str, Any], **_: Any) -> None:
+        calls.append({"user_id": str(user_id), "payload": payload})
+
+    monkeypatch.setattr("vellaris.server.routes.documents.send_push", fake_send_push)
+
+    alice = _signup(server, "alice", alice_public_pem)
+    bob = _signup(server, "bob", bob_public_pem)
+    alice_token = _login(server, "alice", alice_keypair)
+
+    body, dek = _upload_payload(
+        plaintext=b"hi",
+        owner_id=UUID(alice["id"]),
+        owner_kp=alice_keypair,
+    )
+    doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
+
+    enc_dek_for_bob = oaep_encrypt(dek, bob_keypair.public_key)
+    res = server.post(
+        f"/documents/{doc_id}/access",
+        json={"user_id": bob["id"], "encrypted_dek": _b64(enc_dek_for_bob)},
+        headers=_bearer(alice_token),
+    )
+    assert res.status_code == 204
+
+    # asyncio.create_task() schedules on the running loop; under TestClient
+    # the request handler ran in its own loop. Drain pending tasks so the
+    # fake_send_push side-effect lands.
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(asyncio.sleep(0.05))
+    loop.close()
+
+    assert len(calls) == 1
+    assert calls[0]["user_id"] == bob["id"]
+    assert calls[0]["payload"] == {
+        "type": "share",
+        "from": "alice",
+        "doc_id": doc_id,
+    }
+
+
+def test_revoke_fires_push_to_revokee(
+    server: TestClient,
+    alice_keypair: RSAKeyPair,
+    alice_public_pem: bytes,
+    bob_keypair: RSAKeyPair,
+    bob_public_pem: bytes,
+    monkeypatch: Any,
+) -> None:
+    import asyncio
+
+    calls: list[dict[str, Any]] = []
+
+    async def fake_send_push(*, user_id: Any, payload: dict[str, Any], **_: Any) -> None:
+        calls.append({"user_id": str(user_id), "payload": payload})
+
+    monkeypatch.setattr("vellaris.server.routes.documents.send_push", fake_send_push)
+
+    alice = _signup(server, "alice", alice_public_pem)
+    bob = _signup(server, "bob", bob_public_pem)
+    alice_token = _login(server, "alice", alice_keypair)
+
+    body, _ = _upload_payload(
+        plaintext=b"x",
+        owner_id=UUID(alice["id"]),
+        owner_kp=alice_keypair,
+        recipients=[(UUID(bob["id"]), bob_keypair)],
+    )
+    doc_id = server.post("/documents", json=body, headers=_bearer(alice_token)).json()["id"]
+
+    res = server.delete(
+        f"/documents/{doc_id}/access/{bob['id']}", headers=_bearer(alice_token)
+    )
+    assert res.status_code == 204
+
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(asyncio.sleep(0.05))
+    loop.close()
+
+    assert len(calls) == 1
+    assert calls[0]["user_id"] == bob["id"]
+    assert calls[0]["payload"] == {
+        "type": "revoke",
+        "from": "alice",
+        "doc_id": doc_id,
+    }

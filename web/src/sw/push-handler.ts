@@ -13,9 +13,7 @@
  *   - Phase 3: BackgroundSyncPlugin queue for offline mutations
  *     (POST /documents, PUT /key-blobs/me, DELETE /documents/{id}) with
  *     custom onSync that broadcasts sync-done / sync-failed messages.
- *
- * Phases pending:
- *   - Phase 5: push / notificationclick / pushsubscriptionchange handlers.
+ *   - Phase 5: push / notificationclick / pushsubscriptionchange.
  */
 
 import { BackgroundSyncPlugin } from 'workbox-background-sync'
@@ -173,6 +171,116 @@ const queuedMutationHandler = new NetworkOnly({ plugins: [uploadsQueue] })
 registerRoute(matchPath(/^\/documents$/), queuedMutationHandler, 'POST')
 registerRoute(matchPath(/^\/key-blobs\/me$/), queuedMutationHandler, 'PUT')
 registerRoute(matchPath(/^\/documents\/[^/]+$/), queuedMutationHandler, 'DELETE')
+
+// ----------------------------------------------------------------------
+// Push notifications (Phase 5).
+//
+// The push event fires when the push service forwards an encrypted
+// payload to the browser. The SW decrypts it (the browser does this
+// transparently using the subscription's private key), and we surface
+// it to the OS notification tray. notificationclick focuses the
+// dashboard — re-using an existing tab if there is one — and
+// pushsubscriptionchange tells the SPA to re-register if the browser
+// rotates the subscription.
+//
+// Payload shape (P2 model — see /docs/protocol):
+//   { type: 'share' | 'revoke', from: '<username>', doc_id: '<uuid>' }
+// Document titles never appear here; surfacing them would require the
+// unwrapped RSA key inside the SW context, which is the P3 model the
+// project rejected.
+// ----------------------------------------------------------------------
+
+interface PushPayload {
+  type: 'share' | 'revoke'
+  from: string
+  doc_id: string
+}
+
+interface SwHighlightMessage {
+  type: 'highlight-doc'
+  doc_id: string
+}
+
+interface SwReSubscribeMessage {
+  type: 'pushsubscriptionchange'
+}
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+  let data: PushPayload
+  try {
+    data = event.data.json() as PushPayload
+  } catch {
+    // Malformed payload — surface a generic notification rather than
+    // dropping it silently. Falls through with a minimal default.
+    data = { type: 'share', from: 'someone', doc_id: '' }
+  }
+
+  const body =
+    data.type === 'share'
+      ? `${data.from} shared a document with you`
+      : `${data.from} revoked access to a document`
+
+  // `tag` dedupes repeated pushes on the same doc — re-issuing collapses
+  // them to a single OS notification rather than stacking duplicates.
+  event.waitUntil(
+    self.registration.showNotification('Vellaris', {
+      body,
+      icon: '/icons/pwa-192x192.png',
+      badge: '/icons/pwa-192x192.png',
+      data: { doc_id: data.doc_id, type: data.type },
+      tag: `vellaris-${data.type}-${data.doc_id}`,
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const docId =
+    typeof event.notification.data === 'object' && event.notification.data !== null
+      ? String((event.notification.data as { doc_id?: unknown }).doc_id ?? '')
+      : ''
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      })
+      // Prefer focusing an existing dashboard tab; otherwise open the
+      // dashboard with the highlight query so React can scroll/highlight
+      // the matching row on cold start.
+      for (const client of allClients) {
+        if (client.url.includes('/dashboard') || client.url.endsWith('/')) {
+          await client.focus()
+          const message: SwHighlightMessage = { type: 'highlight-doc', doc_id: docId }
+          client.postMessage(message)
+          return
+        }
+      }
+      const target = docId ? `/dashboard?highlight=${encodeURIComponent(docId)}` : '/dashboard'
+      await self.clients.openWindow(target)
+    })(),
+  )
+})
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  // Browser rotated the keys. The SW can't authenticate to the server
+  // on its own (the bearer token lives in the SPA's sessionStorage), so
+  // it asks any open clients to re-run the auth'd subscribe flow.
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      })
+      const message: SwReSubscribeMessage = { type: 'pushsubscriptionchange' }
+      for (const client of allClients) {
+        client.postMessage(message)
+      }
+    })(),
+  )
+})
 
 // ----------------------------------------------------------------------
 // Client → SW message handlers.

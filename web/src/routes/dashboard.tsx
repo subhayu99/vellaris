@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Button, Icons, InstallPrompt, Notice } from '../components/index.ts'
+import { Button, Icons, InstallPrompt, NotificationPrompt, Notice } from '../components/index.ts'
 import { VellarisAPIError, VellarisClient, VellarisNetworkError } from '../api/index.ts'
 import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '../api/index.ts'
 import type { DocumentScope, DocumentSummary } from '../api/index.ts'
@@ -100,6 +100,16 @@ export function DashboardRoute() {
   // Bumped after every successful list refetch so the SW's sync-done
   // callback can trigger a re-load of the dashboard rows.
   const [refetchTick, setRefetchTick] = useState(0)
+
+  // Tristate: null while we probe /notifications/public-key, true when
+  // the server has VAPID configured, false when it returns 503 / 404.
+  // Drives whether we mount the N1 soft prompt.
+  const [pushAvailable, setPushAvailable] = useState<boolean | null>(null)
+
+  // Doc to scroll to + flash. Set from ?highlight=<id> on cold start
+  // (notification → openWindow path) and from the SW's 'highlight-doc'
+  // postMessage on warm start (notification → existing tab).
+  const [highlightDocId, setHighlightDocId] = useState<string | null>(() => params.get('highlight'))
 
   // Passkey-nudge banner state. We render it only when:
   //   1. The browser supports WebAuthn AND has a platform authenticator
@@ -249,6 +259,56 @@ export function DashboardRoute() {
     })
   }, [user])
 
+  // Probe whether the server supports push, so the N1 prompt has
+  // somewhere to subscribe to. 503 / 404 / network error all → "no".
+  useEffect(() => {
+    if (!client) return
+    let cancelled = false
+    void (async () => {
+      try {
+        await client.getPushPublicKey()
+        if (!cancelled) setPushAvailable(true)
+      } catch {
+        if (!cancelled) setPushAvailable(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [client])
+
+  // Listen for SW notificationclick → highlight-doc messages so we can
+  // scroll the matching row into view in an already-focused tab.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.serviceWorker) return
+    function onMessage(event: MessageEvent) {
+      const data = event.data as { type?: string; doc_id?: string } | undefined
+      if (data?.type === 'highlight-doc' && data.doc_id) {
+        setHighlightDocId(data.doc_id)
+      }
+    }
+    navigator.serviceWorker.addEventListener('message', onMessage)
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', onMessage)
+    }
+  }, [])
+
+  // Scroll the highlighted row into view + flash it once the rows render.
+  useEffect(() => {
+    if (!highlightDocId) return
+    const node = document.querySelector(
+      `[data-testid="row-${CSS.escape(highlightDocId)}"]`,
+    ) as HTMLElement | null
+    if (!node) return
+    node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    node.classList.add('ring-2', 'ring-gold')
+    const timer = setTimeout(() => {
+      node.classList.remove('ring-2', 'ring-gold')
+      setHighlightDocId(null)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [highlightDocId, rows])
+
   useEffect(() => {
     if (!client) return
     let cancelled = false
@@ -313,6 +373,7 @@ export function DashboardRoute() {
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-5">
         <InstallPrompt />
+        <NotificationPrompt client={client} serverAvailable={pushAvailable} />
         {!online && (
           <Notice variant="warn" data-testid="offline-hint">
             Working offline.{' '}

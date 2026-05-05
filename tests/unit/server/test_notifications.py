@@ -20,7 +20,7 @@ from fastapi.testclient import TestClient
 from vellaris.core.asymmetric import RSAKeyPair, pss_sign
 from vellaris.server.config import reset_settings_cache
 from vellaris.server.push import (
-    _serialize_private_raw,  # noqa: SLF001 — generating fixtures lives close to the helper
+    _serialize_private_raw,
     generate_vapid_key_pair,
     reset_vapid_key_cache,
 )

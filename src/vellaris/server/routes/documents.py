@@ -23,6 +23,7 @@ from vellaris.server.models import (
     DocumentAccess,
     User,
 )
+from vellaris.server.push import send_push
 from vellaris.server.schemas import (
     DocumentCreate,
     DocumentDownload,
@@ -266,6 +267,20 @@ async def share(
     )
     await db.commit()
 
+    # Fire push to the grantee. Fire-and-forget so a slow push service
+    # can't make the share request itself feel laggy. send_push opens
+    # its own session (this one closes when the request returns).
+    asyncio.create_task(  # noqa: RUF006 — intentional fire-and-forget
+        send_push(
+            user_id=body.user_id,
+            payload={
+                "type": "share",
+                "from": current.username,
+                "doc_id": str(doc.id),
+            },
+        )
+    )
+
 
 @router.delete("/{document_id}/access/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def revoke(
@@ -303,6 +318,17 @@ async def revoke(
         extra={"revoked": str(user_id)},
     )
     await db.commit()
+
+    asyncio.create_task(  # noqa: RUF006 — intentional fire-and-forget
+        send_push(
+            user_id=user_id,
+            payload={
+                "type": "revoke",
+                "from": current.username,
+                "doc_id": str(doc.id),
+            },
+        )
+    )
 
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
