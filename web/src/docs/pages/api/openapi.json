@@ -469,6 +469,185 @@
         "title": "PasskeySummary",
         "type": "object"
       },
+      "PushSubscriptionCreate": {
+        "description": "POST /notifications/subscriptions body.",
+        "properties": {
+          "auth_secret": {
+            "contentMediaType": "application/octet-stream",
+            "description": "Browser subscription auth secret, raw 16 bytes.",
+            "title": "Auth Secret",
+            "type": "string"
+          },
+          "endpoint": {
+            "description": "Push-service URL.",
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "friendly_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Friendly Name"
+          },
+          "p256dh_key": {
+            "contentMediaType": "application/octet-stream",
+            "description": "Browser subscription public key, raw 65 bytes.",
+            "title": "P256Dh Key",
+            "type": "string"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "required": [
+          "endpoint",
+          "p256dh_key",
+          "auth_secret"
+        ],
+        "title": "PushSubscriptionCreate",
+        "type": "object"
+      },
+      "PushSubscriptionListItem": {
+        "description": "One row from GET /notifications/subscriptions \u2014 the Settings list.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "friendly_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Friendly Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "required": [
+          "id",
+          "created_at"
+        ],
+        "title": "PushSubscriptionListItem",
+        "type": "object"
+      },
+      "PushSubscriptionResponse": {
+        "description": "POST /notifications/subscriptions response.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "friendly_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Friendly Name"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "required": [
+          "id",
+          "endpoint",
+          "created_at"
+        ],
+        "title": "PushSubscriptionResponse",
+        "type": "object"
+      },
+      "PushVapidKeyResponse": {
+        "description": "GET /notifications/public-key \u2014 anonymous, served to every client.\n\nThe SPA passes ``public_key`` (base64url-no-pad) into\n``pushManager.subscribe({applicationServerKey})``. ``subject`` is the\noperator-contact URI (mailto: or https://) the push service uses to\nreach the operator if the keys misbehave.",
+        "properties": {
+          "public_key": {
+            "description": "VAPID server public key, base64url no-padding.",
+            "title": "Public Key",
+            "type": "string"
+          },
+          "subject": {
+            "description": "VAPID `sub` claim \u2014 operator contact URI.",
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "public_key",
+          "subject"
+        ],
+        "title": "PushVapidKeyResponse",
+        "type": "object"
+      },
       "ShareRequest": {
         "properties": {
           "encrypted_dek": {
@@ -680,7 +859,7 @@
   "info": {
     "description": "End-to-end encrypted document sharing \u2014 server.",
     "title": "Vellaris",
-    "version": "0.6.0"
+    "version": "0.7.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1281,6 +1460,146 @@
         "summary": "Push",
         "tags": [
           "key-blobs"
+        ]
+      }
+    },
+    "/notifications/public-key": {
+      "get": {
+        "description": "Return the VAPID server public key + subject claim.",
+        "operationId": "get_public_key_notifications_public_key_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushVapidKeyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Public Key",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/subscriptions": {
+      "get": {
+        "description": "Return the caller's registered devices for the Settings page.",
+        "operationId": "list_subscriptions_notifications_subscriptions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PushSubscriptionListItem"
+                  },
+                  "title": "Response List Subscriptions Notifications Subscriptions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Subscriptions",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "post": {
+        "description": "Register a subscription for the calling user + their current browser.\n\nIdempotent: if the same ``endpoint`` is already in the table for any\nuser, we update the row in place (replacing keys + reassigning the\nuser) rather than rejecting the request. This handles two cases \u2014\nthe same browser on the same account re-subscribing after a\npushsubscriptionchange, and a different account on the same browser\noverwriting the previous tenant.",
+        "operationId": "subscribe_notifications_subscriptions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushSubscriptionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Subscribe",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/subscriptions/{subscription_id}": {
+      "delete": {
+        "description": "Remove a subscription, ownership-checked.",
+        "operationId": "unsubscribe_notifications_subscriptions__subscription_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "subscription_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Subscription Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Unsubscribe",
+        "tags": [
+          "notifications"
         ]
       }
     },

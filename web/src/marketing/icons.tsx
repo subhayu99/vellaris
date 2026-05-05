@@ -148,6 +148,18 @@ export function IKey(p: IconProps) {
   )
 }
 
+export function IFingerprint(p: IconProps) {
+  return (
+    <Ic {...p}>
+      <path d="M12 11c0 6-2 8-2 8" />
+      <path d="M16 11.5c0 4.5-1 6.5-1 6.5" />
+      <path d="M8 14a4 4 0 0 1 8 0c0 1-.2 2-.5 3" />
+      <path d="M5 13a7 7 0 0 1 14-2" />
+      <path d="M3 11c0-5 4-8 9-8 5 0 9 3 9 8v2" />
+    </Ic>
+  )
+}
+
 export function IBadgeOSS(p: IconProps) {
   return (
     <Ic {...p}>

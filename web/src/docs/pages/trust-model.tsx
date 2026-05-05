@@ -125,6 +125,38 @@ export function TrustModelPage() {
                 provider&rsquo;s security.
               </td>
             </tr>
+            <tr>
+              <td>Push service correlates your username with notification timing</td>
+              <td>
+                <DefenseBadge kind="partial" />
+              </td>
+              <td>
+                Notifications use the P2 model — the encrypted payload contains{' '}
+                <code>{'{type, from: "<username>", doc_id}'}</code>, never document titles or
+                contents. The push payload is AES-GCM-encrypted in transit between server and
+                browser via VAPID/p256dh. The push service (FCM / Mozilla autopush) learns that you
+                got <em>a</em> share / revoke at <em>a</em> time from a sender named{' '}
+                <code>&lt;username&gt;</code>, plus your IP. v0.7 trades this exposure for
+                actually-useful notifications; users who don&rsquo;t want it can leave Settings →
+                Notifications disabled.
+              </td>
+            </tr>
+            <tr>
+              <td>Compromised SPA build silently MITMs API calls (SW as fetch interceptor)</td>
+              <td>
+                <DefenseBadge kind="partial" />
+              </td>
+              <td>
+                Service-worker updates use the U2 prompt-and-reload model — a &ldquo;new
+                version&rdquo; banner is shown when the registered SW changes, so the swap is
+                visible. AES-GCM auth tags prevent silent ciphertext tampering, so a malicious SW
+                returning bogus blobs surfaces decrypt errors rather than silent compromise. The
+                remaining attack is theft of the unwrapped RSA key from the in-memory{' '}
+                <code>key-cache</code> via SW-injected JS — the same trust boundary as XSS on the
+                page itself. Reproducible / signed SW builds with a transparency log are a future
+                milestone.
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

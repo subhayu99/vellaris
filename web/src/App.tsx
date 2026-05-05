@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { SwUpdateBanner } from './components/index.ts'
 import { DocsRoute } from './docs/Docs.tsx'
 import Marketing from './marketing/Marketing.tsx'
 import { ConnectRoute } from './routes/connect.tsx'
@@ -18,21 +19,24 @@ import { UploadRoute } from './routes/upload.tsx'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Marketing />} />
-      <Route path="/docs" element={<DocsRoute />} />
-      <Route path="/docs/:slug" element={<DocsRoute />} />
-      <Route path="/app" element={<Navigate to="/connect" replace />} />
-      <Route path="/connect" element={<ConnectRoute />} />
-      <Route path="/signup" element={<SignupRoute />} />
-      <Route path="/login" element={<LoginRoute />} />
-      <Route path="/recover" element={<RecoverRoute />} />
-      <Route path="/dashboard" element={<DashboardRoute />} />
-      <Route path="/upload" element={<UploadRoute />} />
-      <Route path="/doc/:id" element={<DocDetailRoute />} />
-      <Route path="/settings" element={<SettingsRoute />} />
-      <Route path="/home" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Marketing />} />
+        <Route path="/docs" element={<DocsRoute />} />
+        <Route path="/docs/:slug" element={<DocsRoute />} />
+        <Route path="/app" element={<Navigate to="/connect" replace />} />
+        <Route path="/connect" element={<ConnectRoute />} />
+        <Route path="/signup" element={<SignupRoute />} />
+        <Route path="/login" element={<LoginRoute />} />
+        <Route path="/recover" element={<RecoverRoute />} />
+        <Route path="/dashboard" element={<DashboardRoute />} />
+        <Route path="/upload" element={<UploadRoute />} />
+        <Route path="/doc/:id" element={<DocDetailRoute />} />
+        <Route path="/settings" element={<SettingsRoute />} />
+        <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <SwUpdateBanner />
+    </>
   )
 }

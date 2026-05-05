@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vellaris"
-version = "0.6.0"
+version = "0.7.0"
 description = "End-to-end encrypted document sharing you self-host."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -46,6 +46,7 @@ server = [
     "python-multipart>=0.0.12",
     "fsspec>=2024.10",
     "webauthn>=2.5",
+    "pywebpush>=2.0",
 ]
 sqlite = ["aiosqlite>=0.20"]
 postgres = ["asyncpg>=0.29", "psycopg2-binary>=2.9"]
@@ -78,6 +79,7 @@ dev = [
     "python-multipart>=0.0.12",
     "fsspec>=2024.10",
     "webauthn>=2.5",
+    "pywebpush>=2.0",
     # Drivers (everything bundled for tests)
     "aiosqlite>=0.20",
     "asyncpg>=0.29",
@@ -150,7 +152,7 @@ explicit_package_bases = true
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["argon2.*", "boto3.*", "botocore.*", "moto.*", "fsspec.*"]
+module = ["argon2.*", "boto3.*", "botocore.*", "moto.*", "fsspec.*", "py_vapid.*", "pywebpush.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -288,6 +288,70 @@ export function DeploymentPage() {
                 </td>
                 <td>Login-challenge lifetime.</td>
               </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_WEBAUTHN_RP_ID</code>
+                </td>
+                <td>
+                  <code>localhost</code>
+                </td>
+                <td>
+                  WebAuthn Relying Party ID — the registrable domain passkeys are bound to. Set to
+                  your apex (e.g. <code>vellaris.example.com</code>) in production.{' '}
+                  <strong>Don&rsquo;t change after launch</strong> — every existing passkey breaks.
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_WEBAUTHN_RP_NAME</code>
+                </td>
+                <td>
+                  <code>Vellaris</code>
+                </td>
+                <td>
+                  Human-readable name shown in the platform passkey prompt (&ldquo;Use Touch ID to
+                  sign in to <em>{'<RP_NAME>'}</em>?&rdquo;).
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_WEBAUTHN_RP_ORIGINS</code>
+                </td>
+                <td>
+                  <code>http://localhost:5173,http://localhost:8000</code>
+                </td>
+                <td>
+                  Allowed origins for register + authenticate ceremonies. Comma-separated or JSON
+                  list. The browser sends the page origin in <code>clientDataJSON</code>;
+                  verification fails if it isn&rsquo;t in this list.
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_VAPID_PRIVATE_KEY_PATH</code>
+                </td>
+                <td>
+                  <em>unset</em>
+                </td>
+                <td>
+                  Path to a 32-byte raw P-256 private key for Web Push (VAPID). Generate with{' '}
+                  <code>vellaris-server generate-vapid-key &gt; vapid.key</code>. If unset,{' '}
+                  <code>/notifications/*</code> returns 503 and push notifications are disabled
+                  cleanly — fine for single-user / dev installs.
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>VELLARIS_VAPID_SUBJECT</code>
+                </td>
+                <td>
+                  <code>mailto:noreply@example.com</code>
+                </td>
+                <td>
+                  VAPID <code>sub</code> claim — operator contact URI sent on every push request.
+                  Use a real <code>mailto:</code> or <code>https://</code> in production.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

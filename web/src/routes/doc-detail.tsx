@@ -173,6 +173,14 @@ export function DocDetailRoute() {
     if (!client || !download) return
     const name = shareInput.trim()
     if (!name) return
+    // Share / revoke are deliberately not queued: a queued revoke would
+    // leave the revokee with access during the queue window, which
+    // breaks the access-control invariant. Fail fast when offline so
+    // the user knows their grant didn't land.
+    if (!navigator.onLine) {
+      setShareError('Vellaris is offline. Sharing needs a live connection.')
+      return
+    }
     setShareBusy(true)
     setShareError(null)
     setShareNotice(null)
@@ -212,6 +220,12 @@ export function DocDetailRoute() {
 
   async function onRevokeChip(userId: string, username: string) {
     if (!client || !download) return
+    if (!navigator.onLine) {
+      // Same fail-fast reasoning as onShare — a queued revoke would
+      // leave access intact until the next reconnect, which is wrong.
+      setRevokeError('Vellaris is offline. Revoking needs a live connection.')
+      return
+    }
     setRevokingUserId(userId)
     setRevokeError(null)
     setRevokeNotice(null)

@@ -29,6 +29,7 @@ import {
 } from '../crypto/index.ts'
 import { getServerUrl } from '../state/server.ts'
 import { getCachedUser, getToken } from '../state/session.ts'
+import { addPendingUpload } from '../state/pending-uploads.ts'
 import { DashboardLayout } from './_dashboard-layout.tsx'
 
 interface ResolvedRecipient {
@@ -154,17 +155,36 @@ export function UploadRoute() {
       })
 
       setStage('uploading')
-      const summary = await client.uploadDocument({
-        encryptedFilename: bundle.encryptedFilename,
-        contentHash: bundle.contentHash,
-        ciphertext: bundle.ciphertext,
-        access: bundle.access.map((a) => ({
-          userId: a.userId,
-          encryptedDek: a.encryptedDek,
-        })),
-      })
+      try {
+        const summary = await client.uploadDocument({
+          encryptedFilename: bundle.encryptedFilename,
+          contentHash: bundle.contentHash,
+          ciphertext: bundle.ciphertext,
+          access: bundle.access.map((a) => ({
+            userId: a.userId,
+            encryptedDek: a.encryptedDek,
+          })),
+        })
 
-      navigate(`/doc/${summary.id}`)
+        navigate(`/doc/${summary.id}`)
+      } catch (uploadErr) {
+        // The SW's BackgroundSyncPlugin queues the request before
+        // surfacing the network error. If the user is genuinely offline,
+        // treat that as "queued — will sync when online" and show a
+        // pending row on the dashboard. Online network errors fall
+        // through to the normal error path.
+        if (uploadErr instanceof VellarisNetworkError && user && !navigator.onLine) {
+          addPendingUpload(user.id, {
+            filename: file.name,
+            size: file.size,
+            contentHash: bundle.contentHash,
+            recipientUsernames: recipients.map((r) => r.username),
+          })
+          navigate('/dashboard?scope=mine&pending=1')
+          return
+        }
+        throw uploadErr
+      }
     } catch (err) {
       setStage('error')
       if (err instanceof VellarisNetworkError) {

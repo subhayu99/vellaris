@@ -1,3 +1,25 @@
+## 0.7.0 — 2026-05-06
+
+### Added
+
+- **Progressive web app — installable, offline-capable, push-aware.** Vellaris becomes a real installable app on iOS / Android / desktop. The SPA caches its shell + previously-fetched data so the dashboard stays useful when the network drops; encrypt-and-upload, key-blob push, and own-doc delete queue automatically and replay on reconnect; share / revoke deliberately stay live (a queued revoke would leave the revokee with access during the queue window, which violates the access-control invariant). Push notifications fire when someone shares a doc with you or revokes access. End-to-end guarantees are unchanged: cached document blobs stay ciphertext on disk, push payloads are encrypted in transit between server and browser via VAPID/p256dh, and document titles never leave the server's encrypted-blob form.
+
+  **What's new:**
+  - **Installable shell.** `vite-plugin-pwa` + a hand-written Workbox service worker (`web/src/sw/push-handler.ts`) under the `injectManifest` strategy. Manifest at `/manifest.webmanifest`, six icon variants in `web/public/icons/`, apple-touch-icon + status-bar metas in `index.html`. Service-worker updates use the **U2 prompt-and-reload** model — a new "Vellaris vX.Y.Z is available" banner appears when the SW changes; clicking Reload posts SKIP_WAITING and reloads onto the new bundle.
+  - **Offline read cache.** Workbox runtime caching for safe GETs, matched by pathname so the SPA can talk to any user-supplied API origin: SWR for `/users/me`, `/users/by-id/*`, `/users/by-username/*`; NetworkFirst (3s timeout) for `/documents` list, `/documents/{id}`, `/webauthn/credentials`. The dashboard shows an amber "Working offline. Last refreshed N min ago." notice when `navigator.onLine` is false. When the in-memory key cache has been wiped (page reload after a long idle), the dashboard now renders an in-place "Sign in required — connect to network to unlock your private key" panel instead of bouncing to a `/login` that can't possibly work offline. Logout wipes every `vellaris-*` runtime cache so the next user on the device doesn't read the previous tenant's data.
+  - **Mutation queue.** `BackgroundSyncPlugin('vellaris-uploads')` with 24h retention queues `POST /documents`, `PUT /key-blobs/me`, `DELETE /documents/{id}` when the network fails. A custom `onSync` replays each queued request and broadcasts `sync-done` / `sync-failed` to all clients. The SPA's pending-uploads tracker (`web/src/state/pending-uploads.ts`) renders a "Pending — will upload when online" placeholder row above the dashboard list, drained as the SW reports each successful replay.
+  - **Web Push notifications (P2 model).** Four new endpoints under `/notifications`: `GET /public-key` (anonymous; 503 when VAPID is unset), `POST /subscriptions` (idempotent on endpoint), `DELETE /subscriptions/{id}` (ownership-checked), `GET /subscriptions` (per-user list). New `PushSubscription` table + three new `AuditAction` enum values (`PUSH_SUBSCRIBE`, `PUSH_UNSUBSCRIBE`, `PUSH_SEND_FAILED`). The Settings page gains a Notifications section that subscribes/unsubscribes the current device, lists registered devices, and surfaces "blocked at browser level" / "disabled on this server" cleanly. Notification payloads carry `{type: 'share' | 'revoke', from: <username>, doc_id}` — never document titles or contents. The push service learns your username + delivery time + IP; users who don't want that exposure can leave the section disabled.
+  - **`vellaris-server generate-vapid-key`** CLI subcommand: writes a fresh raw 32-byte P-256 private key to stdout + setup hints (Cloud Run / Secret Manager snippets) to stderr. The matching public key is derived from it at startup; operators only manage one secret.
+
+### Migration notes
+
+- Run `alembic upgrade head` to add the `push_subscriptions` table. On Postgres the migration also `ALTER TYPE auditaction ADD VALUE`s the three new audit actions.
+- Two new env vars (both optional — leave unset for installs that don't want push):
+  - `VELLARIS_VAPID_PRIVATE_KEY_PATH` — path to the raw 32-byte P-256 private key file. If unset, every `/notifications/*` route returns 503 and the SPA hides the Notifications UI.
+  - `VELLARIS_VAPID_SUBJECT` — `mailto:` or `https://` URI the push service uses to contact the operator if the keys misbehave. RFC 8292 §2.
+- The web bundle gains ~30 KB gzipped for the Workbox runtime; the 500 KB CI budget still has headroom.
+- iOS Safari needs to be 16.4+ for installed-PWA push. The Settings page detects this and hides the Enable button on older iOS until the user installs to the home screen.
+
 ## 0.6.0 — 2026-05-02
 
 ### Added

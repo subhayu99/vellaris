@@ -23,6 +23,10 @@ import type {
   PasskeyAuthFinishResponse,
   PasskeyBeginResponse,
   PasskeySummary,
+  PushSubscriptionCreate,
+  PushSubscriptionListItem,
+  PushSubscriptionRecord,
+  PushVapidKeyResponse,
   TokenResponse,
   UserPrivate,
   UserPublic,
@@ -401,6 +405,73 @@ export class VellarisClient {
       optionsJson: String(body.options_json),
     }
   }
+
+  // ---------- push notifications ----------
+
+  /**
+   * GET /notifications/public-key — anonymous. Returns the VAPID server
+   * public key + subject claim. Throws VellarisAPIError(503) when push
+   * is disabled on this server (no VAPID key configured).
+   */
+  async getPushPublicKey(): Promise<PushVapidKeyResponse> {
+    const r = await this._request('/notifications/public-key', { method: 'GET' })
+    const body = (await r.json()) as Record<string, unknown>
+    return {
+      publicKey: String(body.public_key),
+      subject: String(body.subject),
+    }
+  }
+
+  /** POST /notifications/subscriptions — register the current browser. */
+  async registerPushSubscription(input: PushSubscriptionCreate): Promise<PushSubscriptionRecord> {
+    const r = await this._request('/notifications/subscriptions', {
+      method: 'POST',
+      expectStatus: 201,
+      requireAuth: true,
+      body: {
+        endpoint: input.endpoint,
+        p256dh_key: bytesToBase64(input.p256dhKey),
+        auth_secret: bytesToBase64(input.authSecret),
+        user_agent: input.userAgent,
+        friendly_name: input.friendlyName,
+      },
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    return {
+      id: String(body.id),
+      endpoint: String(body.endpoint),
+      friendlyName: body.friendly_name == null ? null : String(body.friendly_name),
+      userAgent: body.user_agent == null ? null : String(body.user_agent),
+      createdAt: new Date(String(body.created_at)),
+    }
+  }
+
+  /** GET /notifications/subscriptions — list the caller's devices. */
+  async listPushSubscriptions(): Promise<PushSubscriptionListItem[]> {
+    const r = await this._request('/notifications/subscriptions', {
+      method: 'GET',
+      requireAuth: true,
+    })
+    const arr = (await r.json()) as Array<Record<string, unknown>>
+    return arr.map((row) => ({
+      id: String(row.id),
+      friendlyName: row.friendly_name == null ? null : String(row.friendly_name),
+      userAgent: row.user_agent == null ? null : String(row.user_agent),
+      createdAt: new Date(String(row.created_at)),
+      lastUsedAt: row.last_used_at == null ? null : new Date(String(row.last_used_at)),
+    }))
+  }
+
+  /** DELETE /notifications/subscriptions/:id — remove a registered device. */
+  async deletePushSubscription(id: string): Promise<void> {
+    await this._request(`/notifications/subscriptions/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      expectStatus: 204,
+      requireAuth: true,
+    })
+  }
+
+  // ---------- passkeys (continued) ----------
 
   /** POST /webauthn/auth/finish — server returns session token + wrapped-key blob. */
   async passkeyAuthFinish(input: {

@@ -16,6 +16,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
+import { OfflineIndicator } from '../components/offline-indicator.tsx'
 import { VSigil } from '../components/v-sigil.tsx'
 import { Wordmark } from '../components/wordmark.tsx'
 import { Button } from '../components/button.tsx'
@@ -33,6 +34,7 @@ import { useTheme } from '../marketing/hooks.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
 import { clearSessionAndKey, getCachedUser, getToken } from '../state/session.ts'
 import { hasUnwrappedPem } from '../state/key-cache.ts'
+import { clearVellarisCaches } from '../state/sw-cache.ts'
 import { metaKeyLabel } from '../util/platform.ts'
 
 export interface DashboardLayoutProps {
@@ -63,15 +65,38 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
   // light mode in the marketing or docs nav.
   useTheme()
 
+  // Track navigator.onLine so the auth-guard can show an offline-friendly
+  // message instead of bouncing to /login when the network can't possibly
+  // succeed.
+  const [online, setOnline] = useState<boolean>(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine,
+  )
+  useEffect(() => {
+    function on() {
+      setOnline(true)
+    }
+    function off() {
+      setOnline(false)
+    }
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => {
+      window.removeEventListener('online', on)
+      window.removeEventListener('offline', off)
+    }
+  }, [])
+
   useEffect(() => {
     if (!serverUrl || !token || !user) {
       navigate('/connect', { replace: true })
-    } else if (!hasUnwrappedPem()) {
+    } else if (!hasUnwrappedPem() && online) {
       // Token is valid but the unwrapped key has been wiped (e.g. page reload).
-      // Bounce to /login so the user re-enters their passphrase.
+      // Bounce to /login so the user re-enters their passphrase. When offline
+      // we can't run the challenge-response, so we render a "needs network"
+      // notice in-place instead — see the early-return below.
       navigate('/login', { replace: true })
     }
-  }, [navigate, serverUrl, token, user])
+  }, [navigate, online, serverUrl, token, user])
 
   // Auto-close the drawer on every navigation so a tap on a nav link
   // doesn't leave the overlay open over the new route. The setState
@@ -94,7 +119,44 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
     }
   }, [drawerOpen])
 
-  if (!serverUrl || !token || !user || !hasUnwrappedPem()) return null
+  if (!serverUrl || !token || !user) return null
+
+  // Offline + key cache wiped: a /login redirect would just fail because
+  // challenge-response needs network. Show a clear, self-contained
+  // explanation and a Retry button that re-checks once they reconnect.
+  if (!hasUnwrappedPem()) {
+    if (online) return null
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-6">
+        <div
+          className="border-line bg-bg-card flex max-w-md flex-col gap-4 rounded-lg border px-6 py-6 text-center"
+          data-testid="offline-key-cache-empty"
+        >
+          <div className="flex justify-center">
+            <VSigil size={36} />
+          </div>
+          <h1 className="text-fg font-serif text-lg">Sign in required</h1>
+          <p className="text-fg-2 text-[13px] leading-relaxed">
+            Connect to a network to unlock your private key. Vellaris signs you in by re-deriving
+            your key from your passphrase or passkey, and that step needs the server to issue a
+            fresh challenge.
+          </p>
+          <div className="flex justify-center gap-2">
+            <Button
+              variant="secondary"
+              size="default"
+              onClick={() => {
+                if (navigator.onLine) navigate('/login', { replace: true })
+              }}
+              data-testid="offline-key-cache-retry"
+            >
+              Try again
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   async function logout() {
     try {
@@ -105,6 +167,9 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
     }
     clearSessionAndKey()
     clearServerUrl()
+    // Wipe per-user runtime caches so the next sign-in on this device
+    // doesn't read the previous tenant's cached docs / user records.
+    void clearVellarisCaches()
     navigate('/connect')
   }
 
@@ -248,7 +313,10 @@ export function DashboardLayout({ children, topBarTrailing }: DashboardLayoutPro
               <ISearch size={18} />
             </button>
           </div>
-          {topBarTrailing && <div className="shrink-0">{topBarTrailing}</div>}
+          <div className="flex shrink-0 items-center gap-2">
+            <OfflineIndicator />
+            {topBarTrailing}
+          </div>
         </header>
         <div id="main-content" className="flex-1 px-4 py-5 sm:px-6 sm:py-6">
           {children}

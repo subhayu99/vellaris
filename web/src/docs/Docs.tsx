@@ -23,11 +23,13 @@ import { SDKPage } from './pages/sdk.tsx'
 import { DeploymentPage } from './pages/deployment.tsx'
 import { ProtocolPage } from './pages/protocol.tsx'
 import { ApiPage } from './pages/api.tsx'
+import { PasskeysPage } from './pages/passkeys.tsx'
 import './docs.css'
 
 const PAGES: Record<string, ComponentType> = {
   quickstart: QuickstartPage,
   'trust-model': TrustModelPage,
+  passkeys: PasskeysPage,
   cli: CLIReferencePage,
   sdk: SDKPage,
   deployment: DeploymentPage,

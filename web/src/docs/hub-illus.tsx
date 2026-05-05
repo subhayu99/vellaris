@@ -94,6 +94,44 @@ export function IllusTrust() {
   )
 }
 
+export function IllusPasskeys() {
+  return (
+    <svg viewBox="0 0 240 120" width="100%" height="100%" aria-hidden="true">
+      <defs>
+        <linearGradient id="docs-illus-passkeys-thread" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="var(--gold)" stopOpacity="0" />
+          <stop offset="0.5" stopColor="var(--gold)" stopOpacity="0.8" />
+          <stop offset="1" stopColor="var(--gold)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M16 78 Q 70 36, 120 60 T 224 50"
+        fill="none"
+        stroke="url(#docs-illus-passkeys-thread)"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <g transform="translate(98,30)" stroke="var(--gold)" fill="none" strokeLinecap="round">
+        <rect
+          x="0"
+          y="0"
+          width="44"
+          height="60"
+          rx="9"
+          fill="var(--accent-soft)"
+          stroke="var(--accent-line)"
+        />
+        <g transform="translate(11,11)" strokeWidth="1.5">
+          <path d="M0 16 a11 11 0 0 1 22 0 v3" />
+          <path d="M3 22 a8 8 0 0 1 16 0 v6" />
+          <path d="M7 28 a4 4 0 0 1 8 0 v4" />
+          <path d="M11 32 v6" />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
 export function IllusCLI() {
   return (
     <svg viewBox="0 0 240 120" width="100%" height="100%" aria-hidden="true">
