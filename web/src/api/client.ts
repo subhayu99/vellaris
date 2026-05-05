@@ -292,6 +292,25 @@ export class VellarisClient {
     return base64ToBytes(String(body.wrapped_key))
   }
 
+  /**
+   * GET /key-blobs/by-username/{username} — public, unauthenticated.
+   *
+   * The fresh-device sign-in bootstrap: a user with no synced passkey
+   * and no local wrapped key types their username + passphrase, and the
+   * SPA pulls the (passphrase-encrypted) blob via this endpoint to seed
+   * IndexedDB. The blob is opaque ciphertext to the server. Throws
+   * VellarisAPIError(404) when no blob is stored for that username
+   * (covering both "user doesn't exist" and "user exists but never
+   * pushed").
+   */
+  async pullKeyblobByUsername(username: string): Promise<Uint8Array> {
+    const r = await this._request(`/key-blobs/by-username/${encodeURIComponent(username)}`, {
+      method: 'GET',
+    })
+    const body = (await r.json()) as Record<string, unknown>
+    return base64ToBytes(String(body.wrapped_key))
+  }
+
   async getKeyblobMeta(): Promise<KeyBlobResponse> {
     const r = await this._request('/key-blobs/me', { method: 'GET', requireAuth: true })
     const body = (await r.json()) as Record<string, unknown>

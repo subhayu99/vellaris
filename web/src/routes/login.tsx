@@ -1,22 +1,26 @@
 /**
  * Login screen — passphrase and / or passkey sign-in.
  *
- * Two paths are surfaced depending on what this device has:
+ * Three paths feed in here, depending on what this device has:
  *
- *   - **Passphrase (legacy / always-supported).** Requires a local
- *     wrapped private key in IndexedDB. Posts /auth/challenge, unwraps
- *     via Argon2id + AES-GCM, signs the challenge with PSS, posts
- *     /auth/verify.
- *   - **Passkey (preferred when available).** Requires the platform to
- *     expose a user-verifying authenticator. Calls /webauthn/auth/begin
- *     and /finish; the WebAuthn PRF extension yields a 32-byte secret
- *     that unwraps the server-side wrapped private key blob.
+ *   - **Passphrase, local wrapped key.** Returning user on the device
+ *     they signed up on. Posts /auth/challenge, unwraps the local
+ *     blob via Argon2id + AES-GCM, signs the challenge with PSS,
+ *     posts /auth/verify. Original v0.1 flow.
+ *   - **Passphrase, server-pulled wrapped key (import).** First sign-
+ *     in on a fresh device for a user who pushed their wrapped blob
+ *     from another device (Settings → Wrapped key sync → Push to
+ *     server). Same flow as above but the SPA fetches the blob via
+ *     ``GET /key-blobs/by-username/{username}`` first, seeds
+ *     IndexedDB, then runs the standard challenge-response.
+ *   - **Passkey (preferred when available).** Touch ID / Face ID /
+ *     hardware key. Calls /webauthn/auth/begin and /finish; the
+ *     WebAuthn PRF extension yields a 32-byte secret that unwraps
+ *     the server-side wrapped private key blob.
  *
- * The screen renders if EITHER input is usable. A user landing on a
- * fresh device with their iCloud / Google-synced passkey but no local
- * wrapped blob still gets here and sees the passkey button — that's the
- * headline UX of the WebAuthn integration. If neither is available we
- * bounce to /signup, since the user has nothing to sign in with.
+ * The screen always renders when a server URL is set. Users with
+ * nothing on this device see "Create an account" and "Recovery
+ * options" links and can pick a path.
  */
 
 import { useEffect, useState, type FormEvent } from 'react'
@@ -30,7 +34,7 @@ import { Icons } from '../components/index.ts'
 import { DecryptError, deserializePrivateKeyForPss, pssSign } from '../crypto/index.ts'
 import { unwrapPrivateKey } from '../crypto/worker-client.ts'
 import { clearServerUrl, getServerUrl } from '../state/server.ts'
-import { getWrappedKey, hasWrappedKey } from '../state/keystore.ts'
+import { getWrappedKey, hasWrappedKey, setWrappedKey } from '../state/keystore.ts'
 import {
   loginWithPasskey,
   PasskeyCancelledError,
@@ -42,9 +46,10 @@ import { setUnwrappedPem } from '../state/key-cache.ts'
 import { uuidToBytes } from '../util/uuid.ts'
 import { AuthLayout } from './_layout.tsx'
 
-type Stage = 'idle' | 'requesting' | 'unwrapping' | 'verifying' | 'error'
+type Stage = 'idle' | 'fetching' | 'requesting' | 'unwrapping' | 'verifying' | 'error'
 
 const STAGE_HEADLINE: Record<Exclude<Stage, 'idle' | 'error'>, string> = {
+  fetching: 'Fetching your wrapped key from the server',
   requesting: 'Asking the server for a challenge',
   unwrapping: 'Unwrapping your private key',
   verifying: 'Signing the challenge and verifying',
@@ -63,10 +68,8 @@ export function LoginRoute() {
   const [error, setError] = useState<string | null>(null)
 
   // null = still detecting (async probe hasn't resolved), true / false
-  // = known. We need the tristate so we don't redirect a fresh-device-
-  // with-passkey user to /signup before the platform-authenticator
-  // probe has a chance to come back. When WebAuthn isn't supported at
-  // all, we know the answer synchronously and short-circuit the probe.
+  // = known. Tristate so we don't flash the wrong UI before the
+  // platform-authenticator probe returns.
   const [passkeyAvailable, setPasskeyAvailable] = useState<boolean | null>(() =>
     isWebAuthnSupported() ? null : false,
   )
@@ -87,25 +90,14 @@ export function LoginRoute() {
   useEffect(() => {
     if (!serverUrl) {
       navigate('/connect', { replace: true })
-      return
     }
-    // Only bounce once we *know* there's no passkey-capable authenticator
-    // either. If the user has neither a local wrapped key nor a platform
-    // authenticator, they have nothing to sign in with → /signup.
-    if (!hasLocalKey && passkeyAvailable === false) {
-      navigate('/signup', { replace: true })
-    }
-  }, [navigate, serverUrl, hasLocalKey, passkeyAvailable])
+  }, [navigate, serverUrl])
 
   useEffect(() => {
     trackPageview('/login')
   }, [])
 
   if (!serverUrl) return null
-  // Still resolving the platform-authenticator probe — render nothing
-  // briefly to avoid a flicker of "/signup redirect" before we know.
-  if (!hasLocalKey && passkeyAvailable === null) return null
-  if (!hasLocalKey && passkeyAvailable === false) return null
 
   function disconnect() {
     clearServerUrl()
@@ -156,16 +148,40 @@ export function LoginRoute() {
       setError('Username and passphrase are required.')
       return
     }
-    const wrapped = getWrappedKey()
+
+    const client = new VellarisClient(serverUrl!)
+
+    // First, make sure we have a wrapped key locally. If not, attempt to
+    // fetch it from the server — this is the "fresh device, account
+    // pushed elsewhere" import flow. The blob is opaque ciphertext on
+    // the server; the passphrase below decrypts it locally.
+    let wrapped = getWrappedKey()
     if (!wrapped) {
-      setStage('error')
-      setError('No local key found. Please sign up first.')
-      return
+      try {
+        setStage('fetching')
+        wrapped = await client.pullKeyblobByUsername(username)
+        setWrappedKey(wrapped)
+      } catch (err) {
+        setStage('error')
+        if (err instanceof VellarisAPIError && err.status === 404) {
+          setError(
+            `No saved key found for "${username}" on this server. ` +
+              'On a device where you can already sign in, push your wrapped key from ' +
+              'Settings → Wrapped key sync. Or create a new account if this is your first time.',
+          )
+          return
+        }
+        if (err instanceof VellarisNetworkError) {
+          setError(`Couldn't reach ${serverUrl}.`)
+          return
+        }
+        setError(`Couldn't fetch your wrapped key: ${(err as Error).message}`)
+        return
+      }
     }
 
     try {
       setStage('requesting')
-      const client = new VellarisClient(serverUrl!)
       const challenge = await client.challenge(username)
 
       setStage('unwrapping')
@@ -215,11 +231,14 @@ export function LoginRoute() {
     }
   }
 
-  const busy = stage === 'requesting' || stage === 'unwrapping' || stage === 'verifying'
+  const busy =
+    stage === 'fetching' ||
+    stage === 'requesting' ||
+    stage === 'unwrapping' ||
+    stage === 'verifying'
   const animLabel = busy ? STAGE_HEADLINE[stage as Exclude<Stage, 'idle' | 'error'>] : undefined
   const showPasskey = passkeyAvailable === true
-  const showPassphrase = hasLocalKey
-  const showDivider = showPasskey && showPassphrase
+  const isImportFlow = !hasLocalKey
 
   return (
     <AuthLayout serverUrl={serverUrl} onDisconnect={disconnect}>
@@ -228,9 +247,9 @@ export function LoginRoute() {
           <VSigil size={42} />
           <h1 className="text-fg font-serif text-2xl tracking-tight">Sign in</h1>
           <p className="text-fg-2 text-[13px]">
-            {showPassphrase
-              ? "We'll sign a challenge from the server with your local key. Nothing is sent that the server hasn't already seen."
-              : 'Use your synced passkey to unlock your private key on this device. The PRF secret never leaves the authenticator.'}
+            {isImportFlow
+              ? "On a new device — we'll pull your wrapped key from the server (if you've pushed it from another device) or use your synced passkey to unlock it. Either way the unwrapping happens here, not on the server."
+              : "We'll sign a challenge from the server with your local key. Nothing is sent that the server hasn't already seen."}
           </p>
         </div>
 
@@ -250,7 +269,7 @@ export function LoginRoute() {
           <>
             <Button
               type="button"
-              variant={showPassphrase ? 'secondary' : 'primary'}
+              variant="secondary"
               size="lg"
               fullWidth
               leading={passkeyBusy ? <Spinner size={14} /> : <Icons.IKey size={14} />}
@@ -265,55 +284,52 @@ export function LoginRoute() {
                 {passkeyError}
               </Notice>
             )}
+            <div className="border-line text-fg-3 relative my-1 flex items-center text-[11px] tracking-[0.16em] uppercase before:mr-3 before:h-px before:flex-1 before:bg-current before:opacity-30 after:ml-3 after:h-px after:flex-1 after:bg-current after:opacity-30">
+              or use your passphrase
+            </div>
           </>
         )}
 
-        {showDivider && (
-          <div className="border-line text-fg-3 relative my-1 flex items-center text-[11px] tracking-[0.16em] uppercase before:mr-3 before:h-px before:flex-1 before:bg-current before:opacity-30 after:ml-3 after:h-px after:flex-1 after:bg-current after:opacity-30">
-            or use your passphrase
+        <Field
+          label="Passphrase"
+          htmlFor="login-passphrase"
+          error={stage === 'error' ? error : undefined}
+        >
+          <Input
+            id="login-passphrase"
+            type="password"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            autoComplete="current-password"
+            disabled={busy || passkeyBusy}
+            data-testid="login-passphrase"
+          />
+        </Field>
+
+        {busy && (
+          <div className="border-line-2 bg-bg-elev rounded-lg border px-4 py-3">
+            <EncryptAnim
+              active
+              label={animLabel}
+              description={
+                stage === 'fetching'
+                  ? 'Pulling the encrypted blob from the server.'
+                  : 'Argon2id unwrapping uses 256 MiB · 3 passes · 4 lanes — about 1 to 2 seconds.'
+              }
+            />
           </div>
         )}
 
-        {showPassphrase && (
-          <>
-            <Field
-              label="Passphrase"
-              htmlFor="login-passphrase"
-              error={stage === 'error' ? error : undefined}
-            >
-              <Input
-                id="login-passphrase"
-                type="password"
-                value={passphrase}
-                onChange={(e) => setPassphrase(e.target.value)}
-                autoComplete="current-password"
-                disabled={busy || passkeyBusy}
-                data-testid="login-passphrase"
-              />
-            </Field>
-
-            {busy && (
-              <div className="border-line-2 bg-bg-elev rounded-lg border px-4 py-3">
-                <EncryptAnim
-                  active
-                  label={animLabel}
-                  description="Argon2id unwrapping uses 256 MiB · 3 passes · 4 lanes — about 1 to 2 seconds."
-                />
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              size="lg"
-              disabled={busy}
-              data-testid="login-submit"
-            >
-              {busy ? 'Signing in…' : 'Sign in'}
-            </Button>
-          </>
-        )}
+        <Button
+          type="submit"
+          variant="primary"
+          fullWidth
+          size="lg"
+          disabled={busy}
+          data-testid="login-submit"
+        >
+          {busy ? 'Signing in…' : 'Sign in'}
+        </Button>
 
         <div className="text-fg-3 flex flex-col gap-1 text-center text-[12.5px]">
           <span>
