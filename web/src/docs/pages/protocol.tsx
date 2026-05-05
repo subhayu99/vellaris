@@ -264,6 +264,123 @@ meta.json                 the constants above, JSON-encoded`}
         The full HTTP API is published as OpenAPI at <code>https://your-server/openapi.json</code>{' '}
         so you can codegen typed clients in any language.
       </p>
+
+      <h2>Push notifications (v0.7+)</h2>
+      <p>
+        The PWA opts in to OS-level notifications via the standard Web Push protocol (
+        <a href="https://datatracker.ietf.org/doc/html/rfc8030">RFC&nbsp;8030</a>) +{' '}
+        <a href="https://datatracker.ietf.org/doc/html/rfc8292">VAPID&nbsp;(RFC&nbsp;8292)</a>.
+        Subscriptions are stored server-side; the actual encrypted push goes from the server to the
+        user&rsquo;s push service (FCM, Mozilla autopush, &hellip;) which forwards it to the
+        browser&rsquo;s service worker.
+      </p>
+      <h3>Server keypair</h3>
+      <p>
+        The Vellaris server holds one P-256 keypair per deployment. Generate it once with the
+        bundled CLI:
+      </p>
+      <CodeBlock lang="shell">
+        {`vellaris-server generate-vapid-key > vapid.key
+# wrote 32 bytes (raw P-256 private key) to stdout.
+# Public key (base64url): BPI78kIu3wPiYmUKXjYpzVhtREGqpjdvAaZbpngeY-V_Vg_8…
+
+# Then wire into Cloud Run / your container:
+gcloud secrets create vellaris-vapid-key --data-file=vapid.key
+# VELLARIS_VAPID_PRIVATE_KEY_PATH=/secrets/vapid.key
+# VELLARIS_VAPID_SUBJECT=mailto:ops@example.com`}
+      </CodeBlock>
+      <p>
+        The private key never leaves the server. The matching public key is derived from it at
+        startup and served at <code>GET /notifications/public-key</code>; the SPA fetches it once
+        per session and feeds it to <code>pushManager.subscribe()</code>.
+      </p>
+
+      <h3>Subscription registration</h3>
+      <p>The SPA &harr; server handshake at subscribe time:</p>
+      <CodeBlock lang="shell">
+        {`POST /notifications/subscriptions
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "endpoint":      "https://fcm.googleapis.com/fcm/send/...",
+  "p256dh_key":    "<base64 65-byte uncompressed P-256 public key>",
+  "auth_secret":   "<base64 16-byte symmetric secret>",
+  "user_agent":    "iPhone Safari" | null,
+  "friendly_name": "iPhone" | null
+}
+
+→ 201 { id, endpoint, friendly_name, user_agent, created_at }`}
+      </CodeBlock>
+      <p>
+        POST is idempotent on <code>endpoint</code>: the same browser re-subscribing (after a
+        <code>pushsubscriptionchange</code> rotation) replaces the keys in place and returns the
+        same row id. The server also exposes <code>GET /notifications/subscriptions</code> (per-user
+        list, drives the Settings page) and{' '}
+        <code>DELETE /notifications/subscriptions/{'{id}'}</code> (ownership-checked).
+      </p>
+
+      <h3>Payload shape (P2 model)</h3>
+      <p>
+        When the server sends a notification, it serialises this JSON, encrypts it with{' '}
+        <code>pywebpush</code> against the subscription&rsquo;s{' '}
+        <code>(p256dh_key, auth_secret)</code> pair, and dispatches it to the endpoint URL with a
+        VAPID JWT in the Authorization header.
+      </p>
+      <CodeBlock lang="json">
+        {`{
+  "type":   "share" | "revoke",
+  "from":   "<sender username>",
+  "doc_id": "<uuid of the document>"
+}`}
+      </CodeBlock>
+      <FieldList
+        items={[
+          {
+            name: 'type',
+            body: (
+              <>
+                Currently <code>share</code> or <code>revoke</code>; future events extend this enum.
+              </>
+            ),
+          },
+          {
+            name: 'from',
+            body: <>The sender&rsquo;s username, plain text. The push service learns this.</>,
+          },
+          {
+            name: 'doc_id',
+            body: (
+              <>
+                Used by the SW&rsquo;s <code>notificationclick</code> handler to navigate to
+                <code>/dashboard?highlight=&lt;doc_id&gt;</code>. The id alone is uninformative — it
+                can&rsquo;t be turned into the document&rsquo;s contents without the user&rsquo;s
+                private key.
+              </>
+            ),
+          },
+        ]}
+      />
+      <p>
+        Document <strong>titles never appear</strong> in the payload, since titles are client-side
+        AES-GCM ciphertext bound to the per-document DEK. Surfacing them would require the unwrapped
+        RSA key inside the SW context (a P3 model the project rejected — see the trust-model page
+        for why). The push service correlation (your username + delivery time) is the cost of P2;
+        users who don&rsquo;t want that exposure can leave Settings → Notifications disabled and
+        Vellaris falls back to a no-notifications PWA.
+      </p>
+
+      <h3>Update strategy (U2 prompt-and-reload)</h3>
+      <p>
+        When a new SW is detected (different bytes from the installed one), the SPA shows a
+        bottom-fixed banner:{' '}
+        <em>&ldquo;Vellaris {'{version}'} is available. Reload to update.&rdquo;</em>
+        Clicking Reload posts <code>SKIP_WAITING</code> to the waiting SW, which fires{' '}
+        <code>controllerchange</code> and reloads the page on the new bundle. We chose visible
+        prompts over silent updates because the SW is the SPA&rsquo;s fetch interceptor — silently
+        swapping the build under the user&rsquo;s feet is the wrong default for a paranoid-by-design
+        product.
+      </p>
     </DocsPageShell>
   )
 }
