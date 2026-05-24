@@ -18,6 +18,7 @@ pip install vellaris
 
 [Source](https://github.com/subhayu99/vellaris) ·
 [PyPI](https://pypi.org/project/vellaris/) ·
+[Docker Image](https://github.com/subhayu99/vellaris/pkgs/container/vellaris) ·
 [Docs](https://docs.vellaris.dev) ·
 [License](./LICENSE)
 
